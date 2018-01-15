@@ -74,9 +74,9 @@ if ($_W['ispost']) {
 		exit(json_encode(array('status' => '0', 'msg' => "已结束报名！")));
 	}
 	//是否关注
-	if ($this->oauthuser['follow'] != 1 && $reply['isfollow'] >= 2 || empty($this->oauthuser['openid'])) {
-		exit(json_encode(array('status' => '500', 'msg' => "没有关注")));
-	}
+	// if ($this->oauthuser['follow'] != 1 && $reply['isfollow'] >= 2 || empty($this->oauthuser['openid'])) {
+	// 	exit(json_encode(array('status' => '500', 'msg' => "没有关注")));
+	// }
 	if (empty($voteuser)) {
 		if ($reply['upimgtype'] == 1) {
 			// 自定义上传图片
