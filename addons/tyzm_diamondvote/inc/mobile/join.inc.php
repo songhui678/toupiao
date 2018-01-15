@@ -32,9 +32,9 @@ if ($reply['minupimg'] < 1) {
 }
 //是否关注
 //是否关注
-if (($this->oauthuser['follow'] != 1 && $reply['isfollow'] >= 2) || empty($this->oauthuser['openid'])) {
-	$nofollow = 1;
-}
+// if (($this->oauthuser['follow'] != 1 && $reply['isfollow'] >= 2) || empty($this->oauthuser['openid'])) {
+// 	$nofollow = 1;
+// }
 if ($reply['endtime'] < time()) {
 	message('活动已经结束！', $this->createMobileUrl('index', array('rid' => $rid)), 'error');
 }
