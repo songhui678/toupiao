@@ -82,10 +82,11 @@ foreach ($applydata as $key => $row) {
 }
 
 if ($vqqcomurl) {
-	preg_match("/\&vid=(.*?)\&/is", $vqqcomurl, $vidcontent);
-	if (!empty($vidcontent['1'])) {
-		$videourl = $vidcontent['1'];
-	}
+	// preg_match("/\&vid=(.*?)\&/is", $vqqcomurl, $vidcontent);
+	// if (!empty($vidcontent['1'])) {
+	// 	// $videourl="https://v.qq.com/iframe/player.html?vid=".$vidcontent['1']."&tiny=0&auto=0";
+	// }
+	$videourl = $vqqcomurl;
 }
 
 $reply['giftscale'] = $reply['giftscale'] ? $reply['giftscale'] : 1;
