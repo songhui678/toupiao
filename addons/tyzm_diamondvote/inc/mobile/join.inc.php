@@ -93,12 +93,16 @@ if ($_W['ispost']) {
 			}
 			//微信默认上传
 		}
+		$shiping = '';
 		$joindata = array();
 		foreach ($applydata as $row) {
 			$joindata[] = array(
 				'name' => $row['infoname'],
 				'val' => $_GPC[$row['infotype']],
 			);
+			if ($row['infotype'] == 'vqqcom') {
+				$shiping = $_GPC[$row['infotype']];
+			}
 			if ($row['notnull'] && empty($_GPC[$row['infotype']])) {
 				exit(json_encode(array('status' => '0', 'msg' => $row['infoname'] . "不能为空")));
 			}
@@ -126,6 +130,7 @@ if ($_W['ispost']) {
 			'img3' => $img[2],
 			'img4' => $img[3],
 			'img5' => $img[4],
+			'shiping' => $shiping,
 			'joindata' => iserializer($joindata),
 			'formatdata' => iserializer($_GPC['picturearr']),
 			'votenum' => 0,
