@@ -101,7 +101,7 @@ if ($_W['ispost']) {
 				'val' => $_GPC[$row['infotype']],
 			);
 			if ($row['infotype'] == 'vqqcom') {
-				$shiping = $_GPC[$row['infotype']];
+				$shiping = $_POST[$row['infotype']];
 			}
 			if ($row['notnull'] && empty($_GPC[$row['infotype']])) {
 				exit(json_encode(array('status' => '0', 'msg' => $row['infoname'] . "不能为空")));
