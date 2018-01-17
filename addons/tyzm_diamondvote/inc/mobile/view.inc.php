@@ -86,6 +86,8 @@ if ($vqqcomurl) {
 	// if (!empty($vidcontent['1'])) {
 	// 	// $videourl="https://v.qq.com/iframe/player.html?vid=".$vidcontent['1']."&tiny=0&auto=0";
 	// }
+}
+if ($voteuser['shiping']) {
 	$videourl = $voteuser['shiping'];
 }
 
