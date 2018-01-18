@@ -156,7 +156,6 @@ if ($do == 'forward') {
 	cache_delete("account:auth:refreshtoken:{$acid}");
 	itoast('更改公众号授权接入成功', url('account/post', array('acid' => $acid, 'uniacid' => $uniacid)), 'success');
 } elseif ($do == 'ticket') {
-	exit('success');
 	$post = file_get_contents('php://input');
 	WeUtility::logging('debug', 'account-ticket' . $post);
 	$encode_ticket = isimplexml_load_string($post, 'SimpleXMLElement', LIBXML_NOCDATA);
