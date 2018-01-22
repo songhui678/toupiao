@@ -165,6 +165,7 @@ if ($_W['ispost']) {
 		$insertid = pdo_insertid();
 		//file_put_contents(MODULE_ROOT."/data.txt",json_encode($insertid));exit;
 		if ($insertid) {
+			//支付
 			if (pdo_insert($this->tablegift, $giftdata)) {
 				// if(empty($reply['defaultpay'])){
 				// 	$out['status'] = 200;
