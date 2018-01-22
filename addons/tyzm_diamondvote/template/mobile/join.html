@@ -16,17 +16,18 @@
 			<div class="cont">
 				<textarea name="introduction" class="ta" cols="" placeholder="一句话描述自己的参赛宣言"></textarea></div>
 			</li>
+
 			{php echo $tplappye[0];}
 			</ul>
 			<div class="divbaoming4">
-			<div class="dlist1">{if $reply['minupimg']==$reply['maxupimg']}选择上传{$reply['maxupimg']}张照片，第一张为封面图。{else}   选择上传{$reply['minupimg']}-{$reply['maxupimg']}张照片，第一张为封面图。{/if}</div>
+				<div class="dlist1">{if $reply['minupimg']==$reply['maxupimg']}选择上传{$reply['maxupimg']}张照片，第一张为封面图。{else}   选择上传{$reply['minupimg']}-{$reply['maxupimg']}张照片，第一张为封面图。{/if}</div>
 
-            {if $reply['upimgtype']==1}
-            {php echo m('tpl')->tpl_app_form_field_image_tyzm('image', $image,$reply['rid']);}
-            {else}
-			<div class="dlist3" id="chooseImages"><img src="{MODULE_URL}/template/static/images/jia.gif" class="bmimg"></div>
-            {/if}
-
+	            {if $reply['upimgtype']==1}
+	            {php echo m('tpl')->tpl_app_form_field_image_tyzm('image', $image,$reply['rid']);}
+	            {else}
+				<div class="dlist3" id="chooseImages"><img src="{MODULE_URL}/template/static/images/jia.gif" class="bmimg"></div>
+	            {/if}
+	            <div class="dlist1">报名费5元</div>
             </div>
 		<div class="btn_area">
 <div class="baomingtxt"><font color="#a0a0a0">请如实填写报名信息，获取参赛资格！</font></div>
