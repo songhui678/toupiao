@@ -9,87 +9,80 @@ if (!defined('IN_IA')) {
 
 	exit('Access Denied');
 
-} 
+}
 
-class Tyzm_Tpl{
+class Tyzm_Tpl {
 
 	public function __construct() {
 
 		global $_W;
 
-	} 
+	}
 
-	
+	public function style($filename, $tmp = "") {
 
-	public function style($filename,$tmp="") {
-
-		if(empty($tmp)){
+		if (empty($tmp)) {
 
 			return $filename;
 
-		}else{
+		} else {
 
-			$source = TYZM_MODEL . "/template/mobile/".$tmp."/".$filename.".html";
+			$source = TYZM_MODEL . "/template/mobile/" . $tmp . "/" . $filename . ".html";
 
-			if(!is_file($source)) {
+			if (!is_file($source)) {
 
 				return $filename;
 
-			}else{
+			} else {
 
-				return $tmp."/".$filename;
+				return $tmp . "/" . $filename;
 
 			}
 
 		}
 
-	} 
-
-	
-
-	
+	}
 
 	function tpl_input($value = array()) {
-        if(is_array($value)){
+		if (is_array($value)) {
 
-        
 			foreach ($value as $row) {
 
-				$js.='
+				$js .= '
 
-				var '.$row['infotype'].'=$("*[name=\''.$row['infotype'].'\']").val();';
+				var ' . $row['infotype'] . '=$("*[name=\'' . $row['infotype'] . '\']").val();';
 
-				if(!empty($row['notnull'])){
+				if (!empty($row['notnull'])) {
 
-				$js.='	
+					$js .= '
 
-				if('.$row['infotype'].'==""){dialog2("请输入'.$row['infoname'].'");return false;}';
+				if(' . $row['infotype'] . '==""){dialog2("请输入' . $row['infoname'] . '");return false;}';
 
 				}
 
-				switch($row['infotype']){
+				switch ($row['infotype']) {
 
 					case 'mobile':
 
-						$html .= '<li><div class="tlt">'.$row['infoname'].'</div><div class="cont"><input name="'.$row['infotype'].'"  type="tel" placeholder="请输入'.$row['infoname'].'" class="tx"></div></li>';
+						$html .= '<li><div class="tlt">' . $row['infoname'] . '</div><div class="cont"><input name="' . $row['infotype'] . '"  type="tel" placeholder="请输入' . $row['infoname'] . '" class="tx"></div></li>';
 
-						$js.='
+						$js .= '
 
 						if(!(/^1[3|4|5|6|7|8|9][0-9]\d{8}$/.test(mobile))){dialog2("请输入正确的手机号码！");return false; } ';
 
-					    break;
+						break;
 
 					case 'email':
 
-						$html .= '<li><div class="tlt">'.$row['infoname'].'</div><div class="cont"><input name="'.$row['infotype'].'"  type="text" placeholder="请输入'.$row['infoname'].'" class="tx"></div></li>';
+						$html .= '<li><div class="tlt">' . $row['infoname'] . '</div><div class="cont"><input name="' . $row['infotype'] . '"  type="text" placeholder="请输入' . $row['infoname'] . '" class="tx"></div></li>';
 
-						$js.='if(!email.match(/^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+((\.[a-zA-Z0-9_-]{2,3}){1,2})$/)){dialog2("请输入正确的电子邮箱！");return false; } ';
+						$js .= 'if(!email.match(/^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+((\.[a-zA-Z0-9_-]{2,3}){1,2})$/)){dialog2("请输入正确的电子邮箱！");return false; } ';
 
 						break;
 
 					case 'vqqcom':
 
-						$html .= '<li><div class="tlt">'.$row['infoname'].'</div><div class="cont"><input name="'.$row['infotype'].'"  type="text" placeholder="请输入'.$row['infoname'].'" class="tx"></div><p style="font-size: 0.8em;color: #960f0f;">至腾讯视频页面，“分享”-“复制flash地址”。</p>
+						$html .= '<li><div class="tlt">' . $row['infoname'] . '</div><div class="cont"><input name="' . $row['infotype'] . '"  type="text" placeholder="请输入' . $row['infoname'] . '" class="tx"></div><p style="font-size: 0.8em;color: #960f0f;">至腾讯视频页面，“分享”-“复制通用代码”。</p>
 
 						</li>';
 
@@ -97,72 +90,62 @@ class Tyzm_Tpl{
 
 					case 'sex':
 
-						$html .= '<li><div class="tlt">'.$row['infoname'].'</div><input name="'.$row['infotype'].'" type="radio" value="2" checked> 女　　<input name="'.$row['infotype'].'" type="radio" value="1" style="margin-left:5%"> 男</li>			';
+						$html .= '<li><div class="tlt">' . $row['infoname'] . '</div><input name="' . $row['infotype'] . '" type="radio" value="2" checked> 女　　<input name="' . $row['infotype'] . '" type="radio" value="1" style="margin-left:5%"> 男</li>			';
 
-						$js.='
+						$js .= '
 
-						var '.$row['infotype'].'=$("input[name=\''.$row['infotype'].'\']:checked").val();';				
+						var ' . $row['infotype'] . '=$("input[name=\'' . $row['infotype'] . '\']:checked").val();';
 
-					    break;
+						break;
 
 					case 'bio':
 
 					case 'interest':
 
-						$html .= '<li><div class="tlt">'.$row['infoname'].'</div>
+						$html .= '<li><div class="tlt">' . $row['infoname'] . '</div>
 
 						<div class="cont">
 
-							<textarea name="'.$row['infotype'].'" class="ta"  placeholder="请输入'.$row['infoname'].'"></textarea></div>
+							<textarea name="' . $row['infotype'] . '" class="ta"  placeholder="请输入' . $row['infoname'] . '"></textarea></div>
 
 						</li>';
 
-						 break;
+						break;
 
 					default:
 
-					    $html .= '<li><div class="tlt">'.$row['infoname'].'</div><div class="cont"><input name="'.$row['infotype'].'"  type="text" placeholder="请输入'.$row['infoname'].'" class="tx"></div></li>';
+						$html .= '<li><div class="tlt">' . $row['infoname'] . '</div><div class="cont"><input name="' . $row['infotype'] . '"  type="text" placeholder="请输入' . $row['infoname'] . '" class="tx"></div></li>';
 
 						break;
 
 				}
 
-				
-
-				$input.=$row['infotype'].":".$row['infotype'].",";
+				$input .= $row['infotype'] . ":" . $row['infotype'] . ",";
 
 			}
 		}
 
-		
-
-
-
-		$res=array($html,$js,$input);
+		$res = array($html, $js, $input);
 
 		return $res;
 
-		
-
 	}
 
-	function tpl_inputweb($styp = array(),$value = array()) {
+	function tpl_inputweb($styp = array(), $value = array()) {
 
-		foreach ($styp as $key =>$row){
+		foreach ($styp as $key => $row) {
 
-
-
-			switch($row['infotype']){
+			switch ($row['infotype']) {
 
 				case 'sex':
 
-				$html.='<div class="form-group">
+					$html .= '<div class="form-group">
 
-					<label class="col-xs-12 col-sm-3 col-md-2 control-label"><span class="text-danger">*</span> '.$row["infoname"].'</label>
+					<label class="col-xs-12 col-sm-3 col-md-2 control-label"><span class="text-danger">*</span> ' . $row["infoname"] . '</label>
 
 					<div class="col-sm-8 col-xs-12">
 
-						<input type="text" class="form-control" name="join['.$row["infoname"].']" value="'.$value[$key]["val"].'"/>
+						<input type="text" class="form-control" name="join[' . $row["infoname"] . ']" value="' . $value[$key]["val"] . '"/>
 
 						<span class="help-block">2为“女”，1为“男”</span>
 
@@ -170,39 +153,19 @@ class Tyzm_Tpl{
 
 				</div>  ';
 
-				
-
-				 break;
+					break;
 
 				case 'bio':
 
 				case 'interest':
 
-				$html.='<div class="form-group">
+					$html .= '<div class="form-group">
 
-					<label class="col-xs-12 col-sm-3 col-md-2 control-label"><span class="text-danger">*</span> '.$row["infoname"].'</label>
-
-					<div class="col-sm-8 col-xs-12">
-
-						<textarea name="join['.$row["infoname"].']" class="form-control js-a" cols="30" rows="2">'.$value[$key]["val"].'</textarea>
-
-						<span class="help-block"></span>
-
-					</div>
-
-				   </div>  ';
-
-				break;
-
-				default:
-
-				    $html.='<div class="form-group">
-
-					<label class="col-xs-12 col-sm-3 col-md-2 control-label"><span class="text-danger">*</span> '.$row["infoname"].'</label>
+					<label class="col-xs-12 col-sm-3 col-md-2 control-label"><span class="text-danger">*</span> ' . $row["infoname"] . '</label>
 
 					<div class="col-sm-8 col-xs-12">
 
-						<input type="text" class="form-control" name="join['.$row["infoname"].']" value="'.$value[$key]["val"].'"/>
+						<textarea name="join[' . $row["infoname"] . ']" class="form-control js-a" cols="30" rows="2">' . $value[$key]["val"] . '</textarea>
 
 						<span class="help-block"></span>
 
@@ -212,41 +175,43 @@ class Tyzm_Tpl{
 
 					break;
 
-				
+				default:
+
+					$html .= '<div class="form-group">
+
+					<label class="col-xs-12 col-sm-3 col-md-2 control-label"><span class="text-danger">*</span> ' . $row["infoname"] . '</label>
+
+					<div class="col-sm-8 col-xs-12">
+
+						<input type="text" class="form-control" name="join[' . $row["infoname"] . ']" value="' . $value[$key]["val"] . '"/>
+
+						<span class="help-block"></span>
+
+					</div>
+
+				   </div>  ';
+
+					break;
 
 			}
 
-				
-
-			
-
 		}
-
-		
-
-
-
-		
 
 		return $html;
 
-		
-
 	}
 
+	function tpl_app_form_field_image_tyzm($name, $value = '', $rid) {
 
+		global $_W;
 
-function tpl_app_form_field_image_tyzm($name, $value = '',$rid) {
+		$thumb = empty($value) ? 'images/global/nopic.jpg' : $value;
 
-	global $_W;
+		$thumb = tomedia($thumb);
 
-	$thumb = empty($value) ? 'images/global/nopic.jpg' : $value;
+		$file = "index.php?i=" . $_W['uniacid'] . "&c=entry&do=file&m=tyzm_diamondvote&rid=" . $rid;
 
-	$thumb = tomedia($thumb);
-
-	$file="index.php?i=".$_W['uniacid']."&c=entry&do=file&m=tyzm_diamondvote&rid=".$rid;
-
-	$html = <<<EOF
+		$html = <<<EOF
 
 	<div class="mui-table-view-chevron">
 
@@ -282,75 +247,73 @@ function tpl_app_form_field_image_tyzm($name, $value = '',$rid) {
 
 EOF;
 
-	return $html;
-
-}
-
-
-
-function tpl_form_field_image_tyzm($name, $value = '', $default = '', $options = array()) {
-
-	global $_W;
-
-	if (empty($default)) {
-
-		$default = './resource/images/nopic.jpg';
+		return $html;
 
 	}
 
-	$val = $default;
+	function tpl_form_field_image_tyzm($name, $value = '', $default = '', $options = array()) {
 
-	if (!empty($value)) {
+		global $_W;
 
-		$val = tomedia($value);
+		if (empty($default)) {
 
-	}
-
-	if (!empty($options['global'])) {
-
-		$options['global'] = true;
-
-	} else {
-
-		$options['global'] = false;
-
-	}
-
-	if (empty($options['class_extra'])) {
-
-		$options['class_extra'] = '';
-
-	}
-
-	if (isset($options['dest_dir']) && !empty($options['dest_dir'])) {
-
-		if (!preg_match('/^\w+([\/]\w+)?$/i', $options['dest_dir'])) {
-
-			exit('图片上传目录错误,只能指定最多两级目录,如: "we7_store","we7_store/d1"');
+			$default = './resource/images/nopic.jpg';
 
 		}
 
-	}
+		$val = $default;
 
-	$options['server'] = "index.php?i=".$_W['uniacid']."&c=entry&do=file&m=tyzm_diamondvote&rid=".$rid;;
+		if (!empty($value)) {
 
-	$options['direct'] = true;
+			$val = tomedia($value);
 
-	$options['multiple'] = false;
+		}
 
-	if (isset($options['thumb'])) {
+		if (!empty($options['global'])) {
 
-		$options['thumb'] = !empty($options['thumb']);
+			$options['global'] = true;
 
-	}
+		} else {
 
-	$options['fileSizeLimit'] = intval($GLOBALS['_W']['setting']['upload']['image']['limit']) * 1024;
+			$options['global'] = false;
 
-	$s = '';
+		}
 
-	if (!defined('TPL_INIT_IMAGE')) {
+		if (empty($options['class_extra'])) {
 
-		$s = '
+			$options['class_extra'] = '';
+
+		}
+
+		if (isset($options['dest_dir']) && !empty($options['dest_dir'])) {
+
+			if (!preg_match('/^\w+([\/]\w+)?$/i', $options['dest_dir'])) {
+
+				exit('图片上传目录错误,只能指定最多两级目录,如: "we7_store","we7_store/d1"');
+
+			}
+
+		}
+
+		$options['server'] = "index.php?i=" . $_W['uniacid'] . "&c=entry&do=file&m=tyzm_diamondvote&rid=" . $rid;
+
+		$options['direct'] = true;
+
+		$options['multiple'] = false;
+
+		if (isset($options['thumb'])) {
+
+			$options['thumb'] = !empty($options['thumb']);
+
+		}
+
+		$options['fileSizeLimit'] = intval($GLOBALS['_W']['setting']['upload']['image']['limit']) * 1024;
+
+		$s = '';
+
+		if (!defined('TPL_INIT_IMAGE')) {
+
+			$s = '
 
 		<script type="text/javascript">
 
@@ -366,7 +329,7 @@ function tpl_form_field_image_tyzm($name, $value = '', $default = '', $options =
 
 					var img = ipt.parent().next().children();
 
-					options = '.str_replace('"', '\'', json_encode($options)).';
+					options = ' . str_replace('"', '\'', json_encode($options)) . ';
 
 					util.image(val, function(url){
 
@@ -414,13 +377,11 @@ function tpl_form_field_image_tyzm($name, $value = '', $default = '', $options =
 
 		</script>';
 
-		define('TPL_INIT_IMAGE', true);
+			define('TPL_INIT_IMAGE', true);
 
-	}
+		}
 
-
-
-	$s .= '
+		$s .= '
 
 		<div class="input-group ' . $options['class_extra'] . '">
 
@@ -442,17 +403,15 @@ function tpl_form_field_image_tyzm($name, $value = '', $default = '', $options =
 
 		</div>';
 
-	return $s;
+		return $s;
 
-}
+	}
 
+	function tpl_footer() {
 
+		global $_W;
 
-function tpl_footer() {
-
-	global $_W;
-
-	$html ='
+		$html = '
 
 <script>
 
@@ -460,10 +419,8 @@ function dialog2(msg){$("#dialog2 .weui-dialog__bd").html(msg);$("#dialog2").sho
 
 ';
 
-	return $html;
+		return $html;
 
-}
-
-
+	}
 
 }
