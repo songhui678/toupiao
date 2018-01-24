@@ -2,8 +2,8 @@
 /**
  * 钻石投票模块-后台管理-ajax
  *
- * @author weizan
- * @url http://weizan/
+ * @author 天涯织梦
+ * @url http://bbs.we7.cc/
  */
 
 defined('IN_IA') or exit('Access Denied');
@@ -63,6 +63,10 @@ if($ty=='deletevoteuser'){
 		pdo_delete($this->tablevoteuser,array('id' => $id,'uniacid' => $uniacid));
 		pdo_delete($this->tablevotedata,array('tid' => $id,'rid' => $rid,'uniacid' => $uniacid));
 		pdo_delete($this->tablecount,array('tid' => $id,'rid' => $rid,'uniacid' => $uniacid));
+		//删除本地图片
+		// for ($i=1; $i < 6; $i++) { 
+		// 	file_delete($voteuser['img'.$i]);
+		// }
 		message('删除成功！', $this->createWebUrl('votelist', array('name' => 'tyzm_diamondvote','rid'=>$rid)), 'success');
 	}{
 		message('删除失败，不存在该投票！', 'error');
@@ -154,6 +158,19 @@ if($ty=='setvotestatus'){
 				pdo_update($this->tablevotedata,array('status'=>(1-$_GPC['status'])),array('id' =>intval($_GPC['vid']),'tid' =>$id,'rid' =>$rid,'uniacid'=>$uniacid));
 			}
 
+		}
+	}
+}
+
+
+if($ty=='setgiftstatus'){
+	if($_W['ispost']){
+		$status = intval($_GPC['status']);
+		$setgiftstatus=pdo_update($this->tablegift,array('status'=>$status),array('id' =>intval($_GPC['vid']),'tid' =>$id,'rid' =>$rid,'uniacid'=>$uniacid));
+		if($setgiftstatus){
+			
+			$out['status'] = 200;
+				exit(json_encode($out));
 		}
 	}
 }

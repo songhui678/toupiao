@@ -23,9 +23,10 @@ $id  = $_GPC['id'];
 //$this->check_browser();
 //$color=m('common')->hex2rgb("#a64d79");
 //print_r($color);exit;
-$reply = pdo_fetch("SELECT id,config,bill_data,endtime,status FROM " . tablename($this->tablereply) . " WHERE rid = :rid ", array(
+$reply = pdo_fetch("SELECT id,config,style,bill_data,endtime,status FROM " . tablename($this->tablereply) . " WHERE rid = :rid ", array(
     ':rid' => $rid
 ));
+$reply['style']=@unserialize($reply['style']);
 $reply = array_merge($reply, unserialize($reply['config']));
 if($reply['apstarttime']> time()){
 	$aptime=1;//未开始报名
@@ -68,10 +69,10 @@ if(file_exists(ATTACHMENT_ROOT .$poster)){
 	load()->func('file');
 	is_dir(ATTACHMENT_ROOT . $posterimg) or mkdirs(ATTACHMENT_ROOT .$posterimg);	
 	$id       = @$voteuser['id'];
-	$photo    = @$voteuser['avatar'];
+	$photo    = tomedia(@$voteuser['avatar']);
 	$nickname = @$voteuser['nickname'];
-	$img      = @$voteuser['img1'];
-	$avatar   = @$voteuser['avatar'];
+	$img      = tomedia(@$voteuser['img1']);
+	$avatar   = tomedia(@$voteuser['avatar']);
 
 	$posterBgImage = tomedia($reply['bill_bg']);
 	
@@ -98,21 +99,27 @@ if(file_exists(ATTACHMENT_ROOT .$poster)){
 	foreach ($posterData as $data){
 			switch ($data['type']) {
 			case 'bag':
-				$pic_path = $posterBgImage;
+				$pic_path = $_W['siteroot']."web/index.php?c=utility&a=wxcode&do=image&attach=".urldecode($posterBgImage);
 				break;
 			case 'img':
-				$pic_path = tomedia($img);
+				$pic_path = $_W['siteroot']."web/index.php?c=utility&a=wxcode&do=image&attach=".urldecode($img);
 				break;
 			case 'avatar':
-				$pic_path = tomedia($avatar);
+				$pic_path = $_W['siteroot']."web/index.php?c=utility&a=wxcode&do=image&attach=".urldecode($avatar);
 				break;
 			case 'name':
+			case 'number':
+			    if($data['type']=='number'){
+					$text=$voteuser['noid'];
+				}else{
+					$text=$nickname;
+				}
 			    $background=ATTACHMENT_ROOT .$poster;
 				$dst = imagecreatefromstring(file_get_contents($background));
 				$color=m('common')->hex2rgb($data['color']);
 				$black = ImageColorAllocate($dst,$color["r"],$color["g"],$color["b"]); 
 				$font = MODULE_ROOT . '/lib/font/font.ttf';
-				$name = mb_convert_encoding($nickname, 'html-entities', 'UTF-8');
+				$name = mb_convert_encoding($text, 'html-entities', 'UTF-8');
 				imagettftext($dst, $data['size']*1.5,0, $data['left'] * 2, ($data['top'] * 2+$data['size']*2), $black, $font, $name);
 				imagejpeg($dst,ATTACHMENT_ROOT.$poster);	
 				break;
@@ -189,4 +196,4 @@ if(file_exists(ATTACHMENT_ROOT .$poster)){
 	}	
 }
 $_W['page']['sitename'] = "个人海报";
-include $this->template('poster');
+include $this->template(m('tpl')->style('poster',$reply['style']['template']));

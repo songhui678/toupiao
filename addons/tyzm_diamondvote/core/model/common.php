@@ -1,4 +1,10 @@
 <?php
+/**
+ * 钻石投票-投票
+ *
+ * @author 微实惠科技
+ * @url https://spf360.taobao.com
+ */
 if (!defined('IN_IA')) {
 	exit('Access Denied');
 } 
@@ -78,28 +84,35 @@ class Tyzm_Common{
 			$address = $locationData['country'].$locationData['province'].$locationData['city'];
 			return $address;
 		}else{
-			$modulelist = uni_modules(false);
-	        $mapAPIKey = $modulelist['tyzm_diamondvote']['config']['tencent_lbs_api_key'];
-			if (!empty($mapAPIKey)) {
-				$mapAPIUrl = "http://apis.map.qq.com/ws/geocoder/v1/?key=" . $mapAPIKey . "&location=" . $latitude . "," . $longitude . "&get_poi=0";
-				$resp = ihttp_get($mapAPIUrl);
-				if (is_error($resp)) {
-					$this->json_exit(0,$resp["message"]);
-				}
-				$locationData = json_decode($resp['content'], true);
-				if ($locationData['status'] == 0) {
-					$result = $locationData['result'];
-					$address = $result['address'];
-					return $address;
-				}else{
-					$this->json_exit(0,"地址转换失败，请查看接口KEY配置！");
-				}
+			$mapkey=array('65c56be24ebfac24c966dacc192aacb3','ecd569c220ee996c90072f8e18a98ad7','af6fad46848d89e1ee25cbf75d1e33a7');
+            $mkey= $mapkey[array_rand($mapkey,1)];
+            $mapAPIUrl="http://restapi.amap.com/v3/geocode/regeo?key=".$mkey."&location=" . $longitude . "," . $latitude . "&batch=false&roadlevel=0";
+            $resp = ihttp_get($mapAPIUrl);
+            if (is_error($resp)) {
+				$this->json_exit(0,$resp["message"]);
+			}
+			$locationData = json_decode($resp['content'], true);
+			if ($locationData['status'] == 1) {
+				$result = $locationData['regeocode'];
+				$address = $result['formatted_address'];
+				return $address;
 			}else{
-				$this->json_exit(0, "请设置api_key！（010）");
+				$this->json_exit(0,$locationData['info']."(".$locationData['infocode'].")");
 			}
 		}
-		
     }
+
+    public function ip2address($ip=0){
+		global $_W;
+		$ip=empty($ip)?$_W['clientip']:$ip;
+		//如果不传地理位置时，自动转换ip定位
+		load()->func('communication');
+		$getipurl="http://int.dpool.sina.com.cn/iplookup/iplookup.php?format=json&ip=".$ip;
+		$resp = ihttp_get($getipurl);
+		$locationData = json_decode($resp['content'], true);
+		$address = $locationData['country'].$locationData['province'].$locationData['city'];
+		return $address;
+       }
 	public function hex2rgb($hexColor) {
         $color = str_replace('#', '', $hexColor);
         if (strlen($color) > 3) {
@@ -121,5 +134,15 @@ class Tyzm_Common{
         }
         return $rgb;
     }
-	
+    public function rand_type($valve){
+		//随机数
+		$aa=explode("-",$valve);
+		if(count($aa)==2){
+            $a=rand($aa[0],$aa[1]);
+		}else{
+            $a=$valve;
+		}
+		return intval($a);
+	}
+
 } 

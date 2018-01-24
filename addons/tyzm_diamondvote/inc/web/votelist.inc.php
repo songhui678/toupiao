@@ -2,7 +2,8 @@
 /**
  * 钻石投票模块-投票列表
  *
- * @author 
+ * @author 天涯织梦
+ * @url http://bbs.we7.cc/
  */
 
 defined('IN_IA') or exit('Access Denied');

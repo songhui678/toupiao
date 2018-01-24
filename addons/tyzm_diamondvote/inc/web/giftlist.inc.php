@@ -2,8 +2,8 @@
 /**
  * 钻石投票模块-投票数据
  *
- * @author weizan
- * @url http://weizan/
+ * @author 天涯织梦
+ * @url http://bbs.we7.cc/
  */
 
 defined('IN_IA') or exit('Access Denied');

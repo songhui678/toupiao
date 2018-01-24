@@ -1,0 +1,34 @@
+{template 'common/header'}
+{if IMS_VERSION<1}
+<link href="{MODULE_URL}/template/static/css/wq1.0.css" rel="stylesheet">
+{/if}
+<div class="main">
+<script type="text/javascript">
+	function uploadMultiImage(elm) {
+		var name = $(elm).next().val();
+		util.image( "", function(urls){
+			$.each(urls, function(idx, url){
+				$(".multi-img-details").append('<div class="multi-item"><img onerror="this.src=\'./resource/images/nopic.jpg\'; this.title=\'图片未找到.\'" src="'+url.url+'" class="img-responsive img-thumbnail"><input type="text" name="imgname[]" value="'+url.filename+'"><input type="hidden" name="imgurl[]" value="'+url.attachment+'"><em class="close" title="删除这张图片" onclick="deleteMultiImage(this)">×</em></div>');
+				console.log("值为:",url);
+
+			});
+		}, {"multiple":true,"direct":false,"fileSizeLimit":8388608});
+	}
+	function deleteMultiImage(elm){
+		$(elm).parent().remove();
+	}
+</script>
+	<div class="mui-input-cell">
+	<div class="input-group">
+	<input type="text" class="form-control" readonly="readonly" value="" placeholder="批量上传图片" autocomplete="off">
+	<span class="input-group-btn">
+		<button class="btn btn-default" type="button" onclick="uploadMultiImage(this);">选择图片</button>
+		<input type="hidden" value="{$name}" />
+	</span>
+    </div>
+
+    <div class="input-group multi-img-details"></div>
+    </div>
+</div>
+
+{template 'common/footer'}

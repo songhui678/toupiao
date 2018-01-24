@@ -13,6 +13,8 @@ img {border:0}
 #pullDown {display:none}
 #pullDown .tishi {width:100%;height:50px;text-align:center;line-height:50px;font-size:12px;color:#999}
 /*main页面*/
+
+.divviewg{width:95%;margin:0 auto;margin-top:10px;}
 .divmain1 {margin:0 auto;width:100%}
 .divmain1 img {width:100%}
 
@@ -163,6 +165,10 @@ img {border:0}
 
 }
 
+.notice{position: fixed; z-index: 1; top: 0;left: 0 ; width: 100%; text-align: center; padding: 6px 10px; border: 1px solid transparent; color: #8a6d3b;
+    background-color: #fcf8e3;
+    border-color: #faebcc;}
+
 .divbotuser h2{padding: 8px;margin: 0;font-size: 16px;line-height:25px;text-align: center;border-bottom: 1px dashed #d5d5d5;background: #f9f9f9;}
 .divbotuser h2 img{border-radius:50%;}
 .divbottommenu { width: 100%; height: 50px;left: 0; top: 0; background-color: #f9f9f9; display:block;    border-bottom: 1px #EFEFEF solid;}
@@ -219,7 +225,7 @@ img {border:0}
 .divbaoming4 .dlist2{margin:0 auto;width:100%;border-bottom:#CCC 1px solid}
 .divbaoming4 .dlist3{margin:0 auto;width:98%;height:80px}
 .divbaoming4 .dlist3 img{margin-top:10px;margin-left:5px}
-.bmimg{width:100px;height:100px;vertical-align:middle}
+.bmimg{width:60px;height:60px;vertical-align:middle}
 
 
 /*关注*/
@@ -384,3 +390,74 @@ img {border:0}
 	opacity: .9;
     font-size: 11px;
 }
+
+
+	#audio_btn {
+    position: fixed;
+    right: 10px;
+    top: 28px;
+    z-index: 200;
+    display: none;
+    width: 50px;
+    height: 50px;
+    background-repeat: no-repeat;
+    cursor: pointer;
+}
+.off {
+    background: url(../images/music_off.png);
+    background-size: 30px 30px;
+}
+.play_yinfu {
+    background-image: url(../images/music.gif);
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 60px 60px;
+}
+.rotate {
+    left: 10px;
+    top: 10px;
+    width: 30px;
+    height: 30px;
+    background-size: 100% 100%;
+    background-image: url(../images/music_off.png);
+    -webkit-animation: rotating 1.2s linear infinite;
+    -moz-animation: rotating 1.2s linear infinite;
+    -o-animation: rotating 1.2s linear infinite;
+    animation: rotating 1.2s linear infinite;
+}
+
+@-webkit-keyframes rotating {
+	from {
+		-webkit-transform: rotate(0)
+	}
+
+	to {
+		-webkit-transform: rotate(360deg)
+	}
+}
+
+@keyframes rotating {
+	from {
+		transform: rotate(0)
+	}
+
+	to {
+		transform: rotate(360deg)
+	}
+}
+
+@-moz-keyframes rotating {
+	from {
+		-moz-transform: rotate(0)
+	}
+
+	to {
+		-moz-transform: rotate(360deg)
+	}
+}
+
+#list_more{margin-top: 16px; text-align: center;margin-bottom: 40px;}
+#list_more span{     border: 1px solid #ccc;
+    padding: 5px 20px;
+    border-radius: 5px;margin-bottom: 8px;
+    display: inline-block;}

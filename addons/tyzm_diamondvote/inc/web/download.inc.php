@@ -17,7 +17,7 @@ if(empty($rid)){
 		$Where .= " AND `rid` = $rid";		
 	}
 		//取得用户详细数据
-$list = pdo_fetchall('SELECT * FROM '.tablename($this->tablevoteuser).' WHERE uniacid= :uniacid '.$Where.'  ORDER BY `id` DESC, `createtime` ASC', array(':uniacid' => $_W['uniacid']) );
+$list = pdo_fetchall('SELECT * FROM '.tablename($this->tablevoteuser).' WHERE uniacid= :uniacid '.$Where.'  ORDER BY `votenum` DESC, `createtime` ASC', array(':uniacid' => $_W['uniacid']) );
 		
 load()->model('mc');
 $tableheader = array('序号','编号','微信昵称', 'openid','姓名','报名信息','宣言','票数','礼物','审核','参加时间' );
@@ -43,11 +43,11 @@ foreach ($list as $mid => $value) {
 	//print_r($status);exit;
 	$html .= $value['id'] . "\t ,";	
 	$html .= $value['noid'] . "\t ,";	
-	$html .= $value['nickname']. "\t ,";
+	$html .= htmlspecialchars($value['nickname']). "\t ,";
 	$html .= $value['openid']. "\t ,";
-	$html .= $value['name'] . "\t ,";	
+	$html .= htmlspecialchars($value['name']) . "\t ,";	
 	$html .= $join . "\t ,";
-	$html .= $value['introduction'] . "\t ,";	
+	$html .= htmlspecialchars($value['introduction']) . "\t ,";	
 	$html .= $value['votenum'] . "\t ,";	
 	$html .= $value['giftcount'] . "\t ,";	
 	$html .= $status . "\t ,";

@@ -43,7 +43,7 @@ $(function(){
 	<strong id="minute_show">0分</strong>
 	<strong id="second_show">0秒</strong>
 </div>
-{if $reply['diamondmodel']==0}
+{if $reply['diamondmodel']==0 && $reply['isshowgift']<2}
 <div class="paihang1 clearfix">
 
   <div class="divitem"> <a href="{php echo $this->createMobileUrl('ranking', array('rid' => $rid))}">
@@ -57,6 +57,8 @@ $(function(){
   </div>
 </div>
   {/if}
+<div class="divviewg"><ins data-revive-zoneid="6" data-revive-id="cf5521a0c29a35de7f416d220fe367e7"></ins>
+</div>
 <div class="paihang2">
 
 
@@ -86,10 +88,12 @@ function get_list(){
 								+'<div class="item1"><img src="'+list[i]['avatar']+'"></div>'
 								+'<div class="item2"><font style="font-size:15px;font-weight:bold">'+list[i]['name']+'&nbsp;&nbsp;'+list[i]['noid']+'号</font><br />'
 								+'<font style="font-size:11px;">票数 '+list[i]['votenum']+'&nbsp;&nbsp;  '
-								{if $reply['diamondmodel']==0}
+								{if $reply['diamondmodel']!=1 && $reply['isshowgift']<2}
 								+'礼物 '+list[i]['giftcount']
+								+'{$reply['giftunit']}'
 								{/if}
-								+'{$reply['giftunit']}<br/>'+list[i]['introduction']+'</font></div>'
+								+'<br/>'
+								+list[i]['introduction']+'</font></div>'
 								+'<div class="item3" '+list[i]['item3color']+'>'+(i+1)+'</div>'
 								+'</div></a><div class="bottoms"></div></div>';
 							$(".paihang2").append(content);

@@ -8,12 +8,11 @@ word-break: normal;
 }
 
 </style>
-<script src="http://hkjj.v.longtick.com/tpl/Api/tyzm/common/js/mzp-packed-me.js"></script>
+<script src="{MODULE_URL}/template/static/js/mzp-packed-me.js"></script>
 <div class="main">
     <ul class="nav nav-tabs">
         <li{if $_GPC['do'] == 'manage' || $_GPC['do'] == '' } class="active"{/if}><a href="{php echo $this->createWebUrl('manage');}">活动管理</a></li>
         <li{if $_GPC['do'] == 'post'} class="active"{/if}><a href="{php echo url('platform/reply/post',array('m'=>'tyzm_diamondvote'));}">添加活动规则</a></li>
-
     </ul>
     
  
@@ -40,7 +39,7 @@ word-break: normal;
 	</div>
  
     </div>
- 
+  <div class="panel panel-default">
     <div style="padding:15px;">
         <table class="table table-hover">
             <thead class="navbar-inner">
@@ -116,7 +115,7 @@ word-break: normal;
         </table>
         {$pager}
     </div>
-
+</div>
 </div>
 <script>
 require(['jquery', 'util'], function($, util){

@@ -21,9 +21,12 @@
 </div>
 <style>
 
-{if $reply['diamondmodel']==1}
+{if $reply['diamondmodel']==1 || $reply['isshowgift']>=3}
 .divbottommenu .divitem{width:33.333%;}
 {/if}
+.carousel-control.left,.carousel-control.right{background-image:none;}
+#viframe{border:1px #EFEFEF solid}
+.view4{margin: 0 auto;    width: 94%;overflow: hidden;}
 </style>
 
 <div class="divbotuser">
@@ -53,81 +56,46 @@
 	  <span><i class="glyphicon glyphicon-fire"></i> 热度</span>
 	  <span>{$pvtotal['pv_total']}</span>
   </div>
-  {if $reply['diamondmodel']==0}
+  {if  $reply['diamondmodel']!=1 && $reply['isshowgift']<3}
   <div class="divitem">
 	  <span><i class="glyphicon glyphicon-gift"></i> 礼物</span>
 	  <span>{php echo $voteuser['giftcount']*$reply['giftscale'];}{$reply['giftunit']}</span>
   </div>
   {/if}
 </div>
+<div class="divviewg">
+<!--/*
+  *
+  * Revive Adserver Asynchronous JS Tag
+  * - Generated with Revive Adserver v4.0.2
+  *
+  */--> 
 
-<div class="divview2">
-<span><i class="glyphicon glyphicon-bullhorn"></i> 宣言：{$voteuser['introduction']}</span>
-
+<ins data-revive-zoneid="3" data-revive-id="cf5521a0c29a35de7f416d220fe367e7"></ins>
+<script async src="//tyzm.gg.v.nowbeta.com/www/delivery/asyncjs.php"></script> 
 </div>
-{if $reply['isfriendship']==1}
+
+{if !empty($voteuser['introduction'])}
+<div class="divview2"> 
+<span><i class="glyphicon glyphicon-bullhorn"></i> 宣言：{$voteuser['introduction']}</span>
+</div>
+{/if}
+{if !empty($joininfo)}
 <div class="panel panel-info view2">
   <div class="panel-heading">
     <h3 class="panel-title"><i class="glyphicon glyphicon-user"></i> 选手信息</h3>
   </div>
-  <div class="panel-body">
-  {if $lookinfo['id']==''}
-	  {if $packnum<1}
-	      <a href="{php echo $this->createMobileUrl('user')}" class="weui-btn weui-btn_mini weui-btn_primary" style="float: right;">查看信息</a>
-	  {else}
-	      <a href="javascript:;" onclick="$('#iosDialog1').show();" class="weui-btn weui-btn_mini weui-btn_primary " style="float: right;">查看信息</a>
-	  {/if}   
-   {else}
-          <a href="{php echo $this->createMobileUrl('user')}" class="weui-btn weui-btn_mini weui-btn_primary" style="float: right;">会员中心</a>   
-   {/if}      
-   {loop $friends $rom}
-      {$rom['name']}：{if $lookinfo==""}****{else}{$rom['val']}{/if}<br/>
+  <div class="panel-body">      
+   {loop $joininfo $rom}
+      {$rom['name']}：{$rom['val']}<br/>
    {/loop}
   </div>
- <div class="js_dialog" id="iosDialog1" style="opacity: 1; display:none;">
-            <div class="weui-mask"></div>
-            <div class="weui-dialog">
-                <div class="weui-dialog__hd"><strong class="weui-dialog__title">提示</strong></div>
-                <div class="weui-dialog__bd">目前还有{$packnum}次查看选手信息机会！每查看一位选手信息，消耗一次机会。</div>
-                <div class="weui-dialog__ft">
-                    <a href="javascript:;" onclick="hidemod('iosDialog1');" class="weui-dialog__btn weui-dialog__btn_default">取消</a>
-                    <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_primary lookinfo">确定</a>
-                </div>
-            </div>
-        </div> 
-
 </div>
-<script>
-		$(".lookinfo").click(function(){
-		    loadingToast("提交中");
-			$.ajax({
-				type: "POST",
-				url: "{php echo $this->createMobileUrl('lookinfo', array('rid' => $reply['rid'],'id' => $_GPC['id']))}",
-				dataType: "json",
-				success: function(str) {
-				    hidemod("loadingToast");
-					if(str!=null && str!=''){
-					   
-						if(str.status == 1){
-							location.href="{php echo $this->createMobileUrl('view', array('rid' => $reply['rid'],'id' => $_GPC['id']))}";
-						}else if(str.status == 2){
-							location.href="{php echo $this->createMobileUrl('user')}";
-						}else{
-					       dialog2("发生错误，请刷新后重试！");
-						}
-					}
-				},
-				error: function(err) {
-					hidemod("loadingToast");
-					dialog2("发生错误，请刷新后重试！");
-				}
-			});
-	});
-
-
-</script>
-
-
+{/if}
+{if !empty($videourl)}
+<div class="view4">
+<iframe frameborder="0" id="viframe" width="100%" height="240" src="{$videourl}" allowfullscreen  ></iframe>
+</div>
 {/if}
 <div class="view2">
 <div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
@@ -205,7 +173,7 @@
 {if $voteuser['openid']!=$openid && $myvoteid!=""}
 		<div class='vsav'><div class='vbtn_tnk'><a href='{php echo $this->createMobileUrl('view', array('rid' =>  $reply['rid'],'id' => $myvoteid))}'>我的投票</a></div></div>
 {else}
-	    {if $voteuser['openid']!=$openid}
+	    {if $voteuser['openid']!=$openid && $aptime!=2}
         <div class='vsav'><div class='vbtn_tnk'><a href='{php echo $this->createMobileUrl('join', array('rid' => $reply['rid']))}'>我也要参加</a></div></div>
 		{/if}
 		{if $voteuser['openid']==$openid && $reply['isposter']==1}
@@ -214,7 +182,9 @@
 		
 {/if}
 </div> 
-{if $reply['diamondmodel']!=1 && $reply['isshowgift']!=1}
+
+
+{if $reply['diamondmodel']!=1  && ($reply['isshowgift']=="" || $reply['isshowgift']==0 || $reply['isshowgift']==2 || $reply['isshowgift']==4)}
 <div class="zuanlist">
    <div class="tabtitle">
        <i class="glyphicon glyphicon-list"></i> 礼物列表
@@ -227,19 +197,20 @@
 {/if}
 
 <div style="height:80px;"></div>
-
-
-
 <div class="lapiao">
-<a href="{php echo $this->createMobileUrl('index', array('rid' => $rid))}" class='l'>回首页</a>
-{if $reply['diamondmodel']!=1}
-<a href="{php echo $this->createMobileUrl('gift', array('rid' => $reply['rid'],'id' => $voteuser['id']))}"  class='r'>礼物</a>
-{else}
-<a href="{php echo $this->createMobileUrl('ranking', array('rid' => $reply['rid']))}"  class='b'>榜单</a>
-{/if}
+	<a href="{php echo $this->createMobileUrl('index', array('rid' => $rid))}" class='l'>回首页</a>
+	{if $reply['diamondmodel']==0}
+	<a href="{php echo $this->createMobileUrl('gift', array('rid' => $reply['rid'],'id' => $voteuser['id']))}"  class='r'>礼物</a>
+	{else}
+	<a href="{php echo $this->createMobileUrl('ranking', array('rid' => $reply['rid']))}"  class='b'>榜单</a>
+	{/if}
 
-
-<div class="add" id="mytoupiao"><div class="i"><i><img src="{MODULE_URL}/template/static/images/xin.png"></i>投票</div></div>
+	{if $reply['diamondmodel']==2}
+	<a href="{php echo $this->createMobileUrl('gift', array('rid' => $reply['rid'],'id' => $voteuser['id']))}" ><div class="add"><div class="i"><i><img src="{MODULE_URL}/template/static/images/xin.png"></i>投票</div></a>
+	{else}
+	<div class="add" {if !empty($reply['verifycode'])} onclick='showverify();' {else} id="mytoupiao" {/if} ><div class="i"><i><img src="{MODULE_URL}/template/static/images/xin.png"></i>投票</div>
+	{/if}
+</div>
 </div>
 
 
@@ -269,11 +240,56 @@
    {if $reply['voteadimg']==""}
       
    {else}
-   <div class="voteadd" onclick="location='{$reply['voteadurl']}'"><img src="{$reply['voteadimg']}"  class="adimg" width="100%"  /><p class="adtext">{$reply['voteadtext']}</p></div>
+   <div class="voteadd" onclick="location='{$reply['voteadurl']}&sourceid={$id}'"><img src="{media $reply['voteadimg']}"  class="adimg" width="100%"  /><p class="adtext">{$reply['voteadtext']}</p></div>
    {/if}
    <div class="votets ">投票成功，今天您还可以投5票。:-D</div>
 <div class="weui-mask" onclick="hidemod('succeed');"></div>
 </div>
+
+{if !empty($reply['verifycode'])}
+
+
+<style type="text/css">
+	
+#verifybox{opacity: 1;display:none}
+#verifybox .weui-dialog__bd{padding: 1.2em 1.7em;}
+#imgverify{width:100%;height: 45px;border: 1px solid rgba(0,0,0,.2); border-radius: 4px;}
+#verifybox input{margin-bottom: 0;text-align: center;color: rgba(45, 137, 210, 0.79);}
+#verifybox input::-webkit-input-placeholder{}
+</style>
+
+<div id="verifybox">
+        <div class="weui-mask"></div>
+        <div class="weui-dialog">
+       <div class="weui-dialog__bd">
+     
+	  <a href="javascript:;" id="toggle" class="input-group-btn imgverify"><img id="imgverify" src="{MODULE_URL}/template/static/images/codeloading.gif"  title="点击图片更换验证码" /></a>
+	  <br/>
+	  <input name="verify" type="number" class="form-control" oninput="if(value.length>4)value=value.slice(0,4)" placeholder="请输入验证码">
+            </div>
+            <div class="weui-dialog__ft">
+                <a id="mytoupiao" href="javascript:;" class="weui-dialog__btn weui-dialog__btn_primary">确认投票</a>
+            </div>
+        </div>
+</div> 
+<script>
+
+function showverify(){
+	$("#verifybox").show();
+	$("input[name='verify']").val('');
+	$("input[name='verify']").focus();
+	$('#imgverify').prop('src', "{php echo $this->createMobileUrl('code')}&r="+Math.round(new Date().getTime()));
+	return false;
+}
+
+
+$('#toggle').click(function() {
+	$('#imgverify').prop('src', "{php echo $this->createMobileUrl('code')}&r="+Math.round(new Date().getTime()));
+	return false;
+});
+</script>
+{/if}
+
 {if $reply['isredpack']==1}
 	<!-- 加入弹出框开始 -->
     <div class="prompt early" id="redpack" style="display:none">
@@ -300,7 +316,7 @@
 $(document).ready(function(){
 var latitude=0;
 var longitude=0;
-{if $reply['area']!="" || $reply['redpackarea']!=""}
+{if (!empty($reply['area']) && empty($reply['locationtype'])) || $reply['redpackarea']!=""}
 
 	wx.ready(function (){
 		wx.getLocation({
@@ -321,7 +337,13 @@ var longitude=0;
 	}); 
 {/if}
     $("#mytoupiao").click(function(){
-	{if $reply['area']!=""}
+    
+    var  verify=0;
+    {if !empty($reply['verifycode'])}
+	    var verify=$("input[name='verify']").val();
+	    hidemod("verifybox");
+    {/if}
+	{if !empty($reply['area']) && empty($reply['locationtype'])}
 	   if(latitude==0 || longitude==0){
 	      loadingToast("获取位置...");return false;
 	   }
@@ -330,7 +352,7 @@ var longitude=0;
    	$.ajax({
 		type: "POST",
 		url: "{php echo $this->createMobileUrl('vote', array('rid' => $reply['rid'],'id' => $voteuser['id']))}",
-		data: {latitude:latitude,longitude:longitude},
+		data: {latitude:latitude,longitude:longitude,verify:verify},
 	    dataType: "json",
 	    success: function(str) {
 		    hidemod("loadingToast");
@@ -424,7 +446,7 @@ function lottery(img,t1,t2){
 });
 
 
-{if $reply['diamondmodel']!=1  && $reply['isshowgift']!=1}
+{if $reply['diamondmodel']!=1  && ($reply['isshowgift']=="" || $reply['isshowgift']==0 || $reply['isshowgift']==2|| $reply['isshowgift']==4)}
 var limit = 1;
 function get_list(){	
 	$("#list_more").html('<div class="am-text-secondary"><span class="am-icon-spinner am-icon-spin"></span> 卖命加载中...</div>');
@@ -447,7 +469,7 @@ function get_list(){
 						if(list.length==10){
 							$("#list_more").html('<span class="am-text-secondary" onclick="get_list();">查看更多</span>');
 						}else{
-							$("#list_more").html('<span></span>');
+							$("#list_more").html('');
 						}
 						limit++;		
 		    }else if(data.status==-103){

@@ -14,7 +14,7 @@ function dragEvent(obj) {
     posterrs.Set($(".rDown", obj), "down");
     posterrs.Scale = true;
     var type = obj.attr('type');
-    if (type == 'name' || type == 'img' || type == 'code') {
+    if (type == 'name' || type == 'img' || type == 'code'|| type == 'number') {
         posterrs.Scale = false;
     }
     new Drag(obj, {

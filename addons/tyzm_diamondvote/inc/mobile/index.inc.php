@@ -2,8 +2,8 @@
 /**
  * 钻石投票-首页
  *
- * @author weizan
- * @url http://weizan/
+ * @author 天涯织梦
+ * @url http://bbs.we7.cc/
  */
 
 defined('IN_IA') or exit('Access Denied');
@@ -11,13 +11,18 @@ global $_W,$_GPC;
 is_weixin();
 $uniacid = intval($_W['uniacid']);
 $rid=intval($_GPC['rid']);
-$reply = pdo_fetch("SELECT rid,title,topimg,eventrule,sharetitle,shareimg,sharedesc,config,endtime,apstarttime,apendtime,status FROM " . tablename($this->tablereply) . " WHERE rid = :rid ORDER BY `id` DESC", array(':rid' => $rid));
-$reply=array_merge ($reply,unserialize($reply['config']));unset($reply['config']);
 
-if(!empty($_GPC['oauth_openidopenid'])){
-	setcookie("oauth_openidopenid",$_GPC['oauth_openidopenid'],time()+3600*24*7);
-	
-}
+
+
+$reply = pdo_fetch("SELECT rid,title,topimg,eventrule,thumb,sharetitle,shareimg,sharedesc,addata,config,style,endtime,apstarttime,apendtime,status,description FROM " . tablename($this->tablereply) . " WHERE rid = :rid ORDER BY `id` DESC", array(':rid' => $rid));
+$reply['style']=@unserialize($reply['style']);
+$reply=@array_merge($reply,unserialize($reply['config']));unset($reply['config']);
+$addata=@unserialize($reply['addata']);	
+
+if(empty($reply['status'])){message("活动已禁用");}
+
+m('domain')->randdomain($rid);
+//$unisetting = uni_setting_load();
 
 if($reply['apstarttime']> time()){
 	$aptime=1;//未开始报名
@@ -31,20 +36,12 @@ if(!empty($voteuser)){
 }
 
 
-
-$condition="";
+$condition.=" AND uniacid=".$uniacid;
 
 $condition.=" AND status=1 ";
 
 
-$jointotal = pdo_fetchcolumn('SELECT COUNT(id) FROM ' . tablename($this->tablevoteuser) . " WHERE   rid = :rid  ".$condition , array(':rid' => $rid));
 
-
-$votetotal=pdo_fetchcolumn("SELECT sum(votenum) FROM ".tablename($this->tablevoteuser)." WHERE rid = :rid ", array(':rid' => $rid));
-$vheat=pdo_fetchcolumn("SELECT sum(vheat) FROM ".tablename($this->tablevoteuser)." WHERE rid = :rid ", array(':rid' => $rid));
-
-$pvtotal=pdo_fetchcolumn("SELECT sum(pv_total) FROM ".tablename($this->tablecount)." WHERE rid = :rid ", array(':rid' => $rid));
-$pvtotal=$pvtotal+$reply['virtualpv']+$vheat;
 
 if($_W['ispost']){
 	$keyword=$_GPC['keyword'];
@@ -119,13 +116,23 @@ if($_W['ispost']){
 	exit(json_encode(array('status' => $sta, 'content' => $list)));
 }
 
+$jointotal = pdo_fetchcolumn('SELECT COUNT(id) FROM ' . tablename($this->tablevoteuser) . " WHERE   rid = :rid  ".$condition , array(':rid' => $rid));
+
+
+$votetotal=pdo_fetchcolumn("SELECT sum(votenum) FROM ".tablename($this->tablevoteuser)." WHERE rid = :rid ", array(':rid' => $rid));
+
+$votetotal=!empty($votetotal)?$votetotal:0;
+$vheat=pdo_fetchcolumn("SELECT sum(vheat) FROM ".tablename($this->tablevoteuser)." WHERE rid = :rid ", array(':rid' => $rid));
+
+$pvtotal=pdo_fetchcolumn("SELECT sum(pv_total) FROM ".tablename($this->tablecount)." WHERE rid = :rid ", array(':rid' => $rid));
+$pvtotal=$pvtotal+$reply['virtualpv']+$vheat;
 
 $_share['title'] =!empty($reply['sharetitle'])?$reply['sharetitle']:$reply['title'];
 $_share['imgUrl'] =!empty($reply['shareimg'])?tomedia($reply['shareimg']):tomedia($reply['thumb']);
 $_share['desc'] =!empty($reply['sharedesc'])?$reply['sharedesc']:$reply['description'];
 $_share['link'] = $_W['siteroot']."app/".$this->createMobileUrl('index', array('rid' => $rid));
 $_W['page']['sitename']=$reply['title'];
-include $this->template('index');
+include $this->template(m('tpl')->style('index',$reply['style']['template']));
 
 
 

@@ -1,0 +1,14 @@
+﻿{template 'yellow/header'}
+{template 'yellow/sider'}
+<div class="divmain10">
+  <div class="divcon">
+  {if $reply['prizemsg']==""}
+     请至后台编辑活动，设置活动内容！
+  {else}
+     {$reply['prizemsg']}
+  {/if}
+  </div>
+</div>
+{template 'yellow/nav_footer'}
+
+{template 'yellow/footer'}

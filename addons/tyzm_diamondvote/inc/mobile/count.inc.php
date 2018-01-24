@@ -2,8 +2,8 @@
 /**
  * 钻石投票-数据统计
  *
- * @author weizan
- * @url http://weizan/
+ * @author 天涯织梦
+ * @url http://bbs.we7.cc/
  */
 
 

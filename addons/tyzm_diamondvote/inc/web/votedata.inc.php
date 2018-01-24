@@ -2,7 +2,8 @@
 /**
  * 钻石投票模块-投票数据
  *
-
+ * @author 天涯织梦
+ * @url http://bbs.we7.cc/
  */
 
 defined('IN_IA') or exit('Access Denied');
@@ -42,6 +43,8 @@ if (!empty($list)) {
 	 $total = pdo_fetchcolumn('SELECT COUNT(*) FROM ' . tablename($this->tablevotedata) . " WHERE uniacid = '{$uniacid}' AND rid = '{$rid} '  $condition");
 	 $pager = pagination($total, $pindex, $psize); 
  }
-		 
+foreach ($list as $key => &$item) {
+	$item['ipaddress']=ip2address($item['user_ip']);
+}	 
 include $this->template('votedata');
 

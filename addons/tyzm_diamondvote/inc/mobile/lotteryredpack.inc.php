@@ -11,8 +11,9 @@ global $_W,$_GPC;
 $uniacid = intval($_W['uniacid']);
 $rid=intval($_GPC['rid']);
 $id=intval($_GPC['voteid']);
-$this->Check_browser();
-$reply = pdo_fetch("SELECT config FROM ".tablename($this->tablereply)." WHERE rid = :rid ORDER BY `id` DESC", array(':rid' => $rid));
+$reply = pdo_fetch("SELECT config,status FROM ".tablename($this->tablereply)." WHERE rid = :rid ORDER BY `id` DESC", array(':rid' => $rid));
+
+if(empty($reply['status'])){message("活动已禁用");}
 $configdata=@unserialize($reply['config']);
 $userinfo=$this->oauthuser;
 $openid = $userinfo['openid'];

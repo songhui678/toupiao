@@ -1,9 +1,13 @@
 {template 'common/header'}
+{if IMS_VERSION<1}
+<link href="{MODULE_URL}/template/static/css/wq1.0.css" rel="stylesheet">
+{/if}
 <style>
 
 .audit{cursor:pointer;}
 
 </style>
+{if IMS_VERSION<1}<link href="{MODULE_URL}/template/static/css/wq1.0.css" rel="stylesheet">{/if}
 <div class="main">
  <ul class="nav nav-tabs">
 	<li{if $_GPC['ty'] == '' && $_GPC['do'] == 'votelist' && $_GPC['ranking'] == ''  } class="active"{/if}><a href="{php echo $this->createWebUrl('votelist',array('rid'=>$_GPC['rid']));}">全部投票</a></li>
@@ -80,7 +84,7 @@
                 <tr>
 
                     <td>{$row['id']}</td>
-					<td style="text-align:center"><img src="{$row['avatar']}" width="48"><br />{$row['nickname']}</td>
+					<td style="text-align:center"><img src="{media $row['avatar']}" width="48"><br />{$row['nickname']}</td>
 														
 	               {if $_GPC['ty']=="diamondnum"}
 					<td>{$row['fee']}</td>

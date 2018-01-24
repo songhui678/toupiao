@@ -1,26 +1,33 @@
 <?php
 /**
- * 送礼投票-投票
+ * 钻石投票-投票
  *
- * @author weizan
- * @url http://weizan/
+ * @author 微实惠科技
+ * @url https://spf360.taobao.com
  */
 
 defined('IN_IA') or exit('Access Denied');
 global $_W,$_GPC;
 
 is_weixin();
-
 $rid=intval($_GPC['rid']);
 $id=intval($_GPC['id']);
+$sourceid=intval($_GPC['sourceid']);
+$id=empty($id)?$sourceid:$id;
 $ty=$_GPC['ty'];
-$oauth_openid=$this->oauthuser['oauth_openid'];
+$count=intval($_GPC['count']);
+$count=empty($count) ? 1 : $count;
 
+$userinfo=$this->oauthuser;
+$oauth_openid=$userinfo['oauth_openid'];
+m('domain')->randdomain($rid,1);
 if(empty($oauth_openid)){
 	message("无法获取OPNEID，请查看是否借权或配置好公众号！(0101)"); 
 }
-$reply = pdo_fetch("SELECT rid,title,sharetitle,shareimg,sharedesc,config,giftdata,endtime,apstarttime,apendtime,votestarttime,voteendtime,status  FROM " . tablename($this->tablereply) . " WHERE rid = :rid ", array(':rid' => $rid));
+$reply = pdo_fetch("SELECT rid,title,sharetitle,shareimg,sharedesc,config,style,giftdata,starttime,endtime,apstarttime,apendtime,votestarttime,voteendtime,status,description  FROM " . tablename($this->tablereply) . " WHERE rid = :rid ", array(':rid' => $rid));
+$reply['style']=@unserialize($reply['style']);
 $reply=array_merge ($reply,unserialize($reply['config']));unset($reply['config']);
+if(empty($reply['status'])){message("活动已禁用");}
 if(empty($reply)){
 	message("参数错误"); 
 }
@@ -51,6 +58,8 @@ $giftdata=@unserialize($reply['giftdata']);
 
 $voteuser = pdo_fetch("SELECT * FROM " . tablename($this->tablevoteuser) . " WHERE rid = :rid AND  id = :id ", array(':rid' => $rid,':id' => $id));
 
+$voteuser['avatar']=!empty($voteuser['avatar'])?$voteuser['avatar']:tomedia($voteuser["img1"]); 
+
 if($ty['ispost']){
 	//是否达到最小人数
 	if(!empty($reply['minnumpeople'])){
@@ -69,7 +78,7 @@ if($ty['ispost']){
 	
 	//最多送礼物
 	$diamondsy=$reply['everyonediamond']-$voteuser['giftcount'];
-	if($gift['giftprice'] > $diamondsy && !empty($reply['everyonediamond'])){
+	if($gift['giftprice']*$count > $diamondsy && !empty($reply['everyonediamond'])){
 		if($diamondsy>0){
 			exit(json_encode(array('status' => '0', 'msg' => "最多还能送".$diamondsy."元礼物，修改后再送！:-D")));
 		}else{
@@ -81,7 +90,7 @@ if($ty['ispost']){
 		'tid' => $tid,
 		'ordersn' => $tid,
 		'title' => '投票送礼付款',
-		'fee' => sprintf("%.2f",$gift['giftprice']),
+		'fee' => sprintf("%.2f",$gift['giftprice']*$count),
 		'user' => $_W['member']['uid'],
 		'module' => $this->module['name'],
 	);
@@ -99,83 +108,19 @@ if($ty['ispost']){
 	}
 	
 
-	if(empty($reply['defaultpay'])){
-		$moduels = uni_modules();
-		if(empty($params) || !array_key_exists($params['module'], $moduels)) {
-			exit(json_encode(array('status' => '0', 'msg' => "访问错误.")));
-		}
-		$setting = uni_setting($uniacid, 'payment');
-		$sql = 'SELECT * FROM ' . tablename('core_paylog') . ' WHERE `uniacid`=:uniacid AND `module`=:module AND `tid`=:tid';
-		$pars  = array();
-		$pars[':uniacid'] = $uniacid;
-		$pars[':module'] = $params['module'];
-		$pars[':tid'] = $params['tid'];
-		$log = pdo_fetch($sql, $pars);
-		if(!empty($log) && $log['status'] != '0') {
-			$out['status'] = 201;
-			$out['msg'] = "请勿重新提交！";
-			exit(json_encode($out));
-		}
-		if(!empty($log) && $log['status'] == '0') {
-			$log = null;
-		}
-		if(empty($log)){
-			$moduleid = pdo_fetchcolumn("SELECT mid FROM ".tablename('modules')." WHERE name = :name", array(':name' => $params['module']));
-			$moduleid = empty($moduleid) ? '000000' : sprintf("%06d", $moduleid);
-			$fee = $params['fee'];
-			$record = array();
-			$record['uniacid'] = $uniacid;
-			$record['openid'] = $_W['member']['uid'];
-			$record['module'] = $params['module'];
-			$record['type'] = 'wechat';
-			$record['tid'] = $params['tid'];
-			$record['uniontid'] = date('YmdHis').$moduleid.random(8,1);
-			$record['fee'] = $fee;
-			$record['status'] = '0';
-			$record['is_usecard'] = 0;
-			$record['card_id'] = 0;
-			$record['card_fee'] = $fee;
-			$record['encrypt_code'] = '';
-			$record['acid'] = $_W['acid'];
-			if(pdo_insert('core_paylog', $record)) {
-				$plid = pdo_insertid();
-				$record['plid'] = $plid;
-				$log = $record;
-			} else {
-				exit(json_encode(array('status' => '0', 'msg' => "操作失败，请刷新后再试！")));
-			}
-		}
-		$ps = array();
-		$ps['tid'] = $log['plid'];
-		$ps['uniontid'] = $log['uniontid'];
-		$ps['user'] = $_W['fans']['oauth_openid'];
-		$ps['fee'] = $log['card_fee'];
-		$ps['title'] = $params['title'];
-		if(!empty($plid)){
-			$tag = array();
-			$tag['acid'] = $_W['acid'];
-			$tag['uid'] = $_W['member']['uid'];
-			pdo_update('core_paylog', array('openid' => $this->oauthuser['openid'], 'tag' => iserializer($tag)), array('plid' => $plid));
-		}
-
-		load()->model('payment');
-		load()->func('communication');
-		$sl = base64_encode(json_encode($ps));
-		$auth = sha1($sl . $uniacid . $_W['config']['setting']['authkey']);
-		
-	}
 	$giftdata = array(
 			'rid'=>$rid, 
 			'tid'=>$id,
 			'uniacid'=>$_W['uniacid'],
-			'oauth_openid'=>$this->oauthuser['oauth_openid'],
-			'openid'=>$this->oauthuser['openid'],
-			'avatar' =>$this->oauthuser['avatar'],
-			'nickname'=>$this->oauthuser['nickname'],
+			'oauth_openid'=>$userinfo['oauth_openid'],
+			'openid'=>$userinfo['openid'],
+			'avatar' =>$userinfo['avatar'],
+			'nickname'=>$userinfo['nickname'],
 			'user_ip'=>$_W['clientip'],
 			'gifticon'=>$gift['gifticon'],
 			'gifttitle'=>$gift['gifttitle'],
-			'giftvote'=>$gift['giftvote'],
+			'giftcount'=>$count,
+			'giftvote'=>$gift['giftvote']*$count,
 			'fee'=>$params['fee'],
 			'ptid'=>$tid,
 			'ispay'=>0,
@@ -183,13 +128,13 @@ if($ty['ispost']){
 			'createtime'=>time()
 	);
 	if(pdo_insert($this->tablegift, $giftdata)){
-		if(empty($reply['defaultpay'])){
-			$out['status'] = 200;
-			$out['pay_url'] = $_W['siteroot']."payment/wechat/pay.php?i={$uniacid}&auth={$auth}&ps={$sl}";
-			exit(json_encode($out));
-		}else{
+		// if(empty($reply['defaultpay'])){
+		// 	$out['status'] = 200;
+		// 	$out['pay_url'] = $_W['siteroot']."payment/wechat/pay.php?i={$uniacid}&auth={$auth}&ps={$sl}&payopenid={$giftdata['oauth_openid']}";
+		// }else{
+		    $_share['title'] ="在线支付";
 			$this->pay($params);
-		}
+		// }
 	}else{
 		exit(json_encode(array('status' => '0', 'msg' => "操作失败，请刷新后再试！")));
 	}
@@ -216,7 +161,7 @@ $_share['desc'] =!empty($reply['sharedesc'])?$reply['sharedesc']:$reply['descrip
 $_W['page']['sitename']=$reply['title'];
 
 
-include $this->template('payvote');
+include $this->template(m('tpl')->style('payvote',$reply['style']['template']));
 
 
 

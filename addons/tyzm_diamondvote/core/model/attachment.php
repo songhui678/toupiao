@@ -13,19 +13,23 @@ class Tyzm_Attachment{
 		load()->model('setting');
 		$jsauth_acid=$unisetting['jsauth_acid'];
 		if(empty($jsauth_acid)){
-			if(!empty($unisetting['oauth']['account'])){
+			if(!empty($unisetting['oauth']['account']) && $_W['account']['level']<3){
 				$jsauth_acid=$unisetting['oauth']['account'];
 			}else{
 				$jsauth_acid=$unisetting['uniacid'];
 			}
-		}
-		//print_r($unisetting);exit;
+		} 
+		/*
 		load()->model('cache');
 		$cachekey = "accesstoken:{$jsauth_acid}";
 		$cache = cache_load($cachekey);
 
 		load()->classs('weixin.account');
 		$access_token = $cache['token'];
+		
+		*/
+		$account_api = WeAccount::create($jsauth_acid);
+		$access_token = $account_api->getAccessToken();
 		
 		$mediatypes = array('image', 'voice', 'thumb');
 		if (empty($media) || empty($media['media_id']) || (!empty($media['type']) && !in_array($media['type'], $mediatypes))) {
@@ -129,8 +133,14 @@ class Tyzm_Attachment{
 				return true;
 			}
 		} elseif ($remote['type'] == '4') {
-			require(IA_ROOT.'/framework/library/cos/include.php');
-			$uploadRet = \Qcloud_cos\Cosapi::upload($remote['cos']['bucket'], ATTACHMENT_ROOT .$filename,'/'.$filename,'',3 * 1024 * 1024, 0);
+			if (!empty($remote['cos']['local'])) {
+			    require(IA_ROOT.'/framework/library/cosv4.2/include.php');
+				qcloudcos\Cosapi :: setRegion($remote['cos']['local']);
+				$uploadRet = qcloudcos\Cosapi::upload($remote['cos']['bucket'], ATTACHMENT_ROOT .$filename,'/'.$filename,'',3 * 1024 * 1024, 0);
+			} else {
+				require(IA_ROOT.'/framework/library/cos/include.php');
+				$uploadRet = \Qcloud_cos\Cosapi::upload($remote['cos']['bucket'], ATTACHMENT_ROOT .$filename,'/'.$filename,'',3 * 1024 * 1024, 0);
+			}
 			if ($uploadRet['code'] != 0) {
 				switch ($uploadRet['code']) {
 					case -62:
@@ -147,6 +157,9 @@ class Tyzm_Attachment{
 						break;
 				}
 				return error(-1, $message);
+			}
+			if ($auto_delete_local) {
+				file_delete($filename);
 			}
 		}
 	}

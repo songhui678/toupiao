@@ -1,17 +1,19 @@
 <?php
 /**
- * 钻石投票-奖品
+ * 钻石投票-投票
  *
- * @author weizan
- * @url http://weizan/
+ * @author 微实惠科技
+ * @url https://spf360.taobao.com
  */
 
 defined('IN_IA') or exit('Access Denied');
 global $_W,$_GPC;
 is_weixin();
 $rid=intval($_GPC['rid']);
-$reply = pdo_fetch("SELECT  rid,title,prizemsg,sharetitle,shareimg,sharedesc,config,addata,endtime,apstarttime,apendtime,status  FROM " . tablename($this->tablereply) . " WHERE rid = :rid ", array(':rid' => $rid));
-$reply=array_merge ($reply,unserialize($reply['config']));unset($reply['config']);
+$reply = pdo_fetch("SELECT  rid,title,prizemsg,sharetitle,shareimg,sharedesc,config,style,addata,endtime,apstarttime,apendtime,status  FROM " . tablename($this->tablereply) . " WHERE rid = :rid ", array(':rid' => $rid));
+$reply['style']=@unserialize($reply['style']);
+$reply=@array_merge ($reply,unserialize($reply['config']));unset($reply['config']);
+if(empty($reply['status'])){message("活动已禁用");}
 $addata=unserialize($reply['addata']);
 if($reply['apstarttime']> time()){
 	$aptime=1;//未开始报名
@@ -28,5 +30,5 @@ $_share['title'] =!empty($reply['sharetitle'])?$reply['sharetitle']:$reply['titl
 $_share['imgUrl'] =!empty($reply['shareimg'])?tomedia($reply['shareimg']):tomedia($reply['thumb']);
 $_share['desc'] =!empty($reply['sharedesc'])?$reply['sharedesc']:$reply['description'];
 $_W['page']['sitename']="活动奖品";
-include $this->template('prize');
+include $this->template(m('tpl')->style('prize',$reply['style']['template']));
 

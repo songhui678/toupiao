@@ -1,5 +1,7 @@
 {template 'common/header'}
-<style>
+{if IMS_VERSION<1}
+<link href="{MODULE_URL}/template/static/css/wq1.0.css" rel="stylesheet">
+{/if}
 <style>
 .thumbadimg{border:1px;}
 .nav_1,.nav_2,.nav_3,.nav_4{display:none}

@@ -2,8 +2,8 @@
 /**
  * 钻石投票模块-后台管理-编辑
  *
- * @author weizan
- * @url http://weizan/
+ * @author 天涯织梦
+ * @url http://bbs.we7.cc/
  */
 
 defined('IN_IA') or exit('Access Denied');
@@ -60,8 +60,8 @@ if ($_W['ispost']) {
 			'img5'=>$_GPC['img5'],
 			'details'=>htmlspecialchars_decode($_GPC['details']),
 			'joindata'=>iserializer($joinedata),
-			'votenum'=>empty($_GPC['votenum'])?0:$_GPC['votenum'],
-			'giftcount'=>empty($_GPC['giftcount'])?0:$_GPC['giftcount'],
+			'votenum +='=>empty($_GPC['addvotenum'])?0:$_GPC['addvotenum'],
+			'giftcount +='=>empty($_GPC['addgiftcount'])?0:$_GPC['addgiftcount'],
 			'vheat'=>$_GPC['vheat'],
 			'attestation'=>$_GPC['attestation'],
 			'atmsg'=>$_GPC['atmsg'],
@@ -73,9 +73,8 @@ if ($_W['ispost']) {
 	if (!empty($votedata['id'])) {
 		pdo_update($this->tablevoteuser, $instdata, array('id' => $votedata['id']));
 	} else {
-		
-		$lastid=pdo_fetch("SELECT noid FROM ".tablename($this->tablevoteuser)." WHERE rid = :rid AND uniacid=:uniacid ORDER BY `noid` DESC LIMIT 1", array(':rid' => $rid,'uniacid'=>$_W['uniacid']));
-		$instdata['noid']=($lastid['noid']+1);
+		$lastid = pdo_getall($this->tablevoteuser, array('rid' => $rid, 'uniacid' => $_W['uniacid']), array('noid') , '' , 'noid DESC' , array(1));
+		$instdata['noid']=$lastid[0]['noid']+1;
         $instdata['createtime']=time();
 		pdo_insert($this->tablevoteuser, $instdata);
 

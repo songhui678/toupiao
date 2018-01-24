@@ -1,9 +1,9 @@
 <?php
 /**
- * 钻石投票-会员中心
+ * 钻石投票-投票
  *
- * @author weizan
- * @url http://weizan/
+ * @author 微实惠科技
+ * @url https://spf360.taobao.com
  */
 
 defined('IN_IA') or exit('Access Denied');
@@ -11,11 +11,12 @@ global $_W,$_GPC;
 $uniacid=$_W['uniacid'];
 $userinfo=$this->oauthuser;
 $packid=intval($_GPC['packid']);
+$rid=intval($_GPC['rid']);
 $ty=$_GPC['ty'];
 
 
 $reply = pdo_fetch("SELECT config FROM " . tablename($this->tablereply) . " WHERE rid = :rid ", array(':rid' => $rid));
-$reply=array_merge ($reply,unserialize($reply['config']));unset($reply['config']);
+$reply=@array_merge ($reply,unserialize($reply['config']));unset($reply['config']);
 $friendship = pdo_fetch("SELECT * FROM " . tablename($this->tablefriendship) . " WHERE uniacid = :uniacid ORDER BY `id` DESC", array(':uniacid' => $uniacid));
 $packata=@unserialize($friendship['packata']);	
 
@@ -108,6 +109,7 @@ if($ty['ispost']){
 		
 	}
 	$viporder = array(
+	    'rid'=>$rid,
 		'ptid'=>$tid ,
 		'uniacid'=>$_W['uniacid'] ,
 		'oauth_openid'=> $this->oauthuser['oauth_openid'],

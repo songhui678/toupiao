@@ -1,4 +1,7 @@
 {template 'common/header'}
+{if IMS_VERSION<1}
+<link href="{MODULE_URL}/template/static/css/wq1.0.css" rel="stylesheet">
+{/if}
 <style>
 
 .setvotestatus{cursor:pointer;}
@@ -8,8 +11,9 @@ word-wrap: break-word;
 word-break: normal;
 }
 </style>
-<div class="main">
- <ul class="nav nav-tabs">
+<div class="main1">
+<div class="we7-page-title">投票数据</div>
+    <ul class="we7-page-tab">
 	<li{if $_GPC['ty'] == '' && $_GPC['do'] == 'votelist' && $_GPC['ranking'] == ''  } class="active"{/if}><a href="{php echo $this->createWebUrl('votelist',array('rid'=>$_GPC['rid']));}">全部投票</a></li>
 
 	<li{if $_GPC['ty'] == 'votenum'} class="active"{/if}><a href="{php echo $this->createWebUrl('votedata',array('rid'=>$_GPC['rid'],'id'=>$_GPC['id'],'ty'=>'votenum'))}">投票数据</a></li>
@@ -20,64 +24,49 @@ word-break: normal;
 
     
  
-    <div class="panel panel-info">
-	<div class="panel-heading">筛选</div>
-	<div class="panel-body">
-<div class="row">
-{if  $_GPC['ty']!="order" }
 
-  <div class="col-sm-6 col-md-1">
-	<div class="thumbnail">
-	  <img src="{php echo tomedia($voteuser['img1']);}" alt="...">
-	</div>
-  </div><span class="label label-default">{$voteuser['name']}</span>
-  <button class="btn btn-primary" type="button">  票数 <span class="badge">{$voteuser['votenum']}</span>
-</button> <button class="btn btn-primary" type="button">  礼物 <span class="badge">{$voteuser['giftcount']}</span>
-</button>
-
-<a class="btn btn-primary"href="{php echo $this->createWebUrl('downloadvote',array('id'=>$_GPC['id'],'rid'=>$_GPC['rid']));}"><span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span> 导出投票数据</a>
-
- 
-</div>
-<div class="alert alert-warning alert-dismissible" role="alert">
-  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-  <strong>说明：</strong>票数可能和列表不符，因为 “票数=普通票数+礼物抵票”决定，还有可以编辑。
-</div>
-		<form action="./index.php" method="get" class="form-horizontal" role="form">
-			<input type="hidden" name="c" value="site" />
+    <div class="we7-padding-bottom clearfix">
+        <form action="./index.php" method="get" role="form" >
+            <div class="input-group pull-left col-sm-4">
+            <input type="hidden" name="c" value="site" />
 			<input type="hidden" name="a" value="entry" />
         	<input type="hidden" name="m" value="tyzm_diamondvote" />
         	<input type="hidden" name="do" value="votedata" />
 			<input type="hidden" name="rid" value="{$_GPC['rid']}" />
 			<input type="hidden" name="id" value="{$_GPC['id']}" />
-			<div class="form-group">
-				<label class="col-xs-12 col-sm-2 col-md-2 col-lg-1 control-label">关键字</label>
-				<div class="col-sm-8 col-lg-9">
-					<input class="form-control" name="keyword" id="" placeholder="输入ip，昵称" type="text" value="{$_GPC['keyword']}">
-				</div>
-                                <div class=" col-xs-12 col-sm-2 col-lg-2">
-					<button class="btn btn-default"><i class="fa fa-search"></i> 搜索</button>
-				</div>
-			</div>
- 			<div class="form-group">
-			</div>
-		</form>
-		{else}
-<p>
-<button class="btn btn-primary" type="button">  所有金额：  <span class="badge">{$ztotal}</span>
+            <input class="form-control" name="keyword" id="" placeholder="输入ip，昵称" type="text" value="{$_GPC['keyword']}">
+            <span class="input-group-btn"><button class="btn btn-default"><i class="fa fa-search"></i></button></span>
+            </div>
+        </form>
+        <div class="pull-right">
+            <a class="btn btn-primary"href="{php echo $this->createWebUrl('downloadvote',array('id'=>$_GPC['id'],'rid'=>$_GPC['rid']));}"><span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span> 导出投票数据</a>
+        </div>
+    </div>
+
+
+  <div class="col-sm-6 col-md-1">
+	<div class="thumbnail">
+	  <img src="{php echo tomedia($voteuser['img1']);}" alt="...">
+	</div>
+  </div>
+
+  <span class="label label-default">{$voteuser['name']}</span>
+  <button class="btn btn-primary" type="button">  票数 <span class="badge">{$voteuser['votenum']}</span>
+</button> <button class="btn btn-primary"  type="button">  礼物 <span class="badge">{$voteuser['giftcount']}</span>
 </button>
 
-<a class="btn btn-primary"href="{php echo $this->createWebUrl('orderverify',array('rid'=>$_GPC['rid']));}"><span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span> 订单校验</a>
-</p>
-{/if}
-	</div>
- 
-    </div>
-    <div style="padding:15px;">
-        <table class="table table-hover">
+</div>
+<div class="alert alert-warning alert-dismissible" role="alert" style="margin-top: 10px;" >
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  <strong>说明：</strong>票数可能和列表不符，因为 “票数=普通票数+礼物抵票”决定，还有可以编辑。
+</div>
+
+
+
+        <table class="table we7-table table-hover">
             <thead class="navbar-inner">
-                <tr><th  width="50">ID</th>	
-					<th   width="60">头像</th>	
+                <tr><th  width="100">ID</th>	
+					<th   width="100">头像</th>	
                     <th>用户openid</th>	
 					{if $_GPC['ty']=="diamondnum" || $_GPC['ty']=="order" }
 					<th>钻石鸡蛋</th>
@@ -102,8 +91,13 @@ word-break: normal;
                 {loop $list $row}
                 <tr>
                     <td>{$row['id']}</td>
-					<td style="text-align:center"><img src="{$row['avatar']}" width="48"></td>
-					<td>{$row['nickname']}<br />{$row['openid']}</td>							
+					<td style="text-align:center"><img src="{media $row['avatar']}" width="48"></td>
+					<td>{$row['nickname']}<br />
+
+					{$row['openid']}
+
+  <span class="label label-danger" onclick="addblack('{$row['openid']}',0);">加入黑名单</span>
+					</td>							
 	                {if $_GPC['ty']=="diamondnum"|| $_GPC['ty']=="order" }
 					<td><span class="label label-success">{$row['fee']}</span><br/>{if $row['votetype']==1}<span class="label label-primary">钻石</span>{/if}{if $row['votetype']==2}<span class="label label-default">鸡蛋</span>{/if}</td>
 					<td>{$row['ptid']}</td>
@@ -112,7 +106,11 @@ word-break: normal;
 					<td>{if $row['ispay']==0}<span class="label label-danger">未付款</span>{else}<span class="label label-success">已付款</span>{/if}</td>
 					<td>{if $row['isdeal']==0}<span class="label label-danger">未兑换积分</span>{else}<span class="label label-success">已兑换积分</span>{/if}</td>
 					{/if}
-					<td>{$row['user_ip']}</td>	
+					<td>{$row['ipaddress']}<br/>{$row['user_ip']}
+
+<span class="label label-danger" onclick="addblack('{$row['user_ip']}',1);">加入黑名单</span>
+
+					</td>	
 					<td>{php echo date('Y-m-d H:i:s',$row['createtime'])}</td>
 					{if $_GPC['ty']=="votenum"}
 					<td>{if $row['status']==1}<span class="label label-danger setvotestatus" data-id="{$row['id']}" data-s="0">无效</span> {else}<span class="label label-success setvotestatus" data-id="{$row['id']}" data-s="1">有效</span>{/if}</td>	
@@ -142,8 +140,10 @@ word-break: normal;
                 {/loop}
             </tbody>
         </table>
+      <div class="pull-right">
         {$pager}
     </div>
+    
 
 </div>
 <script>
@@ -211,15 +211,25 @@ $(".setvotestatus").click(function(){
 	});
 });		
 			
-			
-			
-			
-			
-			
-			
-			
-                    });</script>
+});
+</script>
 <script>
+
+function addblack(val,type){
+   
+	$.ajax({
+		type : "post",
+		url : "{php echo $this->createWebUrl('blacklist',array('op'=>'add'))}"+"&val="+val+"&type="+type,
+		dataType : "json",
+		success : function(res) {
+			if (res.type == 'success') { 
+			    alert("添加成功");
+			}else{
+				alert("已添加"); 
+		    }
+		}
+	});
+};	
             function drop_confirm(msg, url){
             if (confirm(msg)){
             window.location = url;
