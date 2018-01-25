@@ -196,7 +196,6 @@ if ($_W['ispost']) {
 			} else {
 				exit(json_encode(array('status' => '0', 'msg' => "操作失败，请刷新后再试！")));
 			}
-			exit;
 
 			if (empty($status)) {
 				$uservoteurl = $_W['siteroot'] . "app/" . $this->createMobileUrl('view', array('id' => $insertid, 'rid' => $rid));
