@@ -156,14 +156,14 @@ if ($_W['ispost']) {
 				'title' => '报名费',
 				'fee' => sprintf("%.2f", $gift['giftprice'] * 1),
 				'user' => $_W['member']['uid'],
-				'module' => $this->module['name'],
+				'module' => 'tyzm_diamondvote',
 			);
 			file_put_contents('/tmp/join.txt', json_encode($params), FILE_APPEND);
 
 			//支付报名费
 			$giftdata = array(
 				'rid' => $rid,
-				'tid' => $id,
+				'tid' => $insertid,
 				'uniacid' => $_W['uniacid'],
 				'oauth_openid' => $this->oauthuser['oauth_openid'],
 				'openid' => $this->oauthuser['openid'],
