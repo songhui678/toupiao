@@ -158,42 +158,10 @@ if ($_W['ispost']) {
 				'user' => $_W['member']['uid'],
 				'module' => 'tyzm_diamondvote',
 			);
+
 			file_put_contents('/home/www/toupiao/join.txt', json_encode($params), FILE_APPEND);
-
-			//支付报名费
-			$giftdata = array(
-				'rid' => $rid,
-				'tid' => $insertid,
-				'uniacid' => $_W['uniacid'],
-				'oauth_openid' => $this->oauthuser['oauth_openid'],
-				'openid' => $this->oauthuser['openid'],
-				'avatar' => $this->oauthuser['avatar'],
-				'nickname' => $this->oauthuser['nickname'],
-				'user_ip' => $_W['clientip'],
-				'gifticon' => '',
-				'giftcount' => 1,
-				'gifttitle' => '报名费',
-				'giftvote' => 0,
-				'fee' => $params['fee'],
-				'ptid' => $tid,
-				'ispay' => 0,
-				'status' => 0,
-				'createtime' => time(),
-				'jy' => 1,
-			);
-			file_put_contents('/home/www/toupiao/join.txt', json_encode($giftdata), FILE_APPEND);
-
-			if (pdo_insert($this->tablegift, $giftdata)) {
-				// if(empty($reply['defaultpay'])){
-				// 	$out['status'] = 200;
-				// 	$out['pay_url'] = $_W['siteroot']."payment/wechat/pay.php?i={$uniacid}&auth={$auth}&ps={$sl}&payopenid={$giftdata['oauth_openid']}";
-				// }else{
-				$_share['title'] = "在线支付";
-				$this->pay($params);
-				// }
-			} else {
-				exit(json_encode(array('status' => '0', 'msg' => "操作失败，请刷新后再试！")));
-			}
+			$_share['title'] = "在线支付";
+			$this->pay($params);
 
 			if (empty($status)) {
 				$uservoteurl = $_W['siteroot'] . "app/" . $this->createMobileUrl('view', array('id' => $insertid, 'rid' => $rid));
