@@ -93,26 +93,7 @@ if ($_W['ispost']) {
 			}
 			//微信默认上传
 		}
-		//报名费
-		$gift = $giftdata[0];
-		$tid = date('YmdHi') . random(12, 1);
-		$params = array(
-			'tid' => $tid,
-			'ordersn' => $tid,
-			'title' => '报名费',
-			'fee' => sprintf("%.2f", $gift['giftprice'] * 1),
-			'user' => $_W['member']['uid'],
-			'module' => $this->module['name'],
-		);
-		$acid = !empty($_SESSION['oauth_acid']) ? $_SESSION['oauth_acid'] : $_SESSION['acid'];
-		if (!empty($_SESSION['oauth_acid'])) {
-			$acid = $_SESSION['oauth_acid'];
-			$account_wechats = pdo_fetch("SELECT uniacid FROM " . tablename('account_wechats') . " WHERE  acid = :acid ", array(':acid' => $acid));
-			$uniacid = $account_wechats['uniacid'];
-		} else {
-			$acid = $_SESSION['acid'];
-			$uniacid = $_W['uniacid'];
-		}
+
 		$shiping = '';
 		$joindata = array();
 		foreach ($applydata as $row) {
@@ -164,6 +145,18 @@ if ($_W['ispost']) {
 		$insertid = pdo_insertid();
 		//file_put_contents(MODULE_ROOT."/data.txt",json_encode($insertid));exit;
 		if ($insertid) {
+			//报名费
+			$gift = $giftdata[0];
+			$tid = date('YmdHi') . random(12, 1);
+			$params = array(
+				'tid' => $tid,
+				'ordersn' => $tid,
+				'title' => '报名费',
+				'fee' => sprintf("%.2f", $gift['giftprice'] * 1),
+				'user' => $_W['member']['uid'],
+				'module' => $this->module['name'],
+			);
+			var_dump($params);exit;
 			//支付报名费
 			$giftdata = array(
 				'rid' => $rid,
