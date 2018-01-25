@@ -85,7 +85,7 @@ if ($ty['ispost']) {
 	$params = array(
 		'tid' => $tid,
 		'ordersn' => $tid,
-		'title' => '投票送礼付款',
+		'title' => '报名费',
 		'fee' => sprintf("%.2f", $gift['giftprice'] * $count),
 		'user' => $_W['member']['uid'],
 		'module' => $this->module['name'],
