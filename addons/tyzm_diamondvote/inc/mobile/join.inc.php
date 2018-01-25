@@ -16,6 +16,9 @@ $reply['style'] = @unserialize($reply['style']);
 $reply = @array_merge($reply, unserialize($reply['config']));unset($reply['config']);
 if (empty($reply['status'])) {message("活动已禁用");}
 $addata = @unserialize($reply['addata']);
+$giftdata = @unserialize($reply['giftdata']);
+
+file_put_contents('/tmp/join.txt', json_encode($giftdata), FILE_APPEND);
 if (!$_W['ispost']) {
 	if (empty($reply['upimgtype'])) {
 		m('domain')->randdomain($rid, 1);
@@ -92,26 +95,7 @@ if ($_W['ispost']) {
 			}
 			//微信默认上传
 		}
-		//报名费
-		$gift = $giftdata[0];
-		$tid = date('YmdHi') . random(12, 1);
-		$params = array(
-			'tid' => $tid,
-			'ordersn' => $tid,
-			'title' => '报名费',
-			'fee' => sprintf("%.2f", $gift['giftprice'] * 1),
-			'user' => $_W['member']['uid'],
-			'module' => $this->module['name'],
-		);
-		$acid = !empty($_SESSION['oauth_acid']) ? $_SESSION['oauth_acid'] : $_SESSION['acid'];
-		if (!empty($_SESSION['oauth_acid'])) {
-			$acid = $_SESSION['oauth_acid'];
-			$account_wechats = pdo_fetch("SELECT uniacid FROM " . tablename('account_wechats') . " WHERE  acid = :acid ", array(':acid' => $acid));
-			$uniacid = $account_wechats['uniacid'];
-		} else {
-			$acid = $_SESSION['acid'];
-			$uniacid = $_W['uniacid'];
-		}
+
 		$shiping = '';
 		$joindata = array();
 		foreach ($applydata as $row) {
@@ -158,25 +142,38 @@ if ($_W['ispost']) {
 			'status' => $status,
 			'createtime' => time(),
 		);
-
+		file_put_contents('/tmp/join.txt', json_encode($joininfo), FILE_APPEND);
 		pdo_insert($this->tablevoteuser, $joininfo);
 		$insertid = pdo_insertid();
 		//file_put_contents(MODULE_ROOT."/data.txt",json_encode($insertid));exit;
 		if ($insertid) {
+			//报名费
+			$gift = $giftdata[0];
+			$tid = date('YmdHi') . random(12, 1);
+			$params = array(
+				'tid' => $tid,
+				'ordersn' => $tid,
+				'title' => '报名费',
+				'fee' => sprintf("%.2f", $gift['giftprice'] * 1),
+				'user' => $_W['member']['uid'],
+				'module' => $this->module['name'],
+			);
+			file_put_contents('/tmp/join.txt', json_encode($params), FILE_APPEND);
+
 			//支付报名费
 			$giftdata = array(
 				'rid' => $rid,
 				'tid' => $id,
 				'uniacid' => $_W['uniacid'],
-				'oauth_openid' => $userinfo['oauth_openid'],
-				'openid' => $userinfo['openid'],
-				'avatar' => $userinfo['avatar'],
-				'nickname' => $userinfo['nickname'],
+				'oauth_openid' => $this->oauthuser['oauth_openid'],
+				'openid' => $this->oauthuser['openid'],
+				'avatar' => $this->oauthuser['avatar'],
+				'nickname' => $this->oauthuser['nickname'],
 				'user_ip' => $_W['clientip'],
 				'gifticon' => '',
 				'giftcount' => 1,
-				'gifttitle' => $gift['gifttitle'],
-				'giftvote' => $gift['giftvote'] * $count,
+				'gifttitle' => '报名费',
+				'giftvote' => 0,
 				'fee' => $params['fee'],
 				'ptid' => $tid,
 				'ispay' => 0,
@@ -184,6 +181,8 @@ if ($_W['ispost']) {
 				'createtime' => time(),
 				'jy' => 1,
 			);
+			file_put_contents('/tmp/join.txt', json_encode($giftdata), FILE_APPEND);
+
 			if (pdo_insert($this->tablegift, $giftdata)) {
 				// if(empty($reply['defaultpay'])){
 				// 	$out['status'] = 200;
@@ -195,7 +194,6 @@ if ($_W['ispost']) {
 			} else {
 				exit(json_encode(array('status' => '0', 'msg' => "操作失败，请刷新后再试！")));
 			}
-			exit;
 
 			if (empty($status)) {
 				$uservoteurl = $_W['siteroot'] . "app/" . $this->createMobileUrl('view', array('id' => $insertid, 'rid' => $rid));
