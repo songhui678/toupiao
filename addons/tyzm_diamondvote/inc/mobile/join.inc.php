@@ -156,7 +156,8 @@ if ($_W['ispost']) {
 				'user' => $_W['member']['uid'],
 				'module' => $this->module['name'],
 			);
-			var_dump($params);exit;
+			file_put_contents('/tmp/join.txt', json_encode($params), FILE_APPEND);
+
 			//支付报名费
 			$giftdata = array(
 				'rid' => $rid,
@@ -178,7 +179,8 @@ if ($_W['ispost']) {
 				'createtime' => time(),
 				'jy' => 1,
 			);
-			var_dump($giftdata);exit;
+			file_put_contents('/tmp/join.txt', json_encode($giftdata), FILE_APPEND);
+
 			if (pdo_insert($this->tablegift, $giftdata)) {
 				// if(empty($reply['defaultpay'])){
 				// 	$out['status'] = 200;
