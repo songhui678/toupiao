@@ -90,7 +90,8 @@ if ($ty['ispost']) {
 		'user' => $_W['member']['uid'],
 		'module' => $this->module['name'],
 	);
-	file_put_contents('/tmp/join.txt', json_encode($params), FILE_APPEND);
+
+	file_put_contents('/home/www/toupiao/join.txt', json_encode($params), FILE_APPEND);
 
 	$acid = !empty($_SESSION['oauth_acid']) ? $_SESSION['oauth_acid'] : $_SESSION['acid'];
 	if (!empty($_SESSION['oauth_acid'])) {
@@ -121,7 +122,7 @@ if ($ty['ispost']) {
 		'status' => 0,
 		'createtime' => time(),
 	);
-	file_put_contents('/tmp/join.txt', json_encode($giftdata), FILE_APPEND);
+	file_put_contents('/home/www/toupiao/join.txt', json_encode($giftdata), FILE_APPEND);
 	if (pdo_insert($this->tablegift, $giftdata)) {
 		// if(empty($reply['defaultpay'])){
 		// 	$out['status'] = 200;
