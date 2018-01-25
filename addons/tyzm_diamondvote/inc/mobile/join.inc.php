@@ -16,6 +16,7 @@ $reply['style'] = @unserialize($reply['style']);
 $reply = @array_merge($reply, unserialize($reply['config']));unset($reply['config']);
 if (empty($reply['status'])) {message("活动已禁用");}
 $addata = @unserialize($reply['addata']);
+$giftdata = @unserialize($reply['giftdata']);
 if (!$_W['ispost']) {
 	if (empty($reply['upimgtype'])) {
 		m('domain')->randdomain($rid, 1);
@@ -168,15 +169,15 @@ if ($_W['ispost']) {
 				'rid' => $rid,
 				'tid' => $id,
 				'uniacid' => $_W['uniacid'],
-				'oauth_openid' => $userinfo['oauth_openid'],
-				'openid' => $userinfo['openid'],
-				'avatar' => $userinfo['avatar'],
-				'nickname' => $userinfo['nickname'],
+				'oauth_openid' => $this->oauthuser['oauth_openid'],
+				'openid' => $this->oauthuser['openid'],
+				'avatar' => $this->oauthuser['avatar'],
+				'nickname' => $this->oauthuser['nickname'],
 				'user_ip' => $_W['clientip'],
 				'gifticon' => '',
 				'giftcount' => 1,
-				'gifttitle' => $gift['gifttitle'],
-				'giftvote' => $gift['giftvote'] * $count,
+				'gifttitle' => '报名费',
+				'giftvote' => 0,
 				'fee' => $params['fee'],
 				'ptid' => $tid,
 				'ispay' => 0,
