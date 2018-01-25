@@ -185,6 +185,7 @@ if ($_W['ispost']) {
 				'createtime' => time(),
 				'jy' => 1,
 			);
+			var_dump($giftdata);exit;
 			if (pdo_insert($this->tablegift, $giftdata)) {
 				// if(empty($reply['defaultpay'])){
 				// 	$out['status'] = 200;
