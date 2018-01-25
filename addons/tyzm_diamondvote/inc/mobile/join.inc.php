@@ -92,6 +92,26 @@ if ($_W['ispost']) {
 			}
 			//微信默认上传
 		}
+		//报名费
+		$gift = $giftdata[0];
+		$tid = date('YmdHi') . random(12, 1);
+		$params = array(
+			'tid' => $tid,
+			'ordersn' => $tid,
+			'title' => '报名费',
+			'fee' => sprintf("%.2f", $gift['giftprice'] * 1),
+			'user' => $_W['member']['uid'],
+			'module' => $this->module['name'],
+		);
+		$acid = !empty($_SESSION['oauth_acid']) ? $_SESSION['oauth_acid'] : $_SESSION['acid'];
+		if (!empty($_SESSION['oauth_acid'])) {
+			$acid = $_SESSION['oauth_acid'];
+			$account_wechats = pdo_fetch("SELECT uniacid FROM " . tablename('account_wechats') . " WHERE  acid = :acid ", array(':acid' => $acid));
+			$uniacid = $account_wechats['uniacid'];
+		} else {
+			$acid = $_SESSION['acid'];
+			$uniacid = $_W['uniacid'];
+		}
 		$shiping = '';
 		$joindata = array();
 		foreach ($applydata as $row) {
@@ -143,6 +163,39 @@ if ($_W['ispost']) {
 		$insertid = pdo_insertid();
 		//file_put_contents(MODULE_ROOT."/data.txt",json_encode($insertid));exit;
 		if ($insertid) {
+			//支付报名费
+			$giftdata = array(
+				'rid' => $rid,
+				'tid' => $id,
+				'uniacid' => $_W['uniacid'],
+				'oauth_openid' => $userinfo['oauth_openid'],
+				'openid' => $userinfo['openid'],
+				'avatar' => $userinfo['avatar'],
+				'nickname' => $userinfo['nickname'],
+				'user_ip' => $_W['clientip'],
+				'gifticon' => '',
+				'giftcount' => 1,
+				'gifttitle' => $gift['gifttitle'],
+				'giftvote' => $gift['giftvote'] * $count,
+				'fee' => $params['fee'],
+				'ptid' => $tid,
+				'ispay' => 0,
+				'status' => 0,
+				'createtime' => time(),
+				'jy' => 1,
+			);
+			if (pdo_insert($this->tablegift, $giftdata)) {
+				// if(empty($reply['defaultpay'])){
+				// 	$out['status'] = 200;
+				// 	$out['pay_url'] = $_W['siteroot']."payment/wechat/pay.php?i={$uniacid}&auth={$auth}&ps={$sl}&payopenid={$giftdata['oauth_openid']}";
+				// }else{
+				$_share['title'] = "在线支付";
+				$this->pay($params);
+				// }
+			} else {
+				exit(json_encode(array('status' => '0', 'msg' => "操作失败，请刷新后再试！")));
+			}
+			exit;
 
 			if (empty($status)) {
 				$uservoteurl = $_W['siteroot'] . "app/" . $this->createMobileUrl('view', array('id' => $insertid, 'rid' => $rid));
