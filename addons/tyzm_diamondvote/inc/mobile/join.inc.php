@@ -7,7 +7,7 @@
  */
 defined('IN_IA') or exit('Access Denied');
 global $_W, $_GPC;
-is_weixin();
+// is_weixin();
 
 $uniacid = intval($_W['uniacid']);
 $rid = intval($_GPC['rid']);
