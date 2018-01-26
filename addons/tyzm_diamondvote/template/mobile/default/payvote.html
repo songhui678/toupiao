@@ -1,11 +1,7 @@
 {template 'header'}
-<link rel="stylesheet" href="{MODULE_URL}/template/static/css/donate.css?a=12">
- 
-<br></br>
+
 <script>
 $(document).ready(function(){
-{if empty($reply['defaultpay'])}
-    //
     //发起微信支付，微信支付依赖于 WeixinJSBridge 组件，所以发起时应该在ready事件中进行
     document.addEventListener('WeixinJSBridgeReady', function onBridgeReady() {
         (function(){
@@ -50,7 +46,7 @@ $(document).ready(function(){
             });
         });
     });
-{/if}
+
 });
 
 </script>
