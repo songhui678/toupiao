@@ -16,9 +16,7 @@ $reply['style'] = @unserialize($reply['style']);
 $reply = @array_merge($reply, unserialize($reply['config']));unset($reply['config']);
 if (empty($reply['status'])) {message("活动已禁用");}
 $addata = @unserialize($reply['addata']);
-$giftdata = @unserialize($reply['giftdata']);
 
-file_put_contents('/home/www/toupiao/join.txt', json_encode($giftdata) . "\n", FILE_APPEND);
 if (!$_W['ispost']) {
 	if (empty($reply['upimgtype'])) {
 		m('domain')->randdomain($rid, 1);
@@ -148,20 +146,31 @@ if ($_W['ispost']) {
 		//file_put_contents(MODULE_ROOT."/data.txt",json_encode($insertid));exit;
 		if ($insertid) {
 
-			if (empty($status)) {
-				$uservoteurl = $_W['siteroot'] . "app/" . $this->createMobileUrl('view', array('id' => $insertid, 'rid' => $rid));
-				$content = '您已成功报名【' . $reply['title'] . '】活动，待审核官方审核通过后，即可开始拉票。<a href=\"' . $uservoteurl . '\">点击进入详情页面<\/a>';
-			} else {
-				$uservoteurl = $_W['siteroot'] . "app/" . $this->createMobileUrl('view', array('id' => $insertid, 'rid' => $rid));
-				$content = '您已成功报名【' . $reply['title'] . '】活动，开始拉票吧！<a href=\"' . $uservoteurl . '\">点击进入详情页面<\/a>';
-			}
-			m('user')->sendkfinfo($this->oauthuser['openid'], $content);
+			$tid = date('YmdHi') . random(12, 1);
+			$gift = $giftdata[0];
+			$params = array(
+				'tid' => $tid,
+				'ordersn' => $tid,
+				'title' => '报名费',
+				'fee' => sprintf("%.2f", $gift['giftprice'] * 1),
+				'user' => $_W['member']['uid'],
+				'module' => "tyzm_diamondvote",
+			);
+
+			// if (empty($status)) {
+			// 	$uservoteurl = $_W['siteroot'] . "app/" . $this->createMobileUrl('view', array('id' => $insertid, 'rid' => $rid));
+			// 	$content = '您已成功报名【' . $reply['title'] . '】活动，待审核官方审核通过后，即可开始拉票。<a href=\"' . $uservoteurl . '\">点击进入详情页面<\/a>';
+			// } else {
+			// 	$uservoteurl = $_W['siteroot'] . "app/" . $this->createMobileUrl('view', array('id' => $insertid, 'rid' => $rid));
+			// 	$content = '您已成功报名【' . $reply['title'] . '】活动，开始拉票吧！<a href=\"' . $uservoteurl . '\">点击进入详情页面<\/a>';
+			// }
+			// m('user')->sendkfinfo($this->oauthuser['openid'], $content);
 
 			//赠送积分或其他！
-			if (!empty($reply['joingive_num'])) {
-				$joingive_num = m('common')->rand_type($reply['joingive_num']);
-				m('present')->upcredit($joininfo['openid'], $reply['joingive_type'], $joingive_num, 'tyzm_diamondvote');
-			}
+			// if (!empty($reply['joingive_num'])) {
+			// 	$joingive_num = m('common')->rand_type($reply['joingive_num']);
+			// 	m('present')->upcredit($joininfo['openid'], $reply['joingive_type'], $joingive_num, 'tyzm_diamondvote');
+			// }
 			//奖励end
 			exit(json_encode(array('status' => '1', 'errmsg' => "成功", 'id' => $insertid)));
 		} else {
