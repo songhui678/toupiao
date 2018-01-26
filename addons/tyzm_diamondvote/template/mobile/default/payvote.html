@@ -12,7 +12,7 @@ $(document).ready(function(){
             loadingToast("奋力加载");
             $.ajax({
                 type: "POST",
-                url: "{php echo $this->createMobileUrl('pay', array('rid' =>12,'id' => 1,'ty' => 1,'type'=>1))}",
+                url: "{php echo $this->createMobileUrl('pay', array('rid' =>13,'id' => 1,'ty' => 1,'type'=>1))}",
                 data: {giftid:0.01,count:1},
                 dataType: "json",
                 success: function(str) {
@@ -30,7 +30,7 @@ $(document).ready(function(){
                            function(res){     
                                if(res.err_msg == "get_brand_wcpay_request:ok" ) {
                                     toast("支付成功");
-                                    setTimeout(location.href ="{php echo $this->createMobileUrl('view', array('rid' => 12,'id' => 1))}",3000); 
+                                    setTimeout(location.href ="{php echo $this->createMobileUrl('view', array('rid' => 13,'id' => 1))}",3000); 
                                     
                                }else if(res.err_msg == "get_brand_wcpay_request:cancel"){
                                     dialog2("已取消支付");return false;
