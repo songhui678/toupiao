@@ -137,7 +137,7 @@ if ($_W['ispost']) {
 			'formatdata' => iserializer($_GPC['picturearr']),
 			'votenum' => 0,
 			'giftcount' => 0,
-			'status' => $status,
+			'status' => 0,
 			'createtime' => time(),
 		);
 		// file_put_contents('/home/www/toupiao/join.txt', json_encode($joininfo) . "\n", FILE_APPEND);

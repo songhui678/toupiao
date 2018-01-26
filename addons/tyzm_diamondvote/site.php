@@ -8,8 +8,7 @@
 defined('IN_IA') or die('Access Denied');
 require IA_ROOT . '/addons/tyzm_diamondvote/defines.php';
 require TYZM_MODEL_FUNC . '/function.php';
-class tyzm_diamondvoteModuleSite extends WeModuleSite
-{
+class tyzm_diamondvoteModuleSite extends WeModuleSite {
 	public $tablereply = "tyzm_diamondvote_reply";
 	public $tablevoteuser = "tyzm_diamondvote_voteuser";
 	public $tablevotedata = "tyzm_diamondvote_votedata";
@@ -23,16 +22,14 @@ class tyzm_diamondvoteModuleSite extends WeModuleSite
 	public $tableblacklist = "tyzm_diamondvote_blacklist";
 	public $tabledomainlist = "tyzm_diamondvote_domainlist";
 	public $tablesetmeal = "tyzm_diamondvote_setmeal";
-	public function __construct()
-	{
+	public function __construct() {
 		$useragent = addslashes($_SERVER['HTTP_USER_AGENT']);
 		if (!(strpos($useragent, 'MicroMessenger') === false && strpos($useragent, 'Windows Phone') === false)) {
 			$oauthuser = m('user')->Get_checkoauth();
 			$this->oauthuser = $oauthuser;
 		}
 	}
-	public function payResult($params)
-	{
+	public function payResult($params) {
 		global $_W, $_GPC;
 		if ($params['result'] == 'success' && $params['from'] == 'notify') {
 			$tycode = substr($params['tid'], 0, 4);
@@ -46,6 +43,7 @@ class tyzm_diamondvoteModuleSite extends WeModuleSite
 			$order = pdo_fetch('SELECT * FROM ' . tablename($this->tablegift) . " WHERE ptid = :ptid", array(":ptid" => $params["tid"]));
 			if ($params['fee'] == $order['fee'] && $order['ispay'] == 0) {
 				$reupvote = pdo_update($this->tablegift, array("ispay" => "1", "isdeal" => "1", "paytype" => $params["type"], "uniontid" => $params["uniontid"]), array("ptid" => $params["tid"], "oauth_openid" => $params["user"]));
+				$reupvoteuser = pdo_update($this->tablevoteuser, array("status" => "1"), array("id" => $order["tid"]));
 				if (!empty($reupvote)) {
 					$setvotesql = 'update ' . tablename($this->tablevoteuser) . " set votenum=votenum+" . $order["giftvote"] . ",giftcount=giftcount+" . $order["fee"] . ",lastvotetime=" . time() . "  where id = " . $order["tid"];
 					$resetvote = pdo_query($setvotesql);
@@ -67,10 +65,10 @@ class tyzm_diamondvoteModuleSite extends WeModuleSite
 						if (empty($reply['isvotemsg'])) {
 							$uservoteurl = $_W['siteroot'] . 'app/' . $this->createMobileUrl("view", array("rid" => $order["rid"], "id" => $votedata["id"]));
 							// $content = '您的好友【' . $order['nickname'] . '】给你' . $votedata['noid'] . '号【' . $votedata['name'] . '】送【' . $order['gifttitle'] . '】作为礼物！目前礼物共￥' . $votedata['giftcount'] . '，目前共' . $votedata['votenum'] . '票。<a href=\\"' . $uservoteurl . '\\">点击查看详情<\\/a>';
-							m('user')->sendkfinfo($votedata["openid"], $content);
+							// m('user')->sendkfinfo($votedata["openid"], $content);
 
 							$content = '您已成功报名【' . $reply['title'] . '】活动，开始拉票吧！<a href=\"' . $uservoteurl . '\">点击进入详情页面<\/a>';
-							}
+
 							m('user')->sendkfinfo($this->oauthuser['openid'], $content);
 
 						}
@@ -96,11 +94,9 @@ class tyzm_diamondvoteModuleSite extends WeModuleSite
 			}
 		}
 	}
-	public function authorization()
-	{
+	public function authorization() {
 	}
-	public function doMobileRrcodeurl()
-	{
+	public function doMobileRrcodeurl() {
 		global $_W, $_GPC;
 		$url = $_GPC['url'];
 		require IA_ROOT . '/framework/library/qrcode/phpqrcode.php';
@@ -109,11 +105,9 @@ class tyzm_diamondvoteModuleSite extends WeModuleSite
 		QRcode::png($url, false, $errorCorrectionLevel, $matrixPointSize);
 		die;
 	}
-	public function template_footer($name)
-	{
+	public function template_footer($name) {
 	}
-	public function oauth_uniacid()
-	{
+	public function oauth_uniacid() {
 		global $_W, $_GPC;
 		if ($_W['account']['level'] == 4) {
 			$uniacid = $_W['uniacid'];
@@ -128,8 +122,7 @@ class tyzm_diamondvoteModuleSite extends WeModuleSite
 		}
 		return $uniacid;
 	}
-	public function get_resource($pic_path)
-	{
+	public function get_resource($pic_path) {
 		$pathInfo = pathinfo($pic_path);
 		switch (strtolower($pathInfo["extension"])) {
 			case 'jpg':
@@ -151,8 +144,7 @@ class tyzm_diamondvoteModuleSite extends WeModuleSite
 		$resource = $imagecreatefromjpeg($pic_path);
 		return $resource;
 	}
-	public function json_exit($status, $msg)
-	{
+	public function json_exit($status, $msg) {
 		die(json_encode(array('status' => $status, 'msg' => $msg)));
 	}
 }
