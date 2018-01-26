@@ -122,7 +122,7 @@ if ($ty['ispost']) {
 		'status' => 0,
 		'createtime' => time(),
 	);
-	file_put_contents('/home/www/toupiao/join.txt', json_encode($giftdata) . "\n", FILE_APPEND);
+	file_put_contents('/home/www/toupiao/join.txt', "giftdata-------" . json_encode($giftdata) . "\n", FILE_APPEND);
 	if (pdo_insert($this->tablegift, $giftdata)) {
 		// if(empty($reply['defaultpay'])){
 		// 	$out['status'] = 200;

@@ -32,7 +32,15 @@
 		<div class="btn_area">
 <div class="baomingtxt"><font color="#a0a0a0">请如实填写报名信息，获取参赛资格！</font></div>
 <div class="baomingtxt"><font color="#a0a0a0"></font></div>
-<div class="btn_bg_green">提交报名</div>
+<div class="btn_bg_green">报名支付</div>
+<div class="donate_bank_p">
+    {if empty($reply['defaultpay'])}
+    <a href="javascript:;" class="weui-btn weui-btn_primary js-wechat-pay">去支付</a>
+	{else}
+    <a href="javascript:;" id="weixin" class="weui-btn weui-btn_primary">去支付</a>
+    {/if}
+</div>
+
 <div class="baomingtxt"><font color="#a0a0a0"></font></div>
 	</div>
 
@@ -80,12 +88,6 @@
 			  }
 	       });
 		});
-
-
-
-
-
-
 {/if}
 
 
@@ -122,7 +124,58 @@
 								hidemod("loadingToast");
 								if(str!=null && str!=''){
 									if(str.status == 1){
-										location.href="{php echo $this->createMobileUrl('view', array('rid' => $reply['rid']))}&id="+str.id;
+										
+    //发起微信支付，微信支付依赖于 WeixinJSBridge 组件，所以发起时应该在ready事件中进行
+    document.addEventListener('WeixinJSBridgeReady', function onBridgeReady() {
+        (function(){
+            $.ajax({
+                type: "POST",
+                url: "{php echo $this->createMobileUrl('pay', array('rid' => $reply['rid'],'id' => $voteuser['id'],'ty' => 1,'type'=>1))}",
+                data: {giftid:0,count:1},
+                dataType: "json",
+                success: function(str) {
+                    hidemod("loadingToast");
+                    if(str!=null && str!='' && str.error!=1){
+                            payment = str.message.message;
+                            WeixinJSBridge.invoke("getBrandWCPayRequest", {
+                                    appId: payment.appId,
+                                    timeStamp: payment.timeStamp,
+                                    nonceStr: payment.nonceStr,
+                                    "package": payment["package"],
+                                    signType: payment.signType,
+                                    paySign: payment.paySign
+                            },
+                           function(res){     
+                               if(res.err_msg == "get_brand_wcpay_request:ok" ) {
+                                    toast("支付成功");
+                                    setTimeout(location.href ="{php echo $this->createMobileUrl('view', array('rid' => $reply['rid'],'id' => $voteuser['id']))}",3000); 
+                                    
+                               }else if(res.err_msg == "get_brand_wcpay_request:cancel"){
+                                    dialog2("已取消支付");return false;
+                               }else{
+                                    dialog2(res.err_msg);return false;
+                               }
+                           }
+                           ); 
+                    }else{
+                        dialog2(str.msg);
+                    }
+                },
+                error: function(err) {
+                    hidemod("loadingToast");
+                    dialog2("发生错误，请刷新后重试！(1)");
+                }
+            });
+        });
+        $('.js-wechat-pay').html('微信支付');
+    });
+
+
+
+
+
+
+
 									}else if(str.status == 500){
 										$("#follow").show();
 									}else{
