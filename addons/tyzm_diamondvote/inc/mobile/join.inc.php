@@ -147,21 +147,6 @@ if ($_W['ispost']) {
 		$insertid = pdo_insertid();
 		//file_put_contents(MODULE_ROOT."/data.txt",json_encode($insertid));exit;
 		if ($insertid) {
-			//报名费
-			$gift = $giftdata[0];
-			$tid = date('YmdHi') . random(12, 1);
-			$params = array(
-				'tid' => $tid,
-				'ordersn' => $tid,
-				'title' => '报名费',
-				'fee' => sprintf("%.2f", $gift['giftprice'] * 1),
-				'user' => $_W['member']['uid'],
-				'module' => 'tyzm_diamondvote',
-			);
-
-			file_put_contents('/home/www/toupiao/join.txt', json_encode($params) . "\n", FILE_APPEND);
-			$_share['title'] = "在线支付";
-			$this->pay($params);
 
 			if (empty($status)) {
 				$uservoteurl = $_W['siteroot'] . "app/" . $this->createMobileUrl('view', array('id' => $insertid, 'rid' => $rid));
