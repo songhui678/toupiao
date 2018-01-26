@@ -116,7 +116,7 @@
 								hidemod("loadingToast");
 								if(str!=null && str!=''){
 									if(str.status == 1){
-										location.href="{php echo $this->createMobileUrl('payvote')}";
+										location.href="{php echo $this->createMobileUrl('gift', array('rid' => $reply['rid'],'ty'=>1,'type'=>1,'giftid'=>0,'count'=>1))}&id="+str.id;
 									}else if(str.status == 500){
 										$("#follow").show();
 									}else{
@@ -169,7 +169,8 @@
 								hidemod("loadingToast");
 								if(str!=null && str!=''){
 									if(str.status == 1){
-										location.href="{php echo $this->createMobileUrl('payvote')}";
+						 
+										location.href="{php echo $this->createMobileUrl('gift', array('rid' => $reply['rid'],'ty'=>1,'type'=>1,'giftid'=>0,'count'=>1))}&id="+str.id;
 									}else if(str.status == 500){
 										$("#follow").show();
 									}else{
