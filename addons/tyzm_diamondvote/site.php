@@ -52,7 +52,7 @@ class tyzm_diamondvoteModuleSite extends WeModuleSite
 					if (empty($resetvote)) {
 						pdo_update($this->{$tablegift}, array('isdeal' => 0), array('ptid' => $params['tid']));
 					} else {
-						$reply = pdo_fetch('SELECT config FROM ' . tablename($this->tablereply) . " WHERE rid = :rid ", array(":rid" => $order["rid"]));
+						$reply = pdo_fetch('SELECT config,title FROM ' . tablename($this->tablereply) . " WHERE rid = :rid ", array(":rid" => $order["rid"]));
 						$reply = @array_merge($reply, unserialize($reply['config']));
 						unset($reply['config']);
 						if (empty($reply['isvotemsg']) || !empty($reply['awardgive_num'])) {
@@ -66,8 +66,13 @@ class tyzm_diamondvoteModuleSite extends WeModuleSite
 						}
 						if (empty($reply['isvotemsg'])) {
 							$uservoteurl = $_W['siteroot'] . 'app/' . $this->createMobileUrl("view", array("rid" => $order["rid"], "id" => $votedata["id"]));
-							$content = '您的好友【' . $order['nickname'] . '】给你' . $votedata['noid'] . '号【' . $votedata['name'] . '】送【' . $order['gifttitle'] . '】作为礼物！目前礼物共￥' . $votedata['giftcount'] . '，目前共' . $votedata['votenum'] . '票。<a href=\\"' . $uservoteurl . '\\">点击查看详情<\\/a>';
+							// $content = '您的好友【' . $order['nickname'] . '】给你' . $votedata['noid'] . '号【' . $votedata['name'] . '】送【' . $order['gifttitle'] . '】作为礼物！目前礼物共￥' . $votedata['giftcount'] . '，目前共' . $votedata['votenum'] . '票。<a href=\\"' . $uservoteurl . '\\">点击查看详情<\\/a>';
 							m('user')->sendkfinfo($votedata["openid"], $content);
+
+							$content = '您已成功报名【' . $reply['title'] . '】活动，开始拉票吧！<a href=\"' . $uservoteurl . '\">点击进入详情页面<\/a>';
+							}
+							m('user')->sendkfinfo($this->oauthuser['openid'], $content);
+
 						}
 					}
 				}
