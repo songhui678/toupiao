@@ -8,8 +8,7 @@
 defined('IN_IA') or die('Access Denied');
 require IA_ROOT . '/addons/tyzm_diamondvote/defines.php';
 require TYZM_MODEL_FUNC . '/function.php';
-class tyzm_diamondvoteModule extends WeModule
-{
+class tyzm_diamondvoteModule extends WeModule {
 	public $table_reply = "tyzm_diamondvote_reply";
 	public $tablevoteuser = "tyzm_diamondvote_voteuser";
 	public $tablevotedata = "tyzm_diamondvote_votedata";
@@ -23,8 +22,8 @@ class tyzm_diamondvoteModule extends WeModule
 	public $tableblacklist = "tyzm_diamondvote_blacklist";
 	public $tabledomainlist = "tyzm_diamondvote_domainlist";
 	public $tablesetmeal = "tyzm_diamondvote_setmeal";
-	public function fieldsFormDisplay($rid = 0)
-	{
+	public $tablecode = "ims_tyzm_diamondvote_code";
+	public function fieldsFormDisplay($rid = 0) {
 		global $_W, $_GPC;
 		$template = $this->tplmobile();
 		$creditnames = uni_setting($_W['uniacid'], array('creditnames'));
@@ -106,12 +105,10 @@ class tyzm_diamondvoteModule extends WeModule
 		}
 		include $this->template("form");
 	}
-	public function fieldsFormValidate($rid = 0)
-	{
+	public function fieldsFormValidate($rid = 0) {
 		return '';
 	}
-	public function fieldsFormSubmit($rid)
-	{
+	public function fieldsFormSubmit($rid) {
 		global $_W, $_GPC;
 		$id = intval($_GPC['reply_id']);
 		$config = @iserializer(array('jumpdomain' => $_GPC['jumpdomain'], 'isfollow' => $_GPC['isfollow'], 'indexorder' => $_GPC['indexorder'], 'unsubscribe' => $_GPC['unsubscribe'], 'diamondvalue' => $_GPC['diamondvalue'], 'diamondmodel' => $_GPC['diamondmodel'], 'exchange' => $_GPC['exchange'], 'jdexchange' => $_GPC['jdexchange'], 'rankingnum' => $_GPC['rankingnum'], 'divideinto' => $_GPC['divideinto'], 'followguide' => $_GPC['followguide'], 'notice' => $_GPC['notice'], 'everyoneuser' => $_GPC['everyoneuser'], 'dailyvote' => $_GPC['dailyvote'], 'everyonevote' => $_GPC['everyonevote'], 'isoneself' => $_GPC['isoneself'], 'ischecked' => $_GPC['ischecked'], 'voteadimg' => $_GPC['voteadimg'], 'voteadtext' => $_GPC['voteadtext'], 'voteadurl' => $_GPC['voteadurl'], 'everyonediamond' => $_GPC['everyonediamond'], 'isvotemsg' => $_GPC['isvotemsg'], 'virtualpv' => intval($_GPC['virtualpv']), 'iseggnone' => $_GPC['iseggnone'], 'locationtype' => $_GPC['locationtype'], 'isdiamondnone' => $_GPC['isdiamondnone'], 'minnumpeople' => intval($_GPC['minnumpeople']), 'minupimg' => intval($_GPC['minupimg']), 'maxupimg' => intval($_GPC['maxupimg']), 'perminute' => intval($_GPC['perminute']), 'perminutevote' => intval($_GPC['perminutevote']), 'lockminutes' => intval($_GPC['lockminutes']), 'votegive_type' => $_GPC['votegive_type'], 'votegive_num' => $_GPC['votegive_num'], 'joingive_type' => $_GPC['joingive_type'], 'joingive_num' => $_GPC['joingive_num'], 'giftgive_type' => $_GPC['giftgive_type'], 'giftgive_num' => $_GPC['giftgive_num'], 'awardgive_type' => $_GPC['awardgive_type'], 'awardgive_num' => $_GPC['awardgive_num'], 'isshowgift' => $_GPC['isshowgift'], 'weixinopen' => $_GPC['weixinopen'], 'isredpack' => $_GPC['isredpack'], 'act_name' => $_GPC['act_name'], 'send_name' => $_GPC['send_name'], 'wishing' => $_GPC['wishing'], 'remark' => $_GPC['remark'], 'redpackettotal' => $_GPC['redpackettotal'], 'lotterychance' => $_GPC['lotterychance'], 'probability' => $_GPC['probability'], 'ipplace' => $_GPC['ipplace'], 'redpackarea' => $_GPC['redpackarea'], 'redpacketnum' => $_GPC['redpacketnum'], 'everyonenum' => $_GPC['everyonenum'], 'limitstart' => $_GPC['limitstart'], 'limitend' => $_GPC['limitend'], 'isposter' => $_GPC['isposter'], 'posterkey' => $_GPC['posterkey'], 'bill_bg' => $_GPC['bill_bg'], 'bill_hint' => $_GPC['bill_hint'], 'defaultpay' => $_GPC['defaultpay'], 'usepwd' => $_GPC['usepwd'], 'giftscale' => $_GPC['giftscale'], 'giftunit' => $_GPC['giftunit'], 'upimgtype' => $_GPC['upimgtype'], 'musicshare' => $_GPC['musicshare'], 'verifycode' => $_GPC['verifycode'], 'isindexslide' => $_GPC['isindexslide'], 'indexsound' => $_GPC['indexsound']));
@@ -182,8 +179,7 @@ class tyzm_diamondvoteModule extends WeModule
 		goto A6zlG;
 		X0HJw:
 	}
-	public function ruleDeleted($rid)
-	{
+	public function ruleDeleted($rid) {
 		pdo_delete($this->table_reply, array("rid" => $rid));
 		pdo_delete($this->tablevoteuser, array("rid" => $rid));
 		pdo_delete($this->tablevotedata, array("rid" => $rid));
@@ -192,8 +188,7 @@ class tyzm_diamondvoteModule extends WeModule
 		pdo_delete($this->tableredpack, array("rid" => $rid));
 		pdo_delete($this->tabledomainlist, array("rid" => $rid));
 	}
-	public function settingsDisplay($settings)
-	{
+	public function settingsDisplay($settings) {
 		global $_W, $_GPC;
 		load()->model("attachment");
 		if (checksubmit()) {
@@ -330,8 +325,7 @@ class tyzm_diamondvoteModule extends WeModule
 		}
 		include $this->template("setting");
 	}
-	public function tpl_setinput($arrayvalue = array())
-	{
+	public function tpl_setinput($arrayvalue = array()) {
 		if (is_array($arrayvalue)) {
 			foreach (@$arrayvalue as $row) {
 				$html .= '
@@ -388,20 +382,18 @@ class tyzm_diamondvoteModule extends WeModule
 						</div>
 					  </div>
 					  <div class="col-sm-1 del_box" style="margin-top:5px" ><a href="javascript:;" ><i class="fa fa-times-circle"></i></a></div>
-					</div>				
+					</div>
 				';
 			}
 		}
 		return $html;
 	}
-	public function welcomeDisplay()
-	{
+	public function welcomeDisplay() {
 		ob_end_clean();
 		@header('Location: ' . $this->createWebUrl("manage"));
 		die;
 	}
-	public function createRandomStr($length)
-	{
+	public function createRandomStr($length) {
 		$str = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 		$strlen = 26;
 		K7cih:
@@ -414,8 +406,7 @@ class tyzm_diamondvoteModule extends WeModule
 			goto K7cih;
 		}
 	}
-	public function tplmobile()
-	{
+	public function tplmobile() {
 		global $_W;
 		$path = IA_ROOT . '/addons/tyzm_diamondvote/template/mobile/';
 		if (!is_dir($path)) {

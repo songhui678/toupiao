@@ -22,6 +22,7 @@ class tyzm_diamondvoteModuleSite extends WeModuleSite {
 	public $tableblacklist = "tyzm_diamondvote_blacklist";
 	public $tabledomainlist = "tyzm_diamondvote_domainlist";
 	public $tablesetmeal = "tyzm_diamondvote_setmeal";
+	public $tablecode = "ims_tyzm_diamondvote_code";
 	public function __construct() {
 		$useragent = addslashes($_SERVER['HTTP_USER_AGENT']);
 		if (!(strpos($useragent, 'MicroMessenger') === false && strpos($useragent, 'Windows Phone') === false)) {
@@ -49,6 +50,11 @@ class tyzm_diamondvoteModuleSite extends WeModuleSite {
 					if (empty($resetvote)) {
 						pdo_update($this->{$tablegift}, array('isdeal' => 0), array('ptid' => $params['tid']));
 					} else {
+						//兑换码
+						$codeInfo = pdo_fetch('SELECT id,code FROM ' . tablename($this->tablecode) . " WHERE status = 0 order by createtime limit 1");
+						if (!empty($codeInfo)) {
+							pdo_update($this->{$tablecode}, array('tid' => $params['tid'], 'rid' => $order["rid"], 'status' => 1), array('id' => $codeInfo['id']));
+						}
 						$reply = pdo_fetch('SELECT config,title FROM ' . tablename($this->tablereply) . " WHERE rid = :rid ", array(":rid" => $order["rid"]));
 						$reply = @array_merge($reply, unserialize($reply['config']));
 						unset($reply['config']);
@@ -62,12 +68,15 @@ class tyzm_diamondvoteModuleSite extends WeModuleSite {
 							m('present')->upcredit($votedata["openid"], $reply["awardgive_type"], $reply["awardgive_num"] * $params["fee"], "tyzm_diamondvote");
 						}
 						if (empty($reply['isvotemsg'])) {
+
 							$uservoteurl = $_W['siteroot'] . 'app/' . $this->createMobileUrl("view", array("rid" => $order["rid"], "id" => $votedata["id"]));
 							// $content = '您的好友【' . $order['nickname'] . '】给你' . $votedata['noid'] . '号【' . $votedata['name'] . '】送【' . $order['gifttitle'] . '】作为礼物！目前礼物共￥' . $votedata['giftcount'] . '，目前共' . $votedata['votenum'] . '票。<a href=\\"' . $uservoteurl . '\\">点击查看详情<\\/a>';
 							// m('user')->sendkfinfo($votedata["openid"], $content);
-
-							$content = '您已成功报名【' . $reply['title'] . '】活动，开始拉票吧！<a href=\"' . $uservoteurl . '\">点击进入详情页面<\/a>';
-
+							if (!empty($codeInfo)) {
+								$content = '您已成功报名【' . $reply['title'] . '】活动，您获得本活动兑换码:' . $codeInfo['code'] . '，详情请回复【兑换码】，开始拉票吧！<a href=\"' . $uservoteurl . '\">点击进入详情页面<\/a>';
+							} else {
+								$content = '您已成功报名【' . $reply['title'] . '】活动，开始拉票吧！<a href=\"' . $uservoteurl . '\">点击进入详情页面<\/a>';
+							}
 							m('user')->sendkfinfo($votedata['openid'], $content);
 
 						}
