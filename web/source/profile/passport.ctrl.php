@@ -11,14 +11,16 @@ $do = in_array($do, $dos) ? $do : 'oauth';
 uni_user_permission_check('profile_setting');
 $_W['page']['title'] = '公众平台oAuth选项 - 会员中心';
 
+load()->model('user');
+
 if ($do == 'save_oauth') {
 	$type = $_GPC['type'];
 	$account = trim($_GPC['account']);
 	if ($type == 'oauth') {
-		$host = $_GPC['host'];
-		$host = rtrim($host,'/');
-		if(!empty($host) && !preg_match('/^http(s)?:\/\//', $host)) {
-			$host = $_W['sitescheme'].$host;
+		$host = safe_gpc_url(rtrim($_GPC['host'],'/'), false);
+
+		if (!empty($_GPC['host']) && empty($host)) {
+			iajax(-1, '域名不合法');
 		}
 		$data = array(
 			'host' => $host,
@@ -35,6 +37,7 @@ if ($do == 'save_oauth') {
 }
 
 if ($do == 'oauth') {
+<<<<<<< HEAD
 	$where = '';
 	$params = array();
 	if(empty($_W['isfounder'])) {
@@ -62,6 +65,11 @@ if ($do == 'oauth') {
 			}
 		}
 	}
+=======
+	$user_have_accounts = user_borrow_oauth_account_list();
+	$oauth_accounts = $user_have_accounts['oauth_accounts'];
+	$jsoauth_accounts = $user_have_accounts['jsoauth_accounts'];
+>>>>>>> parent of 775f72a... 654
 	$oauth = pdo_fetchcolumn('SELECT `oauth` FROM '.tablename('uni_settings').' WHERE `uniacid` = :uniacid LIMIT 1',array(':uniacid' => $_W['uniacid']));
 	$oauth = iunserializer($oauth) ? iunserializer($oauth) : array();
 	$jsoauth = pdo_getcolumn('uni_settings', array('uniacid' => $_W['uniacid']), 'jsauth_acid');

@@ -61,7 +61,6 @@ if (!empty($_GPC['code'])) {
 	$oauth = $proxy_pay_account->getOauthInfo($_GPC['code']);
 	if (!empty($oauth['openid'])) {
 		$log['openid'] = $oauth['openid'];
-		pdo_update('core_paylog', array('openid' => $oauth['openid']), array('plid' => $log['plid']));
 	}
 }
 
@@ -71,6 +70,7 @@ $_W['openid'] = $log['openid'];
 if(!is_array($setting['payment'])) {
 	exit('没有设定支付参数.');
 }
+
 $wechat = $setting['payment']['wechat'];
 $sql = 'SELECT `key`,`secret` FROM ' . tablename('account_wechats') . ' WHERE `acid`=:acid';
 $row = pdo_fetch($sql, array(':acid' => $wechat['account']));

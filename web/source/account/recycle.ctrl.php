@@ -9,9 +9,12 @@ load()->model('account');
 
 $dos = array('display', 'recover', 'delete');
 $do = in_array($do, $dos) ? $do : 'display';
-if ($_W['role'] != ACCOUNT_MANAGE_NAME_OWNER && $_W['role'] != ACCOUNT_MANAGE_NAME_FOUNDER) {
-	itoast('无权限操作！', referer(), 'error');
-}
+
+	if (!in_array($_W['role'], array(ACCOUNT_MANAGE_NAME_OWNER, ACCOUNT_MANAGE_NAME_FOUNDER, ACCOUNT_MANAGE_NAME_VICE_FOUNDER))) {
+		itoast('无权限操作！', referer(), 'error');
+	}
+
+
 $_W['page']['title'] = $account_typename . '回收站 - ' . $account_typename;
 
 if ($do == 'display') {
@@ -27,6 +30,7 @@ if ($do == 'display') {
 		ACCOUNT_TYPE_APP_NORMAL => array(ACCOUNT_TYPE_APP_NORMAL),
 		ACCOUNT_TYPE_OFFCIAL_NORMAL => array(ACCOUNT_TYPE_OFFCIAL_NORMAL, ACCOUNT_TYPE_OFFCIAL_AUTH),
 		ACCOUNT_TYPE_OFFCIAL_AUTH => array(ACCOUNT_TYPE_OFFCIAL_NORMAL, ACCOUNT_TYPE_OFFCIAL_AUTH),
+		ACCOUNT_TYPE_WEBAPP_NORMAL => array(ACCOUNT_TYPE_WEBAPP_NORMAL),
 	);
 	$type_condition_sql = "'".implode("','", $type_condition[ACCOUNT_TYPE])."'";
 	
@@ -84,12 +88,25 @@ if ($do == 'recover') {
 }
 
 if($do == 'delete') {
+	if (empty($_W['isajax']) || empty($_W['ispost'])) {
+		iajax(0, '非法操作！', referer());
+	}
 	$uniacid = intval($_GPC['uniacid']);
 	$acid = intval($_GPC['acid']);
+<<<<<<< HEAD
 	$state = uni_permission($_W['uid'], $uniacid);
 	if($state != ACCOUNT_MANAGE_NAME_FOUNDER && $state != ACCOUNT_MANAGE_NAME_OWNER) {
 		itoast('没有权限！', referer(), 'error');
 	}
+=======
+	$state = permission_account_user_role($_W['uid'], $uniacid);
+	
+		if (!in_array($state, array(ACCOUNT_MANAGE_NAME_OWNER, ACCOUNT_MANAGE_NAME_FOUNDER, ACCOUNT_MANAGE_NAME_VICE_FOUNDER))) {
+			itoast('没有权限！', referer(), 'error');
+		}
+	
+	
+>>>>>>> parent of 775f72a... 654
 	account_delete($acid);
-	itoast('删除成功！', referer(), 'success');
+	iajax(0, '删除成功！', referer());
 }

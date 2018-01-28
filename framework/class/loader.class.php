@@ -18,10 +18,43 @@ function load() {
 class Loader {
 	
 	private $cache = array();
+<<<<<<< HEAD
 	
 	function func($name) {
 		global $_W;
 		if (isset($this->cache['func'][$name])) {
+=======
+	private $singletonObject = array();
+	private $libraryMap = array(
+		'agent' => 'agent/agent.class',
+		'captcha' => 'captcha/captcha.class',
+		'pdo' => 'pdo/PDO.class',
+		'qrcode' => 'qrcode/phpqrcode',
+		'ftp' => 'ftp/ftp',
+		'pinyin' => 'pinyin/pinyin',
+		'pkcs7' => 'pkcs7/pkcs7Encoder',
+		'json' => 'json/JSON',
+		'phpmailer' => 'phpmailer/PHPMailerAutoload',
+		'oss' => 'alioss/autoload',
+		'qiniu' => 'qiniu/autoload',
+		'cos' => 'cosv4.2/include',
+		'cosv3' => 'cos/include',
+	);
+	private $loadTypeMap = array(
+		'func' => '/framework/function/%s.func.php',
+		'model' => '/framework/model/%s.mod.php',
+		'classs' => '/framework/class/%s.class.php',
+		'library' => '/framework/library/%s.php',
+		'table' => '/framework/table/%s.table.php',
+		'web' => '/web/common/%s.func.php',
+		'app' => '/app/common/%s.func.php',
+	);
+
+	public function __call($type, $params) {
+		global $_W;
+		$name = $cachekey = array_shift($params);
+		if (!empty($this->cache[$type]) && isset($this->cache[$type][$cachekey])) {
+>>>>>>> parent of 775f72a... 654
 			return true;
 		}
 		$file = IA_ROOT . '/framework/function/' . $name . '.func.php';
@@ -40,6 +73,7 @@ class Loader {
 		if (isset($this->cache['model'][$name])) {
 			return true;
 		}
+<<<<<<< HEAD
 		$file = IA_ROOT . '/framework/model/' . $name . '.mod.php';
 		if (file_exists($file)) {
 			include $file;
@@ -47,6 +81,15 @@ class Loader {
 			return true;
 		} else {
 			trigger_error('Invalid Model /framework/model/' . $name . '.mod.php', E_USER_ERROR);
+=======
+		$file = sprintf($this->loadTypeMap[$type], $name);
+		if (file_exists(IA_ROOT . $file)) {
+			include IA_ROOT . $file;
+			$this->cache[$type][$cachekey] = true;
+			return true;
+		} else {
+			trigger_error('Invalid ' . ucfirst($type) . $file, E_USER_WARNING);
+>>>>>>> parent of 775f72a... 654
 			return false;
 		}
 	}

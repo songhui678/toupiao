@@ -11,7 +11,6 @@ load()->func('communication');
 
 $dos = array('check');
 $do = in_array($do, $dos) ? $do : '';
-
 $_W['page']['title'] = '系统文件校验 - 常用系统工具 - 系统管理';
 
 if ($do == 'check') {

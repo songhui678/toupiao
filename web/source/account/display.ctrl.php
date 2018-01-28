@@ -18,6 +18,13 @@ if($do == 'switch') {
 	if(empty($role)) {
 		itoast('操作失败, 非法访问.', '', 'error');
 	}
+	if (empty($_W['isfounder'])) {
+		$account_endtime = uni_fetch($uniacid);
+		$account_endtime = $account_endtime['endtime'];
+		if ($account_endtime > 0 && TIMESTAMP > $account_endtime) {
+			itoast('公众号已到期。', '', 'error');
+		}
+	}
 	uni_account_save_switch($uniacid);
 	$module_name = trim($_GPC['module_name']);
 	$version_id = intval($_GPC['version_id']);
@@ -41,15 +48,29 @@ if ($do == 'rank' && $_W['isajax'] && $_W['ispost']) {
 }
 
 if ($do == 'display') {
+<<<<<<< HEAD
 	$pindex = max(1, intval($_GPC['page']));
 	$psize = 15;
 	$condition = array();
 	$condition['type'] = array(ACCOUNT_TYPE_OFFCIAL_NORMAL, ACCOUNT_TYPE_OFFCIAL_AUTH);
 	
+=======
+
+	$pindex = max(1, intval($_GPC['page']));
+	$psize = 15;
+
+	$account_table = table('account');
+	$account_table->searchWithType(array(ACCOUNT_TYPE_OFFCIAL_NORMAL, ACCOUNT_TYPE_OFFCIAL_AUTH));
+	$account_count = $account_table->searchAccountList();
+	$total = count($account_count);
+	$account_table->searchWithType(array(ACCOUNT_TYPE_OFFCIAL_NORMAL, ACCOUNT_TYPE_OFFCIAL_AUTH));
+
+>>>>>>> parent of 775f72a... 654
 	$keyword = trim($_GPC['keyword']);
 	if (!empty($keyword)) {
 		$condition['keyword'] = $keyword;
 	}
+<<<<<<< HEAD
 	
 	if(isset($_GPC['letter']) && strlen($_GPC['letter']) == 1) {
 		$condition['letter'] = trim($_GPC['letter']);
@@ -59,6 +80,24 @@ if ($do == 'display') {
 	$account_list = $account_lists['list'];
 
 	if ($_W['isajax'] && $_W['ispost']) {
+=======
+
+	$letter = $_GPC['letter'];
+	if(isset($letter) && strlen($letter) == 1) {
+		$account_table->searchWithLetter($letter);
+	}
+
+	$account_table->accountRankOrder();
+	$account_table->searchWithPage($pindex, $psize);
+	$account_list = $account_table->searchAccountList();
+	$account_list = array_values($account_list);
+	foreach($account_list as &$account) {
+		$account = uni_fetch($account['uniacid']);
+		$account['role'] = permission_account_user_role($_W['uid'], $account['uniacid']);
+	}
+
+	if ($_W['ispost']) {
+>>>>>>> parent of 775f72a... 654
 		iajax(0, $account_list);
 	}
 }

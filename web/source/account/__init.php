@@ -11,6 +11,7 @@ if ($controller == 'account' && $action == 'manage') {
 		define('ACTIVE_FRAME_URL', url('account/manage/display', array('account_type' => ACCOUNT_TYPE_APP_NORMAL)));
 	}
 }
+<<<<<<< HEAD
 $_GPC['account_type'] = !empty($_GPC['account_type']) ? $_GPC['account_type'] : ACCOUNT_TYPE_OFFCIAL_NORMAL;
 if ($_GPC['account_type'] == ACCOUNT_TYPE_APP_NORMAL) {
 	define('ACCOUNT_TYPE', ACCOUNT_TYPE_APP_NORMAL);
@@ -24,3 +25,10 @@ if ($_GPC['account_type'] == ACCOUNT_TYPE_APP_NORMAL) {
 	define('ACCOUNT_TYPE_NAME', '公众号');
 	define('ACCOUNT_TYPE_TEMPLATE', '');
 }
+=======
+
+$account_param = WeAccount::createByType($_GPC['account_type']);
+define('ACCOUNT_TYPE', $account_param->type);
+define('ACCOUNT_TYPE_NAME', $account_param->typeName);
+define('ACCOUNT_TYPE_TEMPLATE', $account_param->typeTempalte);
+>>>>>>> parent of 775f72a... 654

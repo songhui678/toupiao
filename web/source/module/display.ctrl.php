@@ -8,17 +8,55 @@ defined('IN_IA') or exit('Access Denied');
 load()->model('module');
 load()->model('wxapp');
 
-$dos = array('display', 'switch', 'getall_last_switch', 'have_permission_uniacids', 'accounts_dropdown_menu');
+$dos = array('display', 'switch', 'getall_last_switch', 'have_permission_uniacids', 'accounts_dropdown_menu', 'rank');
 $do = in_array($do, $dos) ? $do : 'display';
 
 if ($do == 'display') {
+<<<<<<< HEAD
 	$user_module = user_modules($_W['uid']);
+=======
+	$user_module = array();
+	if (!$_W['isfounder']) {
+		$account_table = table('account');
+		$user_table = table('users');
+		$user_owned_account = $account_table->userOwnedAccount($_W['uid']);
+		if (!empty($user_owned_account) && is_array($user_owned_account)) {
+			foreach ($user_owned_account as $uniacid => $account) {
+				$account_module = uni_modules_by_uniacid($uniacid);
+				$account_user_module = $user_table->userPermission($_W['uid'], $uniacid);
+				if (!empty($account_user_module) && is_array($account_user_module)) {
+					$account_module = array_intersect_key($account_module, $account_user_module);
+				}
+				$user_module = array_merge($user_module, $account_module);
+			}
+		}
+	} else {
+		$user_module = user_modules($_W['uid']);
+	}
+	$module_table = table('module');
+	$module_rank = $module_table->moduleRank();
+	$rank = array();
+>>>>>>> parent of 775f72a... 654
 	foreach ($user_module as $key => $module_value) {
 		if (!empty($module_value['issystem'])) {
 			unset($user_module[$key]);
+		} else {
+			$rank[] = !empty($module_rank[$key]['rank']) ? $module_rank[$key]['rank'] : 0;
 		}
 	}
+	array_multisort($rank, SORT_DESC, $user_module);
 	template('module/display');
+}
+
+if ($do == 'rank') {
+	$module_name = trim($_GPC['module_name']);
+
+	$exist = module_fetch($module_name);
+	if (empty($exist)) {
+		iajax(1, '模块不存在', '');
+	}
+	module_rank_top($module_name);
+	itoast('更新成功！', referer(), 'success');
 }
 
 if ($do == 'switch') {
@@ -146,14 +184,19 @@ if ($do == 'accounts_dropdown_menu') {
 			break;
 		}
 	}
+<<<<<<< HEAD
 	$return_selected_html .= '</span>';
 
 	$return_dropmenu_html = '<span class="dropdown"><a href="javascript:;" class="dropdown-icon" data-toggle="dropdown"><i class="wi wi-angle-down"></i></a><ul class="dropdown-menu dropdown-menu-right" role="menu">';
 	foreach ($accounts_list as $account) {
+=======
+	foreach ($accounts_list as $key => $account) {
+>>>>>>> parent of 775f72a... 654
 		$url = url('module/display/switch', array('uniacid' => $account['uniacid'], 'module_name' => $module_name));
 		if (!empty($account['version_id'])) {
 			$url .= '&version_id=' . $account['version_id'];
 		}
+<<<<<<< HEAD
 		$return_dropmenu_html .= '<li><a href="' . $url . '">';
 		if (!empty($account['app_name'])) {
 			$return_dropmenu_html .= '<span><i class="wi wi-wechat"></i>' . $account['app_name'] . '</span>';
@@ -166,6 +209,9 @@ if ($do == 'accounts_dropdown_menu') {
 			$return_dropmenu_html .= '<span><i class="wi wi-wxapp"></i>' . $account['wxapp_name'] . '</span>';
 		}
 		$return_dropmenu_html .= '</a></li>';
+=======
+		$accounts_list[$key]['url'] = $url;
+>>>>>>> parent of 775f72a... 654
 	}
 	$return_dropmenu_html .= '</ul></span>';
 	echo $return_selected_html . $return_dropmenu_html;

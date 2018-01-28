@@ -5,6 +5,7 @@
  */
 defined('IN_IA') or exit('Access Denied');
 
+<<<<<<< HEAD
 
 function uni_create_permission($uid, $type = ACCOUNT_TYPE_OFFCIAL_NORMAL) {
 	$groupid = pdo_fetchcolumn('SELECT groupid FROM ' . tablename('users') . ' WHERE uid = :uid', array(':uid' => $uid));
@@ -28,13 +29,16 @@ function uni_create_permission($uid, $type = ACCOUNT_TYPE_OFFCIAL_NORMAL) {
 	}
 	return true;
 }
+=======
+>>>>>>> parent of 775f72a... 654
 
-function uni_owned($uid = 0) {
+function uni_owned($uid = 0, $is_uni_fetch = true) {
 	global $_W;
 	$uid = empty($uid) ? $_W['uid'] : intval($uid);
 	$uniaccounts = array();
 	$founders = explode(',', $_W['config']['setting']['founder']);
 
+<<<<<<< HEAD
 	if (in_array($uid, $founders)) {
 		$account_uniacid = pdo_fetchall("SELECT uniacid FROM " . tablename('account') . " WHERE type IN (:type_1, :type_2) GROUP BY uniacid", array(':type_1' => ACCOUNT_TYPE_OFFCIAL_NORMAL, ':type_2' => ACCOUNT_TYPE_OFFCIAL_AUTH));
 	} else {
@@ -43,14 +47,56 @@ function uni_owned($uid = 0) {
 	if (!empty($account_uniacid)) {
 		foreach ($account_uniacid as $row) {
 			$uniaccounts[$row['uniacid']] = uni_fetch($row['uniacid']);
+=======
+	$user_accounts = uni_user_accounts($uid);
+	if (empty($user_accounts)) {
+		return $uniaccounts;
+	}
+
+	if (!empty($user_accounts) && !empty($is_uni_fetch)) {
+		foreach ($user_accounts as &$row) {
+			$row = uni_fetch($row['uniacid']);
+>>>>>>> parent of 775f72a... 654
 		}
 	}
-	return $uniaccounts;
+	return $user_accounts;
 }
 
 
+<<<<<<< HEAD
+=======
+function uni_user_accounts($uid) {
+	global $_W;
+	$uid = intval($uid) > 0 ? intval($uid) : $_W['uid'];
+	$cachekey = cache_system_key("user_accounts:{$uid}");
+	$cache = cache_load($cachekey);
+	if (!empty($cache)) {
+		return $cache;
+	}
+	$field = '';
+	$where = '';
+	$params = array();
+	$user_is_founder = user_is_founder($uid);
+	if (empty($user_is_founder) || user_is_vice_founder($uid)) {
+		$field .= ', u.role';
+		$where .= " LEFT JOIN " . tablename('uni_account_users') . " u ON u.uniacid = w.uniacid WHERE u.uid = :uid AND u.role IN(:role1, :role2) ";
+		$params[':uid'] = $uid;
+		$params[':role1'] = ACCOUNT_MANAGE_NAME_OWNER;
+		$params[':role2'] = ACCOUNT_MANAGE_NAME_VICE_FOUNDER;
+	}
+	$where .= !empty($where) ? " AND a.isdeleted <> 1 AND u.role IS NOT NULL" : " WHERE a.isdeleted <> 1";
+
+	$sql = "SELECT w.acid, w.uniacid, w.key, w.secret, w.level, w.name, w.token, a.type" . $field . " FROM " . tablename('account_wechats') . " w LEFT JOIN " . tablename('account') . " a ON a.acid = w.acid AND a.uniacid = w.uniacid" . $where;
+	$result = pdo_fetchall($sql, $params, 'uniacid');
+	cache_write($cachekey, $result);
+	return $result;
+}
+
+
+>>>>>>> parent of 775f72a... 654
 function account_owner($uniacid = 0) {
 	global $_W;
+	load()->model('user');
 	$uniacid = intval($uniacid);
 	if (empty($uniacid)) {
 		return array();
@@ -81,7 +127,6 @@ function uni_accounts($uniacid = 0) {
 function uni_fetch($uniacid = 0) {
 	global $_W;
 	load()->model('mc');
-	load()->model('user');
 
 	$uniacid = empty($uniacid) ? $_W['uniacid'] : intval($uniacid);
 	$cachekey = "uniaccount:{$uniacid}";
@@ -89,18 +134,40 @@ function uni_fetch($uniacid = 0) {
 	if (!empty($cache)) {
 		return $cache;
 	}
+<<<<<<< HEAD
 	$account = uni_account_default($uniacid);
 	$owneruid = pdo_fetchcolumn("SELECT uid FROM ".tablename('uni_account_users')." WHERE uniacid = :uniacid AND role = 'owner'", array(':uniacid' => $uniacid));
 	$owner = user_single(array('uid' => $owneruid));
 	$account['uid'] = $owner['uid'];
+=======
 
+	$acid = table('account')->getAccountByUniacid($uniacid);
+	if (empty($acid)) {
+		return false;
+	}
+	$account_api = WeAccount::create($acid['acid']);
+	if (is_error($account_api)) {
+		return $account_api;
+	}
+	$account = $account_api->account;
+	if (empty($account) || $account['isdeleted'] == 1) {
+		return array();
+	}
+>>>>>>> parent of 775f72a... 654
+
+	$owner = account_owner($uniacid);
+
+	$account['uid'] = $owner['uid'];
 	$account['starttime'] = $owner['starttime'];
-	$account['endtime'] = $owner['endtime'];
-	$account['groups'] = mc_groups($uniacid);
+	if (!empty($account['endtime'])) {
+		$account['endtime'] = $account['endtime'] == '-1' ? 0 : $account['endtime'];
+	} else {
+		$account['endtime'] = $owner['endtime'];
+	}
 
+	$account['groups'] = mc_groups($uniacid);
 	$account['setting'] = uni_setting($uniacid);
 	$account['grouplevel'] = $account['setting']['grouplevel'];
-
 	$account['logo'] = tomedia('headimg_'.$account['acid']. '.jpg').'?time='.time();
 	$account['qrcode'] = tomedia('qrcode_'.$account['acid']. '.jpg').'?time='.time();
 
@@ -108,6 +175,32 @@ function uni_fetch($uniacid = 0) {
 	return $account;
 }
 
+
+<<<<<<< HEAD
+=======
+function uni_site_store_buy_goods($uniacid, $type = STORE_TYPE_MODULE) {
+	$cachekey = cache_system_key($uniacid . ':site_store_buy_' . $type);
+	$site_store_buy_goods = cache_load($cachekey);
+	if (!empty($site_store_buy_goods)) {
+		return $site_store_buy_goods;
+	}
+	$store_table = table('store');
+	if ($type != STORE_TYPE_API) {
+		$store_table->searchWithEndtime();
+		$site_store_buy_goods = $store_table->searchAccountBuyGoods($uniacid, $type);
+		$site_store_buy_goods = array_keys($site_store_buy_goods);
+	} else {
+		$site_store_buy_goods = $store_table->searchAccountBuyGoods($uniacid, $type);
+		$setting = uni_setting_load('statistics', $uniacid);
+		$use_number = isset($setting['statistics']['use']) ? intval($setting['statistics']['use']) : 0;
+		$site_store_buy_goods = $site_store_buy_goods - $use_number;
+	}
+	cache_write($cachekey, $site_store_buy_goods);
+	return $site_store_buy_goods;
+}
+
+
+>>>>>>> parent of 775f72a... 654
 
 
 function uni_modules_by_uniacid($uniacid, $enabled = true) {
@@ -121,12 +214,29 @@ function uni_modules_by_uniacid($uniacid, $enabled = true) {
 		$founders = explode(',', $_W['config']['setting']['founder']);
 		$owner_uid = pdo_getcolumn('uni_account_users',  array('uniacid' => $uniacid, 'role' => 'owner'), 'uid');
 		$condition = "WHERE 1";
+<<<<<<< HEAD
+=======
+		$site_store_buy_goods = array();
+		
+			$account_info = uni_fetch($_W['uniacid']);
+			$goods_type = $account_info['type'] == ACCOUNT_TYPE_APP_NORMAL ? STORE_TYPE_WXAPP_MODULE : STORE_TYPE_MODULE;
+			$site_store_buy_goods = uni_site_store_buy_goods($uniacid, $goods_type);
+		
+>>>>>>> parent of 775f72a... 654
 
 		if (!empty($owner_uid) && !in_array($owner_uid, $founders)) {
 			$uni_modules = array();
 			$packageids = pdo_getall('uni_account_group', array('uniacid' => $uniacid), array('groupid'), 'groupid');
 			$packageids = array_keys($packageids);
 
+<<<<<<< HEAD
+=======
+			if (IMS_FAMILY == 'x') {
+				$store = table('store');
+				$site_store_buy_package = $store->searchUserBuyPackage($uniacid);
+				$packageids = array_merge($packageids, array_keys($site_store_buy_package));
+			}
+>>>>>>> parent of 775f72a... 654
 			if (!in_array('-1', $packageids)) {
 				$uni_groups = pdo_fetchall("SELECT `modules` FROM " . tablename('uni_group') . " WHERE " .  "id IN ('".implode("','", $packageids)."') OR " . " uniacid = '{$uniacid}'");
 				if (!empty($uni_groups)) {
@@ -136,7 +246,11 @@ function uni_modules_by_uniacid($uniacid, $enabled = true) {
 					}
 				}
 				$user_modules = user_modules($owner_uid);
+<<<<<<< HEAD
 				$modules = array_merge(array_keys($user_modules), $uni_modules);
+=======
+				$modules = array_merge(array_keys($user_modules), $uni_modules, $site_store_buy_goods);
+>>>>>>> parent of 775f72a... 654
 				if (!empty($modules)) {
 					$condition .= " AND a.name IN ('" . implode("','", $modules) . "')";
 				} else {
@@ -239,6 +353,11 @@ function uni_groups($groupids = array()) {
 								if ($module['wxapp_support'] == MODULE_SUPPORT_WXAPP) {
 									$row['wxapp'][$module['name']] = $module;
 								}
+
+								if ($module['webapp_support'] == MODULE_SUPPORT_WEBAPP) {
+									$row['webapp'][$module['name']] = $module;
+								}
+
 								if ($module['app_support'] == MODULE_SUPPORT_ACCOUNT) {
 									if (!empty($module['main_module'])) {
 										continue;
@@ -359,7 +478,9 @@ function uni_setting_save($name, $value) {
 		pdo_insert('uni_settings', array($name => $value, 'uniacid' => $_W['uniacid']));
 	}
 	$cachekey = "unisetting:{$_W['uniacid']}";
+	$account_cachekey = "uniaccount:{$_W['uniacid']}";
 	cache_delete($cachekey);
+	cache_delete($account_cachekey);
 	return true;
 }
 
@@ -374,12 +495,18 @@ function uni_setting_load($name = '', $uniacid = 0) {
 		if (!empty($unisetting)) {
 			$serialize = array('site_info', 'stat', 'oauth', 'passport', 'uc', 'notify',
 				'creditnames', 'default_message', 'creditbehaviors', 'payment',
+<<<<<<< HEAD
 				'recharge', 'tplnotice', 'mcplugin');
+=======
+				'recharge', 'tplnotice', 'mcplugin', 'statistics', 'bind_domain');
+>>>>>>> parent of 775f72a... 654
 			foreach ($unisetting as $key => &$row) {
 				if (in_array($key, $serialize) && !empty($row)) {
 					$row = (array)iunserializer($row);
 				}
 			}
+		} else {
+			$unisetting = array();
 		}
 		cache_write($cachekey, $unisetting);
 	}
@@ -416,9 +543,14 @@ function uni_account_default($uniacid = 0) {
 	}
 	if (!empty($uni_account)) {
 		$account = pdo_get(uni_account_tablename($uni_account['type']), array('acid' => $uni_account['acid']));
+		if (empty($account)) {
+			$account['uniacid'] = $uni_account['uniacid'];
+			$account['acid'] = $uni_account['default_acid'];
+		}
 		$account['type'] = $uni_account['type'];
 		$account['isconnect'] = $uni_account['isconnect'];
 		$account['isdeleted'] = $uni_account['isdeleted'];
+		$account['endtime'] = $uni_account['endtime'];
 		return $account;
 	}
 }
@@ -430,6 +562,8 @@ function uni_account_tablename($type) {
 			return 'account_wechats';
 		case ACCOUNT_TYPE_APP_NORMAL:
 			return 'account_wxapp';
+		case ACCOUNT_TYPE_WEBAPP_NORMAL:
+			return 'account_webapp';
 	}
 }
 
@@ -447,6 +581,7 @@ function uni_user_account_role($uniacid, $uid, $role) {
 }
 
 
+<<<<<<< HEAD
 function uni_permission($uid = 0, $uniacid = 0) {
 	global $_W;
 	load()->model('user');
@@ -482,6 +617,9 @@ function uni_permission($uid = 0, $uniacid = 0) {
 
 
 function uni_user_permission_exist($uid = 0, $uniacid = 0) {
+=======
+function uni_user_see_more_info($user_type, $see_more = false) {
+>>>>>>> parent of 775f72a... 654
 	global $_W;
 	load()->model('user');
 	$uid = intval($uid) > 0 ? $uid : $_W['uid'];
@@ -586,6 +724,7 @@ function uni_permission_name() {
 }
 
 
+<<<<<<< HEAD
 function uni_update_user_permission($uid, $uniacid, $data) {
 	global $_GPC;
 	$uid = intval($uid);
@@ -708,6 +847,12 @@ function uni_user_account_permission($uid = 0) {
 	$account_num = $wxapp_num = 0;
 	$group = pdo_get('users_group', array('id' => $user['groupid']));
 	$uniacocunts = pdo_getall('uni_account_users', array('uid' => $user['uid'], 'role' => 'owner'), array(), 'uniacid');
+=======
+function uni_owner_account_nums($uid, $role) {
+	$account_num = $wxapp_num = $webapp_num = 0;
+	$condition = array('uid' => $uid, 'role' => $role);
+	$uniacocunts = pdo_getall('uni_account_users', $condition, array(), 'uniacid');
+>>>>>>> parent of 775f72a... 654
 	if (!empty($uniacocunts)) {
 				$all_account = pdo_fetchall('SELECT * FROM (SELECT u.uniacid, a.default_acid FROM ' . tablename('uni_account_users') . ' as u RIGHT JOIN '. tablename('uni_account').' as a  ON a.uniacid = u.uniacid  WHERE u.uid = :uid AND u.role = :role ) AS c LEFT JOIN '.tablename('account').' as d ON c.default_acid = d.acid WHERE d.isdeleted = 0', array(':uid' => $user['uid'], ':role' => 'owner'));
 		foreach ($all_account as $account) {
@@ -717,8 +862,12 @@ function uni_user_account_permission($uid = 0) {
 			if ($account['type'] == 4) {
 				$wxapp_num++;
 			}
+			if ($account['type'] == ACCOUNT_TYPE_WEBAPP_NORMAL) {
+				$webapp_num++;
+			}
 		}
 	}
+<<<<<<< HEAD
 	$data = array(
 		'group_name' => $group['name'],
 		'maxaccount' => $group['maxaccount'],
@@ -727,6 +876,12 @@ function uni_user_account_permission($uid = 0) {
 		'maxwxapp' => $group['maxwxapp'],
 		'wxapp_num' => $wxapp_num,
 		'wxapp_limit' => max((intval($group['maxwxapp']) - $wxapp_num), 0),
+=======
+	$num = array(
+		'account_num' => $account_num,
+		'wxapp_num' =>$wxapp_num,
+		'webapp_num'=>$webapp_num
+>>>>>>> parent of 775f72a... 654
 	);
 	return $data;
 }
@@ -805,21 +960,29 @@ function uni_account_rank_top($uniacid) {
 	return true;
 }
 
+
 function uni_account_last_switch() {
 	global $_W, $_GPC;
 	$cache_key = cache_system_key(CACHE_KEY_ACCOUNT_SWITCH, $_GPC['__switch']);
 	$cache_lastaccount = (array)cache_load($cache_key);
-	if (strexists($_W['siteurl'], 'c=wxapp')) {
+
+	if (strexists($_W['siteurl'], 'c=webapp')) {
+		$uniacid = $cache_lastaccount['webapp'];
+	} else if (strexists($_W['siteurl'], 'c=wxapp')) {
 		$uniacid = $cache_lastaccount['wxapp'];
 	} else {
 		$uniacid = $cache_lastaccount['account'];
 	}
+<<<<<<< HEAD
 	if (!empty($uniacid)) {
 		$account_info = uni_fetch($uniacid);
 		if (!empty($account_info) && $account_info['isdeleted'] == 1) {
 			$uniacid = '';
 		}
 	}
+=======
+
+>>>>>>> parent of 775f72a... 654
 	return $uniacid;
 }
 
@@ -851,6 +1014,7 @@ function uni_account_save_switch($uniacid) {
 		$cache_lastaccount['account'] = $uniacid;
 	}
 	cache_write($cache_key, $cache_lastaccount);
+	isetcookie('__uniacid', $uniacid, 7 * 86400);
 	isetcookie('__switch', $_GPC['__switch'], 7 * 86400);
 	return true;
 }
@@ -1057,8 +1221,13 @@ function account_delete($acid) {
 		$account = pdo_get('uni_account', array('default_acid' => $acid));
 	if ($account) {
 		$uniacid = $account['uniacid'];
+<<<<<<< HEAD
 		$state = uni_permission($_W['uid'], $uniacid);
 		if($state != ACCOUNT_MANAGE_NAME_FOUNDER && $state != ACCOUNT_MANAGE_NAME_OWNER) {
+=======
+		$state = permission_account_user_role($_W['uid'], $uniacid);
+		if (!in_array($state, array(ACCOUNT_MANAGE_NAME_OWNER, ACCOUNT_MANAGE_NAME_FOUNDER, ACCOUNT_MANAGE_NAME_VICE_FOUNDER))) {
+>>>>>>> parent of 775f72a... 654
 			itoast('没有该公众号操作权限！', url('account/recycle'), 'error');
 		}
 		if($uniacid == $_W['uniacid']) {
@@ -1178,3 +1347,47 @@ function uni_account_module_shortcut_enabled($modulename, $uniacid = 0, $status 
 	}
 	return true;
 }
+<<<<<<< HEAD
+=======
+
+
+function uni_account_member_fields($uniacid) {
+	if (empty($uniacid)) {
+		return array();
+	}
+	$account_member_fields = pdo_getall('mc_member_fields', array('uniacid' => $uniacid), array(), 'fieldid');
+	$system_member_fields = pdo_getall('profile_fields', array(), array(), 'id');
+	$less_field_indexes = array_diff(array_keys($system_member_fields), array_keys($account_member_fields));
+	if (empty($less_field_indexes)) {
+		foreach ($account_member_fields as &$field) {
+			$field['field'] = $system_member_fields[$field['fieldid']]['field'];
+		}
+		unset($field);
+		return $account_member_fields;
+	}
+
+	$account_member_add_fields = array('uniacid' => $uniacid);
+	foreach ($less_field_indexes as $field_index) {
+		$account_member_add_fields['fieldid'] = $system_member_fields[$field_index]['id'];
+		$account_member_add_fields['title'] = $system_member_fields[$field_index]['title'];
+		$account_member_add_fields['available'] = $system_member_fields[$field_index]['available'];
+		$account_member_add_fields['displayorder'] = $system_member_fields[$field_index]['displayorder'];
+		pdo_insert('mc_member_fields', $account_member_add_fields);
+		$insert_id = pdo_insertid();
+		$account_member_fields[$insert_id]['id'] = $insert_id;
+		$account_member_fields[$insert_id]['field'] = $system_member_fields[$field_index]['field'];
+		$account_member_fields[$insert_id]['fid'] = $system_member_fields[$field_index]['id'];
+		$account_member_fields[$insert_id] = array_merge($account_member_fields[$insert_id], $account_member_add_fields);
+	}
+	return $account_member_fields;
+}
+
+
+
+function uni_account_global_oauth() {
+	load()->model('setting');
+	$oauth = setting_load('global_oauth');
+	$oauth = !empty($oauth['global_oauth']) ? $oauth['global_oauth'] : '';
+	return $oauth;
+}
+>>>>>>> parent of 775f72a... 654

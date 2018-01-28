@@ -23,10 +23,13 @@ if ($do == 'get_setting') {
 			'credit' => array('switch' => false),
 			'alipay' => array('switch' => false),
 			'wechat' => array('switch' => false),
+			
 			'wechat_facilitator' => array('switch' => false, 'mchid' => '', 'signkey' => ''),
+			
 			'unionpay' => array('switch' => false),
 			'baifubao' => array('switch' => false),
 			'line' => array('switch' => false),
+			'jueqiymf' => array('switch' => false),
 		);
 	}
 	iajax(0, $pay_setting, '');
@@ -62,13 +65,21 @@ if ($do == 'save_setting') {
 	if ($type == 'credit' || $type == 'delivery') {
 		$param['switch'] = $param['switch'] == 'false' ? true : false;
 	}
-	if ($type == 'alipay' || $type == 'wechat_facilitator' || $type == 'baifubao' || $type == 'line') {
+	if ($type == 'jueqiymf') {
 		$param['switch'] = $param['switch'] == 'true' ? true : false;
 	}
+	
+	
+		if ($type == 'alipay' || $type == 'wechat_facilitator' || $type == 'baifubao' || $type == 'line') {
+			$param['switch'] = $param['switch'] == 'true' ? true : false;
+		}
+	
+
 	if ($type == 'wechat') {
 		$param['account'] = $_W['acid'];
 		$param['signkey'] = $param['version'] == 2 ? trim($param['apikey']) : trim($param['signkey']);
 	}
+
 	if ($type == 'unionpay') {
 		$unionpay = $_GPC['unionpay'];
 		if ($unionpay['switch'] && empty($_FILES['unionpay']['tmp_name']['signcertpath']) && !file_exists(IA_ROOT . '/attachment/unionpay/PM_'.$_W['uniacid'].'_acp.pfx')) {
@@ -120,6 +131,11 @@ MFF/yA==
 	$pay_setting[$type] = $param;
 	$payment = iserializer($pay_setting);
 	uni_setting_save('payment', $payment);
+	
+		if ($type == 'wechat_facilitator') {
+			cache_clean(cache_system_key('proxy_wechatpay_account:'));
+		}
+	
 	if ($type == 'unionpay') {
 		header('LOCATION: '.url('profile/payment'));
 		exit();
@@ -130,7 +146,7 @@ MFF/yA==
 if ($do == 'display') {
 	$proxy_wechatpay_account = account_wechatpay_proxy();
 	$setting = uni_setting_load('payment', $_W['uniacid']);
-	$pay_setting = $setting['payment'];
+	$pay_setting = is_array($setting['payment']) ? $setting['payment'] : array();
 	if (empty($pay_setting['delivery'])) {
 		$pay_setting['delivery'] = array('switch' => false);
 	}
@@ -143,9 +159,6 @@ if ($do == 'display') {
 	if (empty($pay_setting['wechat'])) {
 		$pay_setting['wechat'] = array('switch' => false);
 	}
-	if (empty($pay_setting['wechat_facilitator'])) {
-		$pay_setting['wechat_facilitator'] = array('switch' => false, 'mchid' => '', 'signkey' => '');
-	}
 	if (empty($pay_setting['unionpay'])) {
 		$pay_setting['unionpay'] = array('switch' => false);
 	}
@@ -155,6 +168,14 @@ if ($do == 'display') {
 	if (empty($pay_setting['line'])) {
 		$pay_setting['line'] = array('switch' => false);
 	}
+	if (empty($pay_setting['jueqiymf'])) {
+		$pay_setting['jueqiymf'] = array('switch' => false);
+	}
+	
+		if (empty($pay_setting['wechat_facilitator'])) {
+			$pay_setting['wechat_facilitator'] = array('switch' => false, 'mchid' => '', 'signkey' => '');
+		}
+	
 		if (empty($_W['isfounder'])) {
 		$user_account_list = pdo_getall('uni_account_users', array('uid' => $_W['uid']), array(), 'uniacid');
 		$param['uniacid'] = array_keys($user_account_list);

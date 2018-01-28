@@ -6,9 +6,20 @@
 defined('IN_IA') or exit('Access Denied');
 
 if ($action != 'entry') {
-	checkaccount();
-}
+	$account_api = WeAccount::create();
+	if (is_error($account_api)) {
+		message($account_api['message'], url('account/display'));
+	}
+	$check_manange = $account_api->checkIntoManage();
 
-if (!($action == 'multi' && $do == 'post')) {
+	if (is_error($check_manange)) {
+		$account_display_url = $account_api->accountDisplayUrl();
+		itoast('', $account_display_url);
+	}
+	$account_type = $account_api->menuFrame;
+	if (!($action == 'multi' && $do == 'post')) {
+		define('FRAME', $account_type);
+	}
+} else {
 	define('FRAME', 'account');
 }

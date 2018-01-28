@@ -7,6 +7,7 @@ defined('IN_IA') or exit('Access Denied');
 
 load()->func('file');
 load()->model('user');
+load()->model('message');
 $dos = array('display', 'delete');
 $do = in_array($_GPC['do'], $dos)? $do : 'display';
 
@@ -14,15 +15,28 @@ $do = in_array($_GPC['do'], $dos)? $do : 'display';
 $_W['page']['title'] = $account_typename . '列表 - ' . $account_typename;
 $account_info = uni_user_account_permission();
 
+	$role_type = in_array($_W['role'], array(ACCOUNT_MANAGE_NAME_FOUNDER, ACCOUNT_MANAGE_NAME_VICE_FOUNDER, ACCOUNT_MANAGE_NAME_OWNER, ACCOUNT_MANAGE_NAME_MANAGER));
+
+
+
 if ($do == 'display') {
+	$message_id = safe_gpc_int($_GPC['message_id']);
+	message_notice_read($message_id);
+
 	$pindex = max(1, intval($_GPC['page']));
 	$psize = 20;
+<<<<<<< HEAD
 
 	$condition = array();
+=======
+	
+	$account_table = table('account');
+>>>>>>> parent of 775f72a... 654
 	
 
 	$type_condition = array(
 		ACCOUNT_TYPE_APP_NORMAL => array(ACCOUNT_TYPE_APP_NORMAL),
+		ACCOUNT_TYPE_WEBAPP_NORMAL => array(ACCOUNT_TYPE_WEBAPP_NORMAL),
 		ACCOUNT_TYPE_OFFCIAL_NORMAL => array(ACCOUNT_TYPE_OFFCIAL_NORMAL, ACCOUNT_TYPE_OFFCIAL_AUTH),
 	);
 	$condition['type'] = $type_condition[ACCOUNT_TYPE];
@@ -33,12 +47,41 @@ if ($do == 'display') {
 	}
 	
 	if(isset($_GPC['letter']) && strlen($_GPC['letter']) == 1) {
+<<<<<<< HEAD
 		$condition['letter'] = trim($_GPC['letter']);
 	}
 	
 	$account_lists = uni_account_list($condition, array($pindex, $psize));
 	$list = $account_lists['list'];
 	$total = $account_lists['total'];
+=======
+		$account_table->searchWithLetter($_GPC['letter']);
+	}
+
+	$order = trim($_GPC['order']);
+	$account_table->accountUniacidOrder($order);
+
+	$type = trim($_GPC['type']);
+	if ($type == 'noconnect') {
+		$account_table->searchWithNoconnect();
+	}
+
+	$account_table->searchWithPage($pindex, $psize);
+	if ($type == 'expire') {
+		$list = $account_table->searchAccountList(true);
+	} else {
+		$list = $account_table->searchAccountList();
+	}
+
+
+	foreach($list as &$account) {
+		$account = uni_fetch($account['uniacid']);
+		$account['end'] = $account['endtime'] == 0 ? '永久' : date('Y-m-d', $account['starttime']) . '~'. date('Y-m-d', $account['endtime']);
+		$account['role'] = permission_account_user_role($_W['uid'], $account['uniacid']);
+	}
+
+	$total = $account_table->getLastQueryTotal();
+>>>>>>> parent of 775f72a... 654
 	$pager = pagination($total, $pindex, $psize);
 	template('account/manage-display' . ACCOUNT_TYPE_TEMPLATE);
 }
@@ -47,10 +90,22 @@ if ($do == 'delete') {
 	$acid = intval($_GPC['acid']);
 	$uid = $_W['uid'];
 	$type = intval($_GPC['type']);
+<<<<<<< HEAD
 		$state = uni_permission($uid, $uniacid);
 	if ($state != ACCOUNT_MANAGE_NAME_OWNER && $state != ACCOUNT_MANAGE_NAME_FOUNDER) {
 		itoast('无权限操作！', url('account/manage'), 'error');
 	}
+=======
+		$state = permission_account_user_role($uid, $uniacid);
+	
+		if (!in_array($state, array(ACCOUNT_MANAGE_NAME_OWNER, ACCOUNT_MANAGE_NAME_FOUNDER, ACCOUNT_MANAGE_NAME_VICE_FOUNDER))) {
+			itoast('无权限操作！', url('account/manage'), 'error');
+		}
+	
+
+	
+
+>>>>>>> parent of 775f72a... 654
 	if (!empty($acid) && empty($uniacid)) {
 		$account = account_fetch($acid);
 		if (empty($account)) {
@@ -69,10 +124,23 @@ if ($do == 'delete') {
 		if (empty($account)) {
 			itoast('抱歉，帐号不存在或是已经被删除', url('account/manage', array('account_type' => ACCOUNT_TYPE)), 'error');
 		}
+<<<<<<< HEAD
 		$state = uni_permission($uid, $uniacid);
 		if($state != ACCOUNT_MANAGE_NAME_FOUNDER && $state != ACCOUNT_MANAGE_NAME_OWNER) {
 			itoast('没有该'. ACCOUNT_TYPE_NAME . '操作权限！', url('account/manage', array('account_type' => ACCOUNT_TYPE)), 'error');
 		}
+=======
+		$state = permission_account_user_role($uid, $uniacid);
+
+		
+			if (!in_array($state, array(ACCOUNT_MANAGE_NAME_OWNER, ACCOUNT_MANAGE_NAME_FOUNDER, ACCOUNT_MANAGE_NAME_VICE_FOUNDER))) {
+				itoast('没有该'. ACCOUNT_TYPE_NAME . '操作权限！', url('account/manage', array('account_type' => ACCOUNT_TYPE)), 'error');
+			}
+		
+
+		
+
+>>>>>>> parent of 775f72a... 654
 		pdo_update('account', array('isdeleted' => 1), array('uniacid' => $uniacid));
 		if($_GPC['uniacid'] == $_W['uniacid']) {
 			isetcookie('__uniacid', '');

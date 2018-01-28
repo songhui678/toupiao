@@ -134,7 +134,7 @@ function material_news_set($data, $attach_id) {
 			'media_id' => '',
 			'type' => 'news',
 			'model' => 'local',
-			'createtime' => time()
+			'createtime' => TIMESTAMP
 		);
 		pdo_insert('wechat_attachment', $wechat_attachment);
 		$attach_id = pdo_insertid();
@@ -288,8 +288,11 @@ function material_local_news_upload($attach_id) {
 			return error('-6', '素材内容不能为空');
 		}
 		$news['content'] = material_parse_content($news['content']);
+		if (!empty($news['content_source_url'])) {
+			$news['content_source_url'] = safe_gpc_url($news['content_source_url'], false, $_W['siteroot'] . 'app/' . $news['content_source_url']);
+		}
 		if (is_error($news['content'])) {
-			return error('-2', $news['content']);
+			return error('-2', $news['content']['message']);
 		}
 		if (empty($news['thumb_media_id'])) {
 			if (empty($news['thumb_url'])){
@@ -347,6 +350,10 @@ function material_local_upload_by_url($url, $type='images') {
 	} else {
 		$url = str_replace('/attachment/', '', parse_url($url, PHP_URL_PATH));
 		$filepath = ATTACHMENT_ROOT . $url;
+	}
+	$filesize = filesize($filepath);
+	if ($filesize > 1024 * 1024 && $type == 'videos') {
+		return error(-1, '要转换的微信素材视频不能超过10M');
 	}
 	return $account_api->uploadMediaFixed($filepath, $type);
 }
@@ -412,12 +419,12 @@ function material_news_delete($material_id){
 
 function material_delete($material_id, $location){
 	global $_W;
-	if (empty($_W['isfounder']) && !in_array($_W['role'], array(ACCOUNT_MANAGE_NAME_OWNER, ACCOUNT_MANAGE_NAME_MANAGER))) {
+	if (empty($_W['isfounder']) && !permission_check_account_user('platform_material_delete')) {
 		return error('-1', '您没有权限删除该文件');
 	}
 	$material_id = intval($material_id);
 	$table = $location == 'wechat' ? 'wechat_attachment' : 'core_attachment';
-	$material = pdo_get($table, array('uniacid' => $_W['uniacid'], 'id' => $material_id));
+	$material = pdo_get($table, array('id' => $material_id));
 	if (empty($material)){
 		return error('-2', '素材文件不存在或已删除');
 	}
@@ -434,7 +441,7 @@ function material_delete($material_id, $location){
 	if (is_error($result)) {
 		return error('-3', '删除文件操作发生错误');
 	}
-	pdo_delete($table, array('uniacid' => $_W['uniacid'], 'id' => $material_id));
+	pdo_delete($table, array('id' => $material_id));
 	return $result;
 }
 
@@ -466,7 +473,7 @@ function material_news_list($server = '', $search ='', $page = array('page_index
 	}
 
 	$select_sql = "SELECT  %s FROM " . tablename('wechat_attachment') . " AS a RIGHT JOIN " . tablename('wechat_news') . " AS b ON a.id = b.attach_id WHERE  a.uniacid = :uniacid AND a.type = 'news' AND a.id <> '' " . $news_model_sql . $search_sql . "%s";
-	$list_sql = sprintf($select_sql, "*, a.id as id", " ORDER BY a.createtime DESC, b.displayorder ASC LIMIT " . ($page['page_index'] - 1) * $page['page_size'] . ", " . $page['page_size']);
+	$list_sql = sprintf($select_sql, "a.id as id, a.filename, a.attachment, a.media_id, a.type, a.model, a.tag, a.createtime, b.displayorder, b.title, b.digest, b.thumb_url, b.thumb_media_id, b.attach_id, b.url", " ORDER BY a.createtime DESC, b.displayorder ASC LIMIT " . ($page['page_index'] - 1) * $page['page_size'] . ", " . $page['page_size']);
 	$total_sql = sprintf($select_sql, "count(*)", '');
 	$total = pdo_fetchcolumn($total_sql, $conditions);
 	$news_list = pdo_fetchall($list_sql, $conditions);

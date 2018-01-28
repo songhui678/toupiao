@@ -16,18 +16,14 @@ if (in_array($do, array('module_link_uniacid', 'front_download', 'module_entranc
 }
 $_W['page']['title'] = '小程序 - 管理';
 
-$uniacid = intval($_GPC['uniacid']);
 $version_id = intval($_GPC['version_id']);
-if (!empty($uniacid)) {
-	$wxapp_info = wxapp_fetch($uniacid);
-}
+$wxapp_info = wxapp_fetch($_W['uniacid']);
 if (!empty($version_id)) {
 	$version_info = wxapp_version($version_id);
-	$wxapp_info = wxapp_fetch($version_info['uniacid']);
 }
 
 if ($do == 'display') {
-	$wxapp_version_list = wxapp_version_all($uniacid);
+	$wxapp_version_list = wxapp_version_all($_W['uniacid']);
 	template('wxapp/version-display');
 }
 
@@ -100,6 +96,7 @@ if ($do == 'get_daily_visittrend') {
 	iajax(0, array('yesterday' => $yesterday_stat), '');
 }
 
+<<<<<<< HEAD
 if ($do == 'front_download') {
 	$wxapp_versions_info = wxapp_version($version_id);
 	template('wxapp/version-front-download');
@@ -114,3 +111,5 @@ if ($do == 'module_entrance_link') {
 	}
 	template('wxapp/version-entrance');
 }
+=======
+>>>>>>> parent of 775f72a... 654

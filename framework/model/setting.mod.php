@@ -28,6 +28,7 @@ function setting_save($data = '', $key = '') {
 	return $return;
 }
 
+
 function setting_load($key = '') {
 	global $_W;
 	$cachekey = "setting";
@@ -66,5 +67,5 @@ define('IMS_FAMILY', '{$family}');
 define('IMS_VERSION', '{$version}');
 define('IMS_RELEASE_DATE', '{$release}');
 VER;
-	file_put_contents($verfile, trim($verdat));
+	return file_put_contents($verfile, trim($verdat));
 }

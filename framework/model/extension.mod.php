@@ -8,16 +8,17 @@ defined('IN_IA') or exit('Access Denied');
 
 function ext_module_convert($manifest) {
 	if (!empty($manifest['platform']['supports'])) {
-		$app_support = in_array('app', $manifest['platform']['supports']) ? 2 : 1;
-		$wxapp_support = in_array('wxapp', $manifest['platform']['supports']) ? 2 : 1;
-		if ($app_support == 1 && $wxapp_support == 1) {
-			$app_support = 2;
+		$app_support = in_array('app', $manifest['platform']['supports']) ? MODULE_SUPPORT_ACCOUNT : MODULE_NONSUPPORT_ACCOUNT;
+		$wxapp_support = in_array('wxapp', $manifest['platform']['supports']) ? MODULE_SUPPORT_WXAPP : MODULE_NONSUPPORT_WXAPP;
+		$welcome_support = in_array('system_welcome', $manifest['platform']['supports']) ? MODULE_SUPPORT_SYSTEMWELCOME : MODULE_NONSUPPORT_SYSTEMWELCOME;
+		$webapp_support = in_array('webapp', $manifest['platform']['supports']) ? MODULE_SUPPORT_WEBAPP : MODULE_NOSUPPORT_WEBAPP;
+		if ($app_support == MODULE_NONSUPPORT_ACCOUNT && $wxapp_support == MODULE_NONSUPPORT_WXAPP && $welcome_support == MODULE_NONSUPPORT_SYSTEMWELCOME && $webapp_support == MODULE_NOSUPPORT_WEBAPP) {
+			$app_support = MODULE_SUPPORT_ACCOUNT;
 		}
 	} else {
-		$app_support = 2;
-		$wxapp_support = 1;
+		$app_support = MODULE_SUPPORT_ACCOUNT;
+		$wxapp_support = MODULE_NONSUPPORT_WXAPP;
 	}
-
 	return array(
 		'name' => $manifest['application']['identifie'],
 		'title' => $manifest['application']['name'],
@@ -32,14 +33,18 @@ function ext_module_convert($manifest) {
 		'handles' => iserializer(is_array($manifest['platform']['handles']) ? $manifest['platform']['handles'] : array()),
 		'isrulefields' => intval($manifest['platform']['isrulefields']),
 		'iscard' => intval($manifest['platform']['iscard']),
+		'oauth_type' => $manifest['platform']['oauth_type'],
 		'page' => $manifest['bindings']['page'],
 		'cover' => $manifest['bindings']['cover'],
 		'rule' => $manifest['bindings']['rule'],
 		'menu' => $manifest['bindings']['menu'],
 		'home' => $manifest['bindings']['home'],
 		'profile' => $manifest['bindings']['profile'],
+		'system_welcome' => $manifest['bindings']['system_welcome'],
 		'app_support' => $app_support,
 		'wxapp_support' => $wxapp_support,
+		'webapp_support' => $webapp_support,
+		'welcome_support' => $welcome_support,
 		'shortcut' => $manifest['bindings']['shortcut'],
 		'function' => $manifest['bindings']['function'],
 		'permissions' => $manifest['permissions'],
@@ -100,6 +105,7 @@ function ext_module_manifest_parse($xml) {
 			'isrulefields' => false,
 			'iscard' => false,
 			'supports' => array(),
+			'oauth_type' => OAUTH_TYPE_BASE,
 		);
 				$subscribes = $platform->getElementsByTagName('subscribes')->item(0);
 		if (!empty($subscribes)) {
@@ -128,6 +134,10 @@ function ext_module_manifest_parse($xml) {
 				$card = $platform->getElementsByTagName('card')->item(0);
 		if (!empty($card) && $card->getAttribute('embed') == 'true') {
 			$manifest['platform']['iscard'] = true;
+		}
+		$oauth_type = $platform->getElementsByTagName('oauth')->item(0);
+		if (!empty($oauth_type) && $oauth_type->getAttribute('type') == OAUTH_TYPE_USERINFO) {
+			$manifest['platform']['oauth_type'] = OAUTH_TYPE_USERINFO;
 		}
 		$supports = $platform->getElementsByTagName('supports')->item(0);
 		if (!empty($supports)) {
@@ -282,6 +292,11 @@ function ext_module_bindings() {
 			'name' => 'page',
 			'title' => '小程序入口',
 			'desc' => '用于小程序入口的链接'
+		),
+		'system_welcome' => array(
+			'name' => 'system_welcome',
+			'title' => '系统首页导航菜单',
+			'desc' => '系统首页导航菜单将会在管理中心生成一个导航入口, 用于对系统首页定义的内容进行管理.',
 		)
 	);
 	return $bindings;

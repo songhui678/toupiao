@@ -96,7 +96,6 @@ function cache_delete($key, $forcecache = true) {
 }
 
 
-
 function cache_clean($prefix = '') {
 	if (!empty($prefix)) {
 		$cache_namespace = cache_namespace($prefix, true);

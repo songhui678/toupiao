@@ -159,6 +159,11 @@ function template_parse($str) {
 	$str = preg_replace('/{([A-Z_\x7f-\xff][A-Z0-9_\x7f-\xff]*)}/s', '<?php echo $1;?>', $str);
 	$str = str_replace('{##', '{', $str);
 	$str = str_replace('##}', '}', $str);
+<<<<<<< HEAD
+=======
+
+	$business_stat_script = "</script><script type=\"text/javascript\" src=\"{$GLOBALS['_W']['siteroot']}app/index.php?i={$GLOBALS['_W']['uniacid']}&c=utility&a=visit&do=showjs&m={$GLOBALS['_W']['current_module']['name']}\">";
+>>>>>>> parent of 775f72a... 654
 	if (!empty($GLOBALS['_W']['setting']['remote']['type'])) {
 		$str = str_replace('</body>', "<script>var imgs = document.getElementsByTagName('img');for(var i=0, len=imgs.length; i < len; i++){imgs[i].onerror = function() {if (!this.getAttribute('check-src') && (this.src.indexOf('http://') > -1 || this.src.indexOf('https://') > -1)) {this.src = this.src.indexOf('{$GLOBALS['_W']['attachurl_local']}') == -1 ? this.src.replace('{$GLOBALS['_W']['attachurl_remote']}', '{$GLOBALS['_W']['attachurl_local']}') : this.src.replace('{$GLOBALS['_W']['attachurl_local']}', '{$GLOBALS['_W']['attachurl_remote']}');this.setAttribute('check-src', true);}}}</script></body>", $str);
 	}
@@ -317,8 +322,18 @@ function site_article($params = array()) {
 			$condition .= " AND ccate = :ccate ";
 			$pars[':ccate'] = $cid;
 		} else {
+<<<<<<< HEAD
 			$condition .= " AND pcate = :pcate";
+=======
+			$condition .= " AND pcate = :pcate AND (ccate = :ccate OR iscommend = '1')";
+>>>>>>> parent of 775f72a... 654
 			$pars[':pcate'] = $cid;
+		}
+	} else {
+		$category_list = pdo_getall('site_category', array('uniacid' => $_W['uniacid'], 'multiid' => $multiid), array(), 'id');
+		$category_list = implode(',', array_keys($category_list));
+		if (!empty($category_list)) {
+			$condition .= " AND (pcate IN (". $category_list .") OR ccate IN (". $category_list .") OR pcate = 0 AND ccate = 0)";
 		}
 	}
 	if ($iscommend == 'true') {
@@ -330,7 +345,7 @@ function site_article($params = array()) {
 	$sql = "SELECT * FROM ".tablename('site_article'). $condition. ' ORDER BY displayorder DESC, id DESC LIMIT ' . ($pindex - 1) * $psize .',' .$psize;
 	$result['list'] = pdo_fetchall($sql, $pars);
 	$total = pdo_fetchcolumn('SELECT COUNT(*) FROM ' . tablename('site_article') . $condition, $pars);
-	$result['pager'] = pagination($total, $pindex, $psize);
+	$result['pager'] = pagination($total, $pindex, $psize, '', array('before' => 0, 'after' => 0));
 	if (!empty($result['list'])) {
 		foreach ($result['list'] as &$row) {
 			if(empty($row['linkurl'])) {

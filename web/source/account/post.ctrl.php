@@ -15,11 +15,28 @@ load()->model('utility');
 $uniacid = intval($_GPC['uniacid']);
 $acid = intval($_GPC['acid']);
 if (empty($uniacid) || empty($acid)) {
-	itoast('请选择要编辑的公众号', url('account/manager'), 'error');
+	itoast('请选择要编辑的公众号', url('account/manage'), 'error');
 }
+<<<<<<< HEAD
 $state = uni_permission($_W['uid'], $uniacid);
 $dos = array('base', 'sms', 'modules_tpl');
 if ($state == ACCOUNT_MANAGE_NAME_FOUNDER || $state == ACCOUNT_MANAGE_NAME_OWNER) {
+=======
+$defaultaccount = uni_account_default($uniacid);
+if (!$defaultaccount) {
+	itoast('无效的acid', url('account/manage'), 'error');
+}
+$acid = $defaultaccount['acid']; 
+
+$state = permission_account_user_role($_W['uid'], $uniacid);
+$dos = array('base', 'sms', 'modules_tpl');
+
+
+	$role_permission = in_array($state, array(ACCOUNT_MANAGE_NAME_FOUNDER, ACCOUNT_MANAGE_NAME_OWNER, ACCOUNT_MANAGE_NAME_VICE_FOUNDER));
+
+
+if ($role_permission) {
+>>>>>>> parent of 775f72a... 654
 	$do = in_array($do, $dos) ? $do : 'base';
 } elseif ($state == ACCOUNT_MANAGE_NAME_MANAGER) {
 	if (ACCOUNT_TYPE == ACCOUNT_TYPE_APP_NORMAL) {
@@ -29,7 +46,7 @@ if ($state == ACCOUNT_MANAGE_NAME_FOUNDER || $state == ACCOUNT_MANAGE_NAME_OWNER
 		$do = in_array($do, $dos) ? $do : 'modules_tpl';
 	}
 } else {
-	itoast('您是该公众号的操作员，无权限操作！', url('account/manager'), 'error');
+	itoast('您是该公众号的操作员，无权限操作！', url('account/manage'), 'error');
 }
 
 $_W['page']['title'] = '管理设置 - 微信' . ACCOUNT_TYPE_NAME . '管理';
@@ -97,6 +114,33 @@ if($do == 'base') {
 					$result = $update_type ? true : false;
 				}
 				break;
+<<<<<<< HEAD
+=======
+			case 'highest_visit':
+				if (user_is_vice_founder() || empty($_W['isfounder'])) {
+					iajax(1, '只有创始人可以修改！');
+				}
+				$statistics_setting = (array)uni_setting_load(array('statistics'), $uniacid);
+				if (!empty($statistics_setting['statistics'])) {
+					$highest_visit = $statistics_setting['statistics'];
+					$highest_visit['founder'] = intval($_GPC['request_data']);
+				} else {
+					$highest_visit = array('founder' => intval($_GPC['request_data']));
+				}
+				$result = pdo_update('uni_settings', array('statistics' => iserializer($highest_visit)), array('uniacid' => $uniacid));
+				break;
+			case 'endtime':
+				if ($_GPC['endtype'] == 1) {
+					$result = pdo_update('account', array('endtime' => -1), array('uniacid' => $uniacid));
+				} else {
+					$endtime = strtotime($_GPC['endtime']);
+					$user_endtime = pdo_getcolumn('users', array('uid' => $_W['uid']), 'endtime');
+					if ($user_endtime < $endtime && !empty($user_endtime) && $state == 'owner') {
+						iajax(1, '设置到期日期不能超过主管理员的到期日期');
+					}
+					$result = pdo_update('account', array('endtime' => $endtime), array('uniacid' => $uniacid));
+				}
+>>>>>>> parent of 775f72a... 654
 		}
 		if(!in_array($type, array('qrcodeimgsrc', 'headimgsrc', 'name', 'endtime', 'jointype'))) {
 			$result = pdo_update(uni_account_tablename(ACCOUNT_TYPE), $data, array('acid' => $acid, 'uniacid' => $uniacid));
@@ -107,7 +151,8 @@ if($do == 'base') {
 			cache_delete("accesstoken:{$acid}");
 			cache_delete("jsticket:{$acid}");
 			cache_delete("cardticket:{$acid}");
-
+			$cachekey = cache_system_key("statistics:{$uniacid}");
+			cache_delete($cachekey);
 			iajax(0, '修改成功！', '');
 		}else {
 			iajax(1, '修改失败！', '');
@@ -125,7 +170,7 @@ if($do == 'base') {
 		} else {
 			$authurl = array(
 				'errno' => 0,
-				'url' => sprintf(ACCOUNT_PLATFORM_API_LOGIN, $account_platform->appid, $preauthcode, urlencode(urlencode($GLOBALS['_W']['siteroot'] . 'index.php?c=account&a=auth&do=forward')))
+				'url' => sprintf(ACCOUNT_PLATFORM_API_LOGIN, $account_platform->appid, $preauthcode, urlencode($GLOBALS['_W']['siteroot'] . 'index.php?c=account&a=auth&do=forward'))
 			);
 		}
 	}
@@ -134,7 +179,9 @@ if($do == 'base') {
 	$account['endtype'] = $account['endtime'] == 0 ? 1 : 2;
 	$uniaccount = array();
 	$uniaccount = pdo_get('uni_account', array('uniacid' => $uniacid));
-
+	
+		$account_api = uni_site_store_buy_goods($uniacid, STORE_TYPE_API);
+	
 	template('account/manage-base' . ACCOUNT_TYPE_TEMPLATE);
 }
 
@@ -298,6 +345,16 @@ if($do == 'modules_tpl') {
 	$extend = pdo_get('uni_group', array('uniacid' => $uniacid));
 	$extend['modules'] = $current_module_names = iunserializer($extend['modules']);
 	$extend['templates'] = iunserializer($extend['templates']);
+<<<<<<< HEAD
+=======
+	$canmodify = false;
+	
+		if ($_W['role'] == ACCOUNT_MANAGE_NAME_FOUNDER && !in_array($owner['uid'], $founders) || $_W['role'] == ACCOUNT_MANAGE_NAME_VICE_FOUNDER && $owner['uid'] != $_W['uid']) {
+			$canmodify = true;
+		}
+	
+	
+>>>>>>> parent of 775f72a... 654
 	if (!empty($extend['modules'])) {
 		foreach ($extend['modules'] as $module_key => $module_val) {
 			$extend['modules'][$module_key] = module_fetch($module_val);
@@ -306,6 +363,40 @@ if($do == 'modules_tpl') {
 	if (!empty($extend['templates'])) {
 		$extend['templates'] = pdo_getall('site_templates', array('id' => $extend['templates']), array('id', 'name', 'title'));
 	}
+	
+		$account_buy_modules = uni_site_store_buy_goods($uniacid);
+		if (!empty($account_buy_modules) && is_array($account_buy_modules)) {
+			foreach ($account_buy_modules as &$module) {
+				$module = module_fetch($module);
+				$module['goods_id'] = pdo_getcolumn('site_store_goods', array('module' => $module['name']), 'id');
+				$module['expire_time'] = pdo_getcolumn('site_store_order', array('uniacid' => $uniacid, 'type' => STORE_ORDER_FINISH,  'goodsid' => $module['goods_id']), 'max(endtime)');
+			}
+		}
 
+		unset($module);
+
+<<<<<<< HEAD
+=======
+		$store = table('store');
+		$account_buy_group = uni_site_store_buy_goods($uniacid, STORE_TYPE_PACKAGE);
+		$account_buy_package = array();
+		if (is_array($account_buy_group) && !empty($account_buy_group)) {
+			foreach ($account_buy_group as $group) {
+				$account_buy_package[$group] = $uni_groups[$group];
+				$account_buy_package[$group]['goods_id'] = pdo_getcolumn('site_store_goods', array('module_group' => $group), 'id');
+				$account_buy_package[$group]['expire_time'] = pdo_getcolumn('site_store_order', array('uniacid' => $uniacid, 'type' => STORE_ORDER_FINISH,  'goodsid' => $account_buy_package[$group]['goods_id']), 'max(endtime)');
+				if (TIMESTAMP > $account_buy_package[$group]['expire_time']) {
+					$account_buy_package[$group]['expire'] = true;
+				} else {
+					$account_buy_package[$group]['expire'] = false;
+					$account_buy_package[$group]['near_expire'] = strtotime('-1 week', $account_buy_package[$group]['expire_time']) < time() ? true : false;
+				}
+				$account_buy_package[$group]['expire_time'] = date('Y-m-d', $account_buy_package[$group]['expire_time']);
+			}
+		}
+		unset($group);
+	
+
+>>>>>>> parent of 775f72a... 654
 	template('account/manage-modules-tpl' . ACCOUNT_TYPE_TEMPLATE);
 }

@@ -16,8 +16,9 @@
 	</div>
 </div>
 <table class="table we7-table table-hover table-manage vertical-middle" id="js-users-display" ng-controller="UsersDisplay" ng-cloak>
-	<col width="120px"/>
+	<col width="150px"/>
 	<col width="150px">
+<<<<<<< HEAD
 	{if $do != 'vice_founder'}
 	<col width="200px"/>
 	{/if}
@@ -25,6 +26,14 @@
 	<col width="120px"/>
 	<col width="100px"/>
 	<col width="120px"/>
+=======
+	<col width="180px"/>
+	<col width="140px"/>
+	<col width="140px"/>
+	<col width="140px"/>
+	<col width="160px"/>
+	<col width="150px"/>
+>>>>>>> parent of 775f72a... 654
 	<col width="150px"/>
 	<tr>
 		<th></th>
@@ -33,13 +42,23 @@
 		<th>用户权限组</th>
 		{/if}
 		<th>创建公众号</th>
+<<<<<<< HEAD
 		<th>使用公众号</th>
 		<th>应用</th>
+=======
+		<th>创建小程序</th>
+		<th>创建pc</th>
+		<th>注册时间</th>
+>>>>>>> parent of 775f72a... 654
 		<th>到期时间</th>
 		<th class="text-right">操作</th>
 	</tr>
 	<tr ng-repeat="user in users" ng-if="users">
-		<td><img src="{{user.avatar}}" alt="" class="img-responsive icon"/></td>
+		<td class="td-link">
+			<a ng-href="{{links.edit}}uid={{user.uid}}">
+				<img src="{{user.avatar}}" alt="" class="img-responsive icon"/>
+			</a>
+		</td>
 		<td class="text-left" ng-bind="user.username">{$user['username']}</td>
 		{if $do != 'vice_founder'}
 		<td>
@@ -49,10 +68,17 @@
 		</td>
 		{/if}
 		<td class="color-default" ng-bind="user.maxaccount"></td>
+<<<<<<< HEAD
 		<td class="color-default" ng-bind="user.uniacid_num"></td>
 		<td class="color-default">
 			<span ng-if="!user.founder" ng-bind="user.module_nums"></span>
 			<span ng-if="user.founder">全部</span>
+=======
+		<td class="color-default" ng-bind="user.maxwxapp"></td>
+		<td class="color-default" ng-bind="user.maxwebapp"></td>
+		<td>
+			<span ng-bind="user.joindate"></span>
+>>>>>>> parent of 775f72a... 654
 		</td>
 		<td>
 			<span ng-bind="user.endtime"></span>

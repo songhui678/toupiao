@@ -7,6 +7,19 @@
 			<th colspan="6" class="text-left we7-padding-right">
 				<span ng-bind="module_tpl.name"></span>
 			</th>
+<<<<<<< HEAD
+=======
+			
+				{if $_W['role'] == ACCOUNT_MANAGE_NAME_FOUNDER && !in_array($owner['uid'], $founders) || $_W['role'] == ACCOUNT_MANAGE_NAME_VICE_FOUNDER && $owner['uid'] != $_W['uid']}
+				<th class="text-right"><a href="{php echo url('user/edit/edit_modules_tpl',array('uid'=>$owner['uid']))}" class="color-default">修改</a></th>
+				{else}
+				<th class="text-right"><a href="" class="color-default"></a></th>
+				{/if}
+			
+
+			
+
+>>>>>>> parent of 775f72a... 654
 		</tr>
 		<tr>
 			<td colspan="5">
@@ -41,7 +54,22 @@
 	</table>
 	<table class="table we7-table table-hover account-package-extra">
 		<tr>
+<<<<<<< HEAD
 			<th colspan="6" class="text-left we7-padding-right"><span>附加权限</span></th>
+=======
+			<th colspan="5" class="text-left">
+				<span class="we7-padding-right">应用权限组</span>
+				<span></span>
+			</th>
+			
+				{if $_W['role'] == ACCOUNT_MANAGE_NAME_FOUNDER && !in_array($owner['uid'], $founders) || $_W['role'] == ACCOUNT_MANAGE_NAME_VICE_FOUNDER && $owner['uid'] != $_W['uid']}
+				<th class="text-right"><a class="color-default" data-toggle="modal" data-target="#change-group">修改</a></th>
+				{/if}
+			
+
+			
+
+>>>>>>> parent of 775f72a... 654
 		</tr>
 		<tr>
 			<td colspan="5">
@@ -56,6 +84,28 @@
 				</div>
 			</td>
 		</tr>
+<<<<<<< HEAD
+=======
+		</tbody>
+	</table>
+
+	<table class="table we7-table table-hover account-package-extra">
+		<tr>
+			<th colspan="5" class="text-left">
+				<span class="we7-padding-right">附加权限</span>
+				<span></span>
+			</th>
+			
+				{if $_W['role'] == ACCOUNT_MANAGE_NAME_FOUNDER && !in_array($owner['uid'], $founders) || $_W['role'] == ACCOUNT_MANAGE_NAME_VICE_FOUNDER && $owner['uid'] != $_W['uid']}
+				<th class="text-right"><a class="color-default" data-toggle="modal" data-target="#jurisdiction-add">修改</a></th>
+				{/if}
+			
+
+			
+
+		</tr>
+		{if !in_array($owner['uid'], $founders)}
+>>>>>>> parent of 775f72a... 654
 		<tr>
 			<td colspan="5">
 				<div class="col-sm-1 color-gray text-left we7-padding-none">模板</div>
@@ -85,6 +135,7 @@
 						<li><a class="we7-padding-horizontal" data-toggle="tab" role="tab" aria-controls="content-templates" href="#content-templates">模板</a></li>
 					</ul>
 				</div>
+<<<<<<< HEAD
 				<div class="modal-body">
 					<div class="tab-content">
 						<div id="content-modules" class="tab-pane active" role="tabpanel">
@@ -124,8 +175,57 @@
 								</tr>
 								{/loop}
 							</table>
+=======
+				<div class="modal-body material-content clearfix">
+					<div class="material-nav" ng-init="jurindex=0">
+						<a href="javascript:;" ng-click="tabChange(0)"  ng-class="{true:'active',false:''}[jurindex==0]" >应用</a>
+						<!--<a href="javascript:;" ng-click="tabChange(1)" ng-class="{true:'active',false:''}[jurindex==1]">模板</a>-->
+					</div>
+					<div class="material-body" ng-show="jurindex==0" id="content-modules">
+						<div class="row">
+							{loop $modules $module_name $module}
+							{if empty($module['issystem']) && $module['wxapp_support'] == 2}
+							<div class="col-sm-2">
+								<div class="item {if is_array($current_module_names) && in_array($module_name, $current_module_names)}active{/if}"
+								     data-title="{$module['title']}"
+								     data-name="{$module['name']}"
+								     onclick="$(this).toggleClass('active')">
+									<img ng-src="{$module['logo']}" alt="" class="icon"/>
+									<div class="name">{$module['title']}</div>
+									<div class="mask">
+										<span class="wi wi-right"></span>
+									</div>
+								</div>
+							</div>
+							{/if}
+							{/loop}
 						</div>
 					</div>
+					<div class="material-body" ng-show="jurindex==1" id="content-templates">
+						<div class="row">
+							{loop $templates $temp}
+							<div class="col-sm-2">
+								<div ng-click="itemClick()" class="item {if is_array($extend['templates']) && in_array($temp, $extend['templates'])}active{/if}" data-title="{$temp['title']}" data-name="{$temp['name']}" data-id="{$temp['id']}" onclick="$(this).toggleClass('active')">
+									<i class="wi wi-home" style="color: #ddd;font-size: 48px;position:relative; top:-15px; margin: 0;"></i>
+									<div class="name">{$temp['title']}</div>
+									<div class="mask">
+										<span class="wi wi-right"></span>
+									</div>
+								</div>
+							</div>
+							{/loop}
+>>>>>>> parent of 775f72a... 654
+						</div>
+					</div>
+				</div>
+				<div class="material-pager text-right clearfix">
+					<div class="pull-left we7-form">
+						<input type="checkbox" id="selected-all" ng-model="allmodule" ng-change="allmodulechange(allmodule)">
+						<label for="selected-all">全选</label>
+					</div>
+					<ul class="pagination">
+
+					</ul>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-primary" ng-click="addExtend()">确定</button>
@@ -148,6 +248,10 @@
 								<th class="text-left bg-light-gray">应用权限组（各权限组均包含系统模块和微站默认模板）</th>
 								<th class="text-right bg-light-gray">操作</th>
 							</tr>
+<<<<<<< HEAD
+=======
+							{if permission_check_account_user('see_account_manage_module_tpl_all_permission')}
+>>>>>>> parent of 775f72a... 654
 							<tr>
 								<td class="text-left">
 									<input id="check-0" type="checkbox" name="package[]" autocomplete="off" value="-1" {if is_array($owner['group']['package']) && in_array('-1', $owner['group']['package'])}checked disabled{/if}{if is_array($extendpackage) && !empty($extendpackage[-1])}checked {/if} />

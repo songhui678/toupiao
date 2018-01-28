@@ -61,6 +61,9 @@ if(is_array($setting['payment'])) {
 			$params = array();
 			$params[':uniontid'] = $get['out_trade_no'];
 			$log = pdo_fetch($sql, $params);
+			if (intval($wechat['switch']) == PAYMENT_WECHAT_TYPE_SERVICE) {
+				$get['openid'] = $log['openid'];
+			}
 						if(!empty($log) && $log['status'] == '0' && (($get['total_fee'] / 100) == $log['card_fee'])) {
 				$log['tag'] = iunserializer($log['tag']);
 				$log['tag']['transaction_id'] = $get['transaction_id'];

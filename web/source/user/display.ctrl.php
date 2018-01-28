@@ -6,6 +6,7 @@
 defined('IN_IA') or exit('Access Denied');
 
 load()->model('user');
+load()->model('message');
 
 $dos = array('display', 'check_display', 'check_pass', 'recycle_display', 'recycle_delete','recycle_restore', 'recycle', 'vice_founder');
 $do = in_array($do, $dos) ? $do: 'display';
@@ -13,6 +14,7 @@ $do = in_array($do, $dos) ? $do: 'display';
 $_W['page']['title'] = '用户列表 - 用户管理';
 $founders = explode(',', $_W['config']['setting']['founder']);
 
+<<<<<<< HEAD
 if (in_array($do, array('display', 'recycle_display', 'check_display', 'vice_founder'))) {
 	switch ($do) {
 		case 'check_display':
@@ -34,6 +36,12 @@ if (in_array($do, array('display', 'recycle_display', 'check_display', 'vice_fou
 	if (user_is_vice_founder()) {
 		$condition .= ' AND u.owner_uid = ' . $_W['uid'];
 	}
+=======
+if ($do == 'display') {
+	$message_id = safe_gpc_int($_GPC['message_id']);
+	message_notice_read($message_id);
+
+>>>>>>> parent of 775f72a... 654
 	$pindex = max(1, intval($_GPC['page']));
 	$psize = 20;
 	$params = array();
@@ -61,6 +69,7 @@ if (in_array($do, array('display', 'recycle_display', 'check_display', 'vice_fou
 		$user['founder'] = user_is_founder($user['uid']);
 		$user['uniacid_num'] = pdo_fetchcolumn("SELECT COUNT(*) FROM ".tablename('uni_account_users')." WHERE uid = :uid", array(':uid' => $user['uid']));
 
+<<<<<<< HEAD
 		$user['module_num'] =array();
 		$group = pdo_get('users_group', array('id' => $user['groupid']));
 		$user_role = user_is_founder($user['uid']);
@@ -82,6 +91,13 @@ if (in_array($do, array('display', 'recycle_display', 'check_display', 'vice_fou
 				}
 			}
 		}
+=======
+		
+			if (user_is_vice_founder()) {
+				$users_table->searchWithOwnerUid($_W['uid']);
+			}
+		
+>>>>>>> parent of 775f72a... 654
 
 		$user['module_num'] = array_unique($user['module_num']);
 		$user['module_nums'] = count($user['module_num']) + $system_module_num;
@@ -110,7 +126,16 @@ if (in_array($do, array('recycle', 'recycle_delete', 'recycle_restore', 'check_p
 	if (empty($uid_user)) {
 		exit('未指定用户,无法删除.');
 	}
+<<<<<<< HEAD
 	switch ($do) {
+=======
+	
+		if ($uid_user['founder_groupid'] != ACCOUNT_MANAGE_GROUP_GENERAL) {
+			iajax(-1, '非法操作', referer());
+		}
+	
+	switch ($type) {
+>>>>>>> parent of 775f72a... 654
 		case 'check_pass':
 			$data = array('status' => 2);
 			pdo_update('users', $data , array('uid' => $uid));

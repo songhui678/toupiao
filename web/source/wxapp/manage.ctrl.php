@@ -9,7 +9,7 @@ define('FRAME', 'system');
 load()->model('system');
 load()->model('wxapp');
 
-$dos = array('delete', 'display', 'edit_version', 'del_version', 'get_available_apps', 'getpackage');
+$dos = array('delete', 'display', 'edit_version', 'del_version', 'get_available_apps');
 $do = in_array($do, $dos) ? $do : 'display';
 
 $uniacid = intval($_GPC['uniacid']);
@@ -18,8 +18,17 @@ if (empty($uniacid)) {
 	itoast('请选择要编辑的小程序', referer(), 'error');
 }
 
+<<<<<<< HEAD
 $state = uni_permission($_W['uid'], $uniacid);
 if ($state != ACCOUNT_MANAGE_NAME_OWNER && $state != ACCOUNT_MANAGE_NAME_FOUNDER && $state != ACCOUNT_MANAGE_NAME_MANAGER) {
+=======
+$state = permission_account_user_role($_W['uid'], $uniacid);
+
+	$role_permission = in_array($state, array(ACCOUNT_MANAGE_NAME_OWNER, ACCOUNT_MANAGE_NAME_FOUNDER, ACCOUNT_MANAGE_NAME_MANAGER, ACCOUNT_MANAGE_NAME_VICE_FOUNDER));
+
+
+if (!$role_permission) {
+>>>>>>> parent of 775f72a... 654
 	itoast('无权限操作！', referer(), 'error');
 }
 
@@ -35,6 +44,7 @@ if ($do == 'display') {
 			$wxapp_modules = wxapp_support_wxapp_modules();
 		}
 	}
+
 	template('wxapp/manage');
 }
 
@@ -119,6 +129,7 @@ if ($do == 'delete') {
 		itoast('版本不存在', referer(), 'error');
 	}
 	itoast('删除成功', referer(), 'success');
+<<<<<<< HEAD
 }
 
 if($do == 'getpackage') {
@@ -154,4 +165,6 @@ if($do == 'getpackage') {
 		echo $result;
 	}
 	exit;
+=======
+>>>>>>> parent of 775f72a... 654
 }

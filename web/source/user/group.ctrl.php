@@ -19,6 +19,7 @@ if ($do == 'display') {
 		$condition .= "WHERE name LIKE :name";
 		$params[':name'] = "%{$_GPC['name']}%";
 	}
+<<<<<<< HEAD
 	if (user_is_vice_founder()) {
 		$condition .= "WHERE owner_uid = :owner_uid";
 		$params[':owner_uid'] = $_W['uid'];
@@ -30,6 +31,14 @@ if ($do == 'display') {
 		itoast('用户组更新成功！', referer(), 'success');
 	}
 	$module_num = pdo_fetchcolumn("SELECT COUNT(*) FROM ".tablename('modules') . "WHERE type = :type AND issystem = :issystem", array(':type' => 'system','issystem' => 1));
+=======
+	
+		if (user_is_vice_founder()) {
+			$condition .= "WHERE owner_uid = :owner_uid";
+			$params[':owner_uid'] = $_W['uid'];
+		}
+	
+>>>>>>> parent of 775f72a... 654
 	$lists = pdo_fetchall("SELECT * FROM " . tablename('users_group').$condition, $params);
 	if (!empty($lists)) {
 		foreach ($lists as $key => $group) {
@@ -90,6 +99,7 @@ if ($do == 'post') {
 			'package' => $_GPC['package'],
 			'maxaccount' => intval($_GPC['maxaccount']),
 			'maxwxapp' => intval($_GPC['maxwxapp']),
+			'maxwebapp' => intval($_GPC['maxwebapp']),
 			'timelimit' => intval($_GPC['timelimit'])
 		);
 

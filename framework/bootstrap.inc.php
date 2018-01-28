@@ -38,6 +38,15 @@ load()->classs('agent');
 load()->model('cache');
 load()->model('account');
 load()->model('setting');
+<<<<<<< HEAD
+=======
+load()->model('module');
+load()->library('agent');
+load()->classs('db');
+load()->func('communication');
+
+
+>>>>>>> parent of 775f72a... 654
 
 define('CLIENT_IP', getip());
 
@@ -72,13 +81,13 @@ if(!empty($_W['config']['setting']['memory_limit']) && function_exists('ini_get'
 		@ini_set('memory_limit', $_W['config']['setting']['memory_limit']);
 	}
 }
-if (isset($_W['config']['setting']['https'])) {
+if (isset($_W['config']['setting']['https']) && $_W['config']['setting']['https'] == '1') {
 	$_W['ishttps'] = $_W['config']['setting']['https'];
 } else {
-	$_W['ishttps'] = $_SERVER['SERVER_PORT'] == 443 || 
-					(isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) != 'off') ||
-					strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) == 'https' ||
-					strtolower($_SERVER['HTTP_X_CLIENT_SCHEME']) == 'https' 					? true : false;
+	$_W['ishttps'] = $_SERVER['SERVER_PORT'] == 443 ||
+	(isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) != 'off') ||
+	strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) == 'https' ||
+	strtolower($_SERVER['HTTP_X_CLIENT_SCHEME']) == 'https' 			? true : false;
 }
 
 $_W['isajax'] = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
@@ -93,14 +102,19 @@ if(substr($_W['siteroot'], -1) != '/') {
 	$_W['siteroot'] .= '/';
 }
 $urls = parse_url($_W['siteroot']);
-$urls['path'] = str_replace(array('/web', '/app', '/payment/wechat', '/payment/alipay', '/api'), '', $urls['path']);
+$urls['path'] = str_replace(array('/web', '/app', '/payment/wechat', '/payment/alipay', '/payment/jueqiymf', '/api'), '', $urls['path']);
 $_W['siteroot'] = $urls['scheme'].'://'.$urls['host'].((!empty($urls['port']) && $urls['port']!='80') ? ':'.$urls['port'] : '').$urls['path'];
-$_W['siteurl'] = $urls['scheme'].'://'.$urls['host'].((!empty($urls['port']) && $urls['port']!='80') ? ':'.$urls['port'] : '') . $_W['script_name'] . (empty($_SERVER['QUERY_STRING'])?'':'?') . $_SERVER['QUERY_STRING'];
 
 if(MAGIC_QUOTES_GPC) {
 	$_GET = istripslashes($_GET);
 	$_POST = istripslashes($_POST);
 	$_COOKIE = istripslashes($_COOKIE);
+}
+foreach($_GET as $key => $value) {
+	if (is_string($value) && !is_numeric($value)) {
+		$value = safe_gpc_string($value);
+	}
+	$_GET[$key] = $_GPC[$key] = $value;
 }
 $cplen = strlen($_W['config']['cookie']['pre']);
 foreach($_COOKIE as $key => $value) {
@@ -110,9 +124,12 @@ foreach($_COOKIE as $key => $value) {
 }
 unset($cplen, $key, $value);
 
-$_GPC = array_merge($_GET, $_POST, $_GPC);
+$_GPC = array_merge($_GPC, $_POST);
 $_GPC = ihtmlspecialchars($_GPC);
-if(!$_W['isajax']) {
+
+$_W['siteurl'] = $urls['scheme'].'://'.$urls['host'].((!empty($urls['port']) && $urls['port']!='80') ? ':'.$urls['port'] : '') . $_W['script_name'] . '?' . http_build_query($_GET, '', '&');
+
+if (!$_W['isajax']) {
 	$input = file_get_contents("php://input");
 	if (!empty($input)) {
 		$__input = @json_decode($input, true);
@@ -128,18 +145,7 @@ setting_load();
 if (empty($_W['setting']['upload'])) {
 	$_W['setting']['upload'] = array_merge($_W['config']['upload']);
 }
-$_W['attachurl'] = $_W['attachurl_local'] = $_W['siteroot'] . $_W['config']['upload']['attachdir'] . '/';
-if (!empty($_W['setting']['remote']['type'])) {
-	if ($_W['setting']['remote']['type'] == ATTACH_FTP) {
-		$_W['attachurl'] = $_W['attachurl_remote'] = $_W['setting']['remote']['ftp']['url'] . '/';
-	} elseif ($_W['setting']['remote']['type'] == ATTACH_OSS) {
-		$_W['attachurl'] = $_W['attachurl_remote'] = $_W['setting']['remote']['alioss']['url'].'/';
-	} elseif ($_W['setting']['remote']['type'] == ATTACH_QINIU) {
-		$_W['attachurl'] = $_W['attachurl_remote'] = $_W['setting']['remote']['qiniu']['url'].'/';
-	} elseif ($_W['setting']['remote']['type'] == ATTACH_COS) {
-		$_W['attachurl'] = $_W['attachurl_remote'] = $_W['setting']['remote']['cos']['url'].'/';
-	}
-}
+
 $_W['os'] = Agent::deviceType();
 if($_W['os'] == Agent::DEVICE_MOBILE) {
 	$_W['os'] = 'mobile';
@@ -167,5 +173,9 @@ if(Agent::isMicroMessage() == Agent::MICRO_MESSAGE_YES) {
 $controller = $_GPC['c'];
 $action = $_GPC['a'];
 $do = $_GPC['do'];
+<<<<<<< HEAD
 
 header('Content-Type: text/html; charset=' . $_W['charset']);
+=======
+header('Content-Type: text/html; charset=' . $_W['charset']);
+>>>>>>> parent of 775f72a... 654

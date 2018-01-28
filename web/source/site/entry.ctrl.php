@@ -9,7 +9,6 @@ load()->model('module');
 load()->model('extension');
 
 $eid = intval($_GPC['eid']);
-
 if (!empty($eid)) {
 	$entry = module_entry($eid);
 } else {
@@ -29,7 +28,27 @@ if (empty($entry) || empty($entry['do'])) {
 
 if (!$entry['direct']) {
 	checklogin();
+<<<<<<< HEAD
 	checkaccount();
+=======
+	$referer = (url_params(referer()));
+	if (empty($_W['isajax']) && empty($_W['ispost']) && empty($_GPC['version_id']) && intval($referer['version_id']) > 0 &&
+		($referer['c'] == 'wxapp' ||
+		$referer['c'] == 'site' && in_array($referer['a'], array('entry', 'nav')) ||
+		$referer['c'] == 'home' && $referer['a'] == 'welcome' ||
+		$referer['c'] == 'module' && in_array($referer['a'], array('manage-account', 'permission')))) {
+			itoast('', $_W['siteurl'] . '&version_id=' . $referer['version_id']);
+	}
+	
+		if (empty($_W['uniacid']) && $entry['entry'] != 'system_welcome' && $_GPC['module_type'] != 'system_welcome') {
+			if (!empty($_GPC['version_id'])) {
+				itoast('', url('wxapp/display'));
+			} else {
+				itoast('', url('account/display'));
+			}
+		}
+	
+>>>>>>> parent of 775f72a... 654
 	
 	$module = module_fetch($entry['module']);
 	if (empty($module)) {
@@ -65,7 +84,18 @@ $_GPC['do'] = $entry['do'];
 
 $modules = uni_modules();
 $_W['current_module'] = $modules[$entry['module']];
-$site = WeUtility::createModuleSite($entry['module']);
+
+
+	if ($entry['entry'] == 'system_welcome' || $_GPC['module_type'] == 'system_welcome') {
+		$_GPC['module_type'] = 'system_welcome';
+		$site = WeUtility::createModuleSystemWelcome($entry['module']);
+		define('SYSTEM_WELCOME_MODULE', true);
+	} else {
+		$site = WeUtility::createModuleSite($entry['module']);
+	}
+
+
+
 
 define('IN_MODULE', $entry['module']);
 
@@ -77,7 +107,11 @@ if (!is_error($site)) {
 	if (in_array($m, $sysmodule)) {
 		$site_urls = $site->getTabUrls();
 	}
-	$method = 'doWeb' . ucfirst($entry['do']);
+	
+	
+		$do_function = defined('SYSTEM_WELCOME_MODULE') ? 'doPage' : 'doWeb';
+		$method = $do_function . ucfirst($entry['do']);
+	
 	exit($site->$method());
 }
 itoast("访问的方法 {$method} 不存在.", referer(), 'error');
