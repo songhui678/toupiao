@@ -9,8 +9,7 @@
 defined('IN_IA') or exit('Access Denied');
 global $_W, $_GPC;
 $time = time();
-$voteuserList = pdo_getall("SELECT * FROM " . tablename($this->tablevoteuser) . " WHERE rid=13 AND status=0 ");
-var_dump($voteuserList);exit;
+$voteuserList = pdo_fetchall("SELECT * FROM " . tablename($this->tablevoteuser) . " WHERE rid=13 AND status=0 ");
 if (!empty($voteuserList)) {
 	foreach ($voteuserList as $voteuser) {
 		$diffTime = $time - $voteuser['createtime'];
