@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 define('IN_MOBILE', true);
 
@@ -85,7 +85,7 @@ if(!in_array($controller, $controllers)) {
 }
 $init = IA_ROOT . "/app/source/{$controller}/__init.php";
 if(is_file($init)) {
-	require $init;
+	require $init;;
 }
 
 $actions = array();

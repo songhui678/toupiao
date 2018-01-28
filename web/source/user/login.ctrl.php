@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 define('IN_GW', true);
@@ -16,7 +16,6 @@ function _login($forward = '') {
 	load()->model('user');
 	$member = array();
 	$username = trim($_GPC['username']);
-
 	pdo_query('DELETE FROM'.tablename('users_failed_login'). ' WHERE lastupdate < :timestamp', array(':timestamp' => TIMESTAMP-300));
 	$failed = pdo_get('users_failed_login', array('username' => $username, 'ip' => CLIENT_IP));
 	if ($failed['count'] >= 5) {
@@ -42,7 +41,7 @@ function _login($forward = '') {
 	}
 	$record = user_single($member);
 	if (!empty($record)) {
-		if ($record['status'] == 1 || $record['status'] == 3) {
+		if ($record['status'] == 1) {
 			itoast('您的账号正在审核或是已经被系统禁止，请联系网站管理员解决！', '', '');
 		}
 		$_W['uid'] = $record['uid'];
@@ -69,7 +68,11 @@ function _login($forward = '') {
 		$status['lastvisit'] = TIMESTAMP;
 		$status['lastip'] = CLIENT_IP;
 		user_update($status);
-
+		if ($record['type'] == ACCOUNT_OPERATE_CLERK) {
+			isetcookie('__uniacid', $record['uniacid'], 7 * 86400);
+			isetcookie('__uid', $record['uid'], 7 * 86400);
+			itoast('登录成功！' ,url('site/entry/clerkdesk', array('uniacid' => $record['uniacid'], 'op' => 'index', 'm' => 'we7_coupon')), 'success');
+		}
 		if (empty($forward)) {
 			$forward = user_login_forward($_GPC['forward']);
 		}

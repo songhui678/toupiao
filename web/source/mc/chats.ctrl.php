@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 
 defined('IN_IA') or exit('Access Denied');
@@ -12,7 +12,7 @@ load()->classs('account');
 
 $dos = array('chats', 'send', 'endchats');
 $do = in_array($do , $dos) ? $do : 'chats';
-permission_check_account_user('mc_fans');
+uni_user_permission_check('mc_fans');
 
 if ($do == 'chats') {
 	$_W['page']['title'] = '粉丝聊天';

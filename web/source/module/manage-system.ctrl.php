@@ -1,7 +1,7 @@
 <?php
 /**
- * [WECHAT 2018]
- * [WECHAT  a free software]
+ * [WeEngine System] Copyright (c) 2014 WE7.CC
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 
 defined('IN_IA') or exit('Access Denied');
@@ -17,7 +17,7 @@ load()->model('utility');
 $dos = array('subscribe', 'filter', 'check_subscribe', 'check_upgrade', 'get_upgrade_info', 'upgrade', 'install', 'installed', 'not_installed', 'uninstall', 'save_module_info', 'module_detail', 'change_receive_ban');
 $do = in_array($do, $dos) ? $do : 'installed';
 
-if (!in_array($_W['role'], array(ACCOUNT_MANAGE_NAME_OWNER, ACCOUNT_MANAGE_NAME_MANAGER, ACCOUNT_MANAGE_NAME_FOUNDER, ACCOUNT_MANAGE_NAME_VICE_FOUNDER))){
+if ($_W['role'] != ACCOUNT_MANAGE_NAME_OWNER && $_W['role'] != ACCOUNT_MANAGE_NAME_MANAGER && $_W['role'] != ACCOUNT_MANAGE_NAME_FOUNDER) {
 	itoast('无权限操作！', referer(), 'error');
 }
 
@@ -65,12 +65,8 @@ if ($do == 'check_subscribe') {
 
 if ($do == 'get_upgrade_info') {
 	$module_name = trim($_GPC['name']);
-	$module = cloud_m_upgradeinfo($module_name);
 	$module_info = module_fetch($module_name);
-	if (empty($module_info['site_branch_id'])) {
-		$module_info['site_branch_id'] = $module['site_branch']['id'];
-		cache_write(cache_system_key(CACHE_KEY_MODULE_INFO, $module_name), $module_info);
-	}
+	$module = cloud_m_upgradeinfo($module_name);
 	if (is_error($module)) {
 		iajax(1, $module['message']);
 	} else {
@@ -105,7 +101,6 @@ if ($do == 'check_upgrade') {
 		if (empty($manifest)) {
 			if (in_array($module['name'], array_keys($cloud_m_query_module))) {
 				$cloud_m_info = $cloud_m_query_module[$module['name']];
-				$module_info = module_fetch($module['name']);
 				if (!empty($cloud_m_info['service_expiretime'])) {
 					$module['service_expire'] = $cloud_m_info['service_expiretime'] > time() ? false : true;
 				}
@@ -130,7 +125,7 @@ if ($do == 'check_upgrade') {
 					continue;
 				}
 				$best_branch = $cloud_m_info['branches'][$best_branch_id];
-				if (version_compare($module['version'], $cloud_branch_version) == -1 || ($cloud_m_info['displayorder'] < $best_branch['displayorder'] && !empty($cloud_m_info['version'])) || (!empty($module_info['site_branch_id']) && $cloud_m_info['site_branch']['id'] > $module_info['site_branch_id'])) {
+				if (version_compare($module['version'], $cloud_branch_version) == -1 || ($cloud_m_info['displayorder'] < $best_branch['displayorder'] && !empty($cloud_m_info['version']))) {
 					$module['upgrade'] = true;
 				} else {
 					$module['upgrade'] = false;
@@ -328,7 +323,7 @@ if ($do =='install') {
 	$module = ext_module_convert($manifest);
 	$module_group = uni_groups();
 	if (!$_W['ispost'] || empty($_GPC['flag'])) {
-		template('system/module-group');
+		template('system/select-module-group');
 		exit;
 	}
 	if (!empty($manifest['platform']['plugin_list'])) {
@@ -479,6 +474,7 @@ if ($do == 'save_module_info') {
 		$image_destination_url = IA_ROOT . "/addons/" . $module_name . '/' . $module_icon_map[$type]['filename'];
 		$result = utility_image_rename($module_icon_map[$type]['url'], $image_destination_url);
 	}
+
 	cache_delete(cache_system_key("module_info:" . $module_name));
 	if (!empty($result)) {
 		iajax(0, '');
@@ -499,7 +495,7 @@ if ($do == 'module_detail') {
 			case ACCOUNT_TYPE_OFFCIAL_NORMAL:
 			case ACCOUNT_TYPE_OFFCIAL_AUTH:
 				$module_info['relation_name'] = '小程序版';
-				$module_info['account_type'] = ACCOUNT_TYPE_APP_NORMAL;
+				$module_info['account_type'] = 0;
 				$module_info['type'] = ACCOUNT_TYPE_APP_NORMAL;
 				break;
 			default:
@@ -649,7 +645,7 @@ if ($do == 'not_installed') {
 	$pageindex = max($_GPC['page'], 1);
 	$pagesize = 20;
 
-	$uninstallModules = module_get_all_unistalled($status, false);
+	$uninstallModules = module_get_all_unistalled($status);
 	$total_uninstalled = $uninstallModules['module_count'];
 	$uninstallModules = (array)$uninstallModules['modules'];
 	if (!empty($uninstallModules)) {

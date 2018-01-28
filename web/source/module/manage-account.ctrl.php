@@ -1,7 +1,7 @@
 <?php
 /**
- * [WECHAT 2018]
- * [WECHAT  a free software]
+ * [WeEngine System] Copyright (c) 2014 WE7.CC
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -106,7 +106,7 @@ if($do == 'display') {
 		itoast('抱歉，你操作的模块不能被访问！', '', '');
 	}
 
-	if(!permission_check_account_user_module($modulename.'_settings', $modulename)) {
+	if(!uni_user_module_permission_check($modulename.'_settings', $modulename)) {
 		itoast('您没有权限进行该操作', '', '');
 	}
 

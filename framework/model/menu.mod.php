@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -124,9 +124,9 @@ function menu_construct_createmenu_data($data_array, $is_conditional = false) {
 	}
 	if(!empty($data_array['matchrule']['province'])) {
 		$menu['matchrule']['country'] = urlencode('中国');
-		$menu['matchrule']['province'] = urlencode($data_array['matchrule']['province']);
+		$menu['matchrule']['province'] = urlencode(rtrim($data_array['matchrule']['province'], '省'));
 		if(!empty($data_array['matchrule']['city'])) {
-			$menu['matchrule']['city'] = urlencode($data_array['matchrule']['city']);
+			$menu['matchrule']['city'] = urlencode(rtrim($data_array['matchrule']['city'], '市'));
 		}
 	}
 	if(!empty($data_array['matchrule']['language'])) {

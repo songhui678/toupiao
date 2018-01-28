@@ -1,39 +1,38 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
 class CoreModule extends WeModule {
 	public $modules = array('basic', 'news', 'image', 'music', 'voice', 'video', 'wxcard', 'keyword', 'module');
 	public $tablename = array(
-		'basic' => 'basic_reply',
-		'news' => 'news_reply',
-		'image' => 'images_reply',
-		'music' => 'music_reply',
-		'voice' => 'voice_reply',
-		'video' => 'video_reply',
-		'wxcard' => 'wxcard_reply',
-		'keyword' => 'basic_reply'
-	);
+			'basic' => 'basic_reply',
+			'news' => 'news_reply',
+			'image' => 'images_reply',
+			'music' => 'music_reply',
+			'voice' => 'voice_reply',
+			'video' => 'video_reply',
+			'wxcard' => 'wxcard_reply',
+			'keyword' => 'basic_reply'
+		);
 		private $options = array(
-		'basic' => true,
-		'news' => true,
-		'image' => true,
-		'music' => true,
-		'voice' => true,
-		'video' => true,
-		'wxcard' => true,
-		'keyword' => true,
-		'module' => true,
-	);
+			'basic' => true,
+			'news' => true,
+			'image' => true,
+			'music' => true,
+			'voice' => true,
+			'video' => true,
+			'wxcard' => true,
+			'keyword' => true,
+			'module' => true,
+		);
 	private $replies = array();
 
 	public function fieldsFormDisplay($rid = 0, $option = array()) {
 		global $_GPC, $_W;
 		load()->model('material');
-		load()->model('reply');
 		$replies = array();
 		switch($_GPC['a']) {
 			case 'mass':
@@ -41,42 +40,42 @@ class CoreModule extends WeModule {
 					$isexists = pdo_get('mc_mass_record', array('id' => $rid), array('media_id', 'msgtype'));
 				}
 				if(!empty($isexists['media_id']) && !empty($isexists['msgtype'])) {
-					$wechat_attachment = material_get($isexists['media_id']);
 					switch($isexists['msgtype']) {
 						case 'news':
-							if(!empty($wechat_attachment['news'])) {
-								foreach($wechat_attachment['news'] as &$item) {
+							$news_items = material_get($isexists['media_id']);
+							if(!empty($news_items['news'])) {
+								foreach($news_items['news'] as &$item) {
 									$item['thumb_url'] = tomedia($item['thumb_url']);
 									$item['media_id'] = $isexists['media_id'];
 									$item['attach_id'] = $item['attach_id'];
-									$item['perm'] = $wechat_attachment['model'];
+									$item['perm'] = $news_items['model'];
 								}
 								unset($item);
 							}
-							$replies['news'] = $wechat_attachment['news'];
+							$replies['news'] = $news_items['news'];
 							break;
 						case 'image':
-							$replies['image'][0]['img_url'] = tomedia($wechat_attachment['attachment'], true);
+							$img = pdo_get('wechat_attachment', array('media_id' => $isexists['media_id']), array('attachment'));
+							$replies['image'][0]['img_url'] = tomedia($img['attachment'], true);
 							$replies['image'][0]['mediaid'] = $isexists['media_id'];
 							break;
 						case 'voice':
-							$replies['voice'][0]['title'] = $wechat_attachment['filename'];
+							$voice = pdo_get('wechat_attachment', array('media_id' => $isexists['media_id']), array('filename'));
+							$replies['voice'][0]['title'] = $voice['filename'];
 							$replies['voice'][0]['mediaid'] = $isexists['media_id'];
 							break;
 						case 'video':
-							$replies['video'][0] = iunserializer($wechat_attachment['tag']);
+							$video = pdo_get('wechat_attachment', array('media_id' => $isexists['media_id']), array('tag'));
+							$video = iunserializer($video['tag']);
+							$replies['video'][0] = $video;
 							$replies['video'][0]['mediaid'] = $isexists['media_id'];
 							break;
 					}
 				}
 				break;
 						default:
-				if (!empty($rid)) {
-					$rule_rid = $rid;
-					if (in_array($_GPC['m'], array('welcome', 'default'))) {
-						$rule_rid = pdo_getcolumn('rule_keyword', array('rid' => $rid), 'rid');
-					}
-					$isexists = reply_single($rule_rid);
+				if(!empty($rid) && $rid > 0) {
+					$isexists = pdo_fetch("SELECT id, name, module FROM ".tablename('rule')." WHERE id = :id", array(':id' => $rid));
 				}
 				if ($_GPC['m'] == 'special') {
 					$default_setting = uni_setting_load('default_message', $_W['uniacid']);
@@ -146,10 +145,11 @@ class CoreModule extends WeModule {
 						}
 										}else {
 						$replies['keyword'][0]['name'] = $isexists['name'];
-						$keyword = pdo_get('rule_keyword', array('uniacid' => $_W['uniacid'], 'rid' => $rid));
-						$replies['keyword'][0]['id'] = $keyword['id'];
+						$keyword = pdo_fetchall("SELECT content FROM ". tablename('rule_keyword') ." WHERE uniacid = :uniacid AND rid = :rid", array(':uniacid' => $_W['uniacid'], ':rid' => $rid));
 						$replies['keyword'][0]['rid'] = $rid;
-						$replies['keyword'][0]['content'] = $keyword['content'];
+						foreach ($keyword as $val) {
+							$replies['keyword'][0]['content'] .= $val['content'].'&nbsp;&nbsp;';
+						}
 					}
 				}
 				break;

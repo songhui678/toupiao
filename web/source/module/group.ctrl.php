@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 load()->model('module');
@@ -10,10 +10,10 @@ load()->model('module');
 
 $dos = array('display', 'delete', 'post', 'save');
 $do = !empty($_GPC['do']) ? $_GPC['do'] : 'display';
-if (!in_array($_W['role'], array(ACCOUNT_MANAGE_NAME_OWNER, ACCOUNT_MANAGE_NAME_MANAGER, ACCOUNT_MANAGE_NAME_FOUNDER, ACCOUNT_MANAGE_NAME_VICE_FOUNDER))){
+if ($_W['role'] != ACCOUNT_MANAGE_NAME_OWNER && $_W['role'] != ACCOUNT_MANAGE_NAME_MANAGER && $_W['role'] != ACCOUNT_MANAGE_NAME_FOUNDER) {
 	itoast('无权限操作！', referer(), 'error');
 }
-if ($do != 'display' && !in_array($_W['role'], array(ACCOUNT_MANAGE_NAME_FOUNDER, ACCOUNT_MANAGE_NAME_VICE_FOUNDER))) {
+if ($do != 'display' && $_W['role'] != ACCOUNT_MANAGE_NAME_FOUNDER) {
 	itoast('您只有查看权限！', url('module/group'), 'error');
 }
 
@@ -98,7 +98,8 @@ if ($do == 'post') {
 		$group_have_module_wxapp = empty($module_group['wxapp']) ? array() : $module_group['wxapp'];
 		$group_have_template = empty($module_group['templates']) ? array() : $module_group['templates'];
 	}
-	$module_list = user_uniacid_modules($_W['uid']);
+
+	$module_list = pdo_getall('modules', array('issystem' => 0), array(), 'name', 'mid DESC');
 	$group_not_have_module_app = array();
 	$group_not_have_module_wxapp = array();
 	if (!empty($module_list)) {
@@ -109,13 +110,15 @@ if ($do == 'post') {
 					if (in_array($module_info['main_module'], array_keys($group_have_module_app))) {
 						$group_not_have_module_app[$name] = $module_info;
 					}
-				} elseif (is_array($module_info['plugin_list']) && !empty($module_info['plugin_list'])) {
+				} elseif (!empty($module_info['plugin'])) {
 					$group_not_have_module_app[$name] = $module_info;
-					foreach ($module_info['plugin_list'] as $plugin) {
-						if (!in_array($plugin, array_keys($group_have_module_app))) {
-							$plugin = module_fetch($plugin);
-							if (!empty($plugin)) {
-								$group_not_have_module_app[$plugin['name']] = $plugin;
+					if (!empty($module_info['plugin'])) {
+						foreach ($module_info['plugin'] as $plugin) {
+							if (!in_array($plugin, array_keys($group_have_module_app))) {
+								$plugin = module_fetch($plugin);
+								if (!empty($plugin)) {
+									$group_not_have_module_app[$plugin['name']] = $plugin;
+								}
 							}
 						}
 					}

@@ -3,7 +3,7 @@ defined('IN_IA') or exit('Access Denied');
 
 $config = array();
 
-$config['db']['master']['host'] = 'localhost';
+$config['db']['master']['host'] = '127.0.0.1';
 $config['db']['master']['username'] = 'root';
 $config['db']['master']['password'] = 'songhui@678';
 $config['db']['master']['port'] = '3306';
@@ -26,7 +26,7 @@ $config['db']['slave']['1']['weight'] = 0;
 $config['db']['common']['slave_except_table'] = array('core_sessions');
 
 // --------------------------  CONFIG COOKIE  --------------------------- //
-$config['cookie']['pre'] = '89eb_';
+$config['cookie']['pre'] = '7e1a_';
 $config['cookie']['domain'] = '';
 $config['cookie']['path'] = '/';
 
@@ -36,7 +36,7 @@ $config['setting']['cache'] = 'mysql';
 $config['setting']['timezone'] = 'Asia/Shanghai';
 $config['setting']['memory_limit'] = '256M';
 $config['setting']['filemode'] = 0644;
-$config['setting']['authkey'] = 'd0a9d234';
+$config['setting']['authkey'] = '3b4f1037';
 $config['setting']['founder'] = '1';
 $config['setting']['development'] = 0;
 $config['setting']['referrer'] = 0;

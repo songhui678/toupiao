@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -213,7 +213,7 @@ function ijson_encode($value, $options = 0) {
 		$str = json_encode($value);
 		$json_str = preg_replace_callback("#\\\u([0-9a-f]{4})#i", function($matchs){
 			return iconv('UCS-2BE', 'UTF-8', pack('H4', $matchs[1]));
-		}, $str);
+			}, $str);
 	} else {
 		$json_str = json_encode($value, $options);
 	}
@@ -228,7 +228,7 @@ function iserializer($value) {
 
 function iunserializer($value) {
 	if (empty($value)) {
-		return array();
+		return '';
 	}
 	if (!is_serialized($value)) {
 		return $value;
@@ -239,9 +239,8 @@ function iunserializer($value) {
 			return 's:'.strlen($matchs[2]).':"'.$matchs[2].'";';
 		}, $value);
 		return unserialize($temp);
-	} else {
-		return $result;
 	}
+	return $result;
 }
 
 
@@ -324,39 +323,37 @@ function wurl($segment, $params = array()) {
 	return $url;
 }
 
-if (!function_exists('murl')) {
-	
-	function murl($segment, $params = array(), $noredirect = true, $addhost = false) {
-		global $_W;
-		list($controller, $action, $do) = explode('/', $segment);
-		if (!empty($addhost)) {
-			$url = $_W['siteroot'] . 'app/';
-		} else {
-			$url = './';
-		}
-		$str = '';
-		if(uni_is_multi_acid()) {
-			$str = "&j={$_W['acid']}";
-		}
-		$url .= "index.php?i={$_W['uniacid']}{$str}&";
-		if (!empty($controller)) {
-			$url .= "c={$controller}&";
-		}
-		if (!empty($action)) {
-			$url .= "a={$action}&";
-		}
-		if (!empty($do)) {
-			$url .= "do={$do}&";
-		}
-		if (!empty($params)) {
-			$queryString = http_build_query($params, '', '&');
-			$url .= $queryString;
-			if ($noredirect === false) {
-								$url .= '&wxref=mp.weixin.qq.com#wechat_redirect';
-			}
-		}
-		return $url;
+
+function murl($segment, $params = array(), $noredirect = true, $addhost = false) {
+	global $_W;
+	list($controller, $action, $do) = explode('/', $segment);
+	if (!empty($addhost)) {
+		$url = $_W['siteroot'] . 'app/';
+	} else {
+		$url = './';
 	}
+	$str = '';
+	if(uni_is_multi_acid()) {
+		$str = "&j={$_W['acid']}";
+	}
+	$url .= "index.php?i={$_W['uniacid']}{$str}&";
+	if (!empty($controller)) {
+		$url .= "c={$controller}&";
+	}
+	if (!empty($action)) {
+		$url .= "a={$action}&";
+	}
+	if (!empty($do)) {
+		$url .= "do={$do}&";
+	}
+	if (!empty($params)) {
+		$queryString = http_build_query($params, '', '&');
+		$url .= $queryString;
+		if ($noredirect === false) {
+						$url .= '&wxref=mp.weixin.qq.com#wechat_redirect';
+		}
+	}
+	return $url;
 }
 
 
@@ -375,11 +372,11 @@ function pagination($total, $pageIndex, $pageSize = 15, $url = '', $context = ar
 	if ($context['ajaxcallback']) {
 		$context['isajax'] = true;
 	}
-
+	
 	if ($context['callbackfuncname']) {
 		$callbackfunc = $context['callbackfuncname'];
 	}
-
+	
 	$pdata['tcount'] = $total;
 	$pdata['tpage'] = (empty($pageSize) || $pageSize < 0) ? 1 : ceil($total / $pageSize);
 	if ($pdata['tpage'] <= 1) {
@@ -863,16 +860,16 @@ function scriptname() {
 function utf8_bytes($cp) {
 	if ($cp > 0x10000){
 				return	chr(0xF0 | (($cp & 0x1C0000) >> 18)).
-			chr(0x80 | (($cp & 0x3F000) >> 12)).
-			chr(0x80 | (($cp & 0xFC0) >> 6)).
-			chr(0x80 | ($cp & 0x3F));
+		chr(0x80 | (($cp & 0x3F000) >> 12)).
+		chr(0x80 | (($cp & 0xFC0) >> 6)).
+		chr(0x80 | ($cp & 0x3F));
 	}else if ($cp > 0x800){
 				return	chr(0xE0 | (($cp & 0xF000) >> 12)).
-			chr(0x80 | (($cp & 0xFC0) >> 6)).
-			chr(0x80 | ($cp & 0x3F));
+		chr(0x80 | (($cp & 0xFC0) >> 6)).
+		chr(0x80 | ($cp & 0x3F));
 	}else if ($cp > 0x80){
 				return	chr(0xC0 | (($cp & 0x7C0) >> 6)).
-			chr(0x80 | ($cp & 0x3F));
+		chr(0x80 | ($cp & 0x3F));
 	}else{
 				return chr($cp);
 	}
@@ -955,7 +952,7 @@ function aes_encode($message, $encodingaeskey = '', $appid = '') {
 
 
 function aes_pkcs7_decode($encrypt_data, $key, $iv = false) {
-	load()->library('pkcs7');
+	require_once IA_ROOT . '/framework/library/pkcs7/pkcs7Encoder.php';
 	$encrypt_data = base64_decode($encrypt_data);
 	if (!empty($iv)) {
 		$iv = base64_decode($iv);
@@ -1021,7 +1018,7 @@ function strip_gpc($values, $type = 'g') {
 
 
 function parse_path($path) {
-	$danger_char = array('../', '{php', '<?php', '<%', '<?', '..\\', '\\\\' ,'\\', '..\\\\', '%00', '\0', '\r');
+	$danger_char = array('../', '{php', '<?php', '<%', '<?');
 	foreach ($danger_char as $char) {
 		if (strexists($path, $char)) {
 			return false;
@@ -1058,7 +1055,7 @@ function get_first_pinyin($str) {
 		return $first_char;
 	}
 	if (empty($pinyin)) {
-		load()->library('pinyin');
+		include_once IA_ROOT . '/framework/library/pinyin/pinyin.php';
 		$pinyin = new Pinyin_Pinyin();
 	}
 	$first_char = $pinyin->get_first_char($str);
@@ -1078,7 +1075,7 @@ function strip_emoji($nickname) {
 	$clean_text = preg_replace($regexMisc, '', $clean_text);
 		$regexDingbats = '/[\x{2700}-\x{27BF}]/u';
 	$clean_text = preg_replace($regexDingbats, '', $clean_text);
-
+	
 	$clean_text = str_replace("'",'',$clean_text);
 	$clean_text = str_replace('"','',$clean_text);
 	$clean_text = str_replace('“','',$clean_text);
@@ -1110,7 +1107,7 @@ function emoji_unicode_encode($string) {
 function getglobal($key) {
 	global $_W;
 	$key = explode('/', $key);
-
+	
 	$v = &$_W;
 	foreach ($key as $k) {
 		if (!isset($v[$k])) {
@@ -1120,28 +1117,3 @@ function getglobal($key) {
 	}
 	return $v;
 }
-
-
-
-if (!function_exists('starts_with')) {
-	function starts_with($haystack, $needles) {
-		foreach ((array) $needles as $needle) {
-			if ($needle != '' && substr($haystack, 0, strlen($needle)) === (string) $needle) {
-				return true;
-			}
-		}
-		return false;
-	}
-}
-
-
-function check_url_not_outside_link($redirect) {
-	global $_W;
-	if(starts_with($redirect, 'http') && !starts_with($redirect, $_W['siteroot'])) {
-		$redirect = $_W['siteroot'];
-	}
-	return $redirect;
-}
-
-
-

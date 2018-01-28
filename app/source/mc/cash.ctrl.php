@@ -1,7 +1,7 @@
 <?php 
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -144,9 +144,6 @@ if(!empty($type)) {
 		$auth = sha1($sl . $_W['uniacid'] . $_W['config']['setting']['authkey']);
 		
 		$callback = $_W['siteroot'] . "payment/wechat/pay.php?i={$_W['uniacid']}&auth={$auth}&ps={$sl}";
-		if (!empty($unisetting['oauth']['host'])) {
-			$callback = str_replace($_W['siteroot'], $unisetting['oauth']['host'].'/', $callback);
-		}
 				$proxy_pay_account = payment_proxy_pay_account();
 		if (!is_error($proxy_pay_account)) {
 			$forward = $proxy_pay_account->getOauthCodeUrl(urlencode($callback), 'we7sid-'.$_W['session_id']);

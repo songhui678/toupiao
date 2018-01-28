@@ -1,7 +1,7 @@
 <?php
 /**
- * [WECHAT 2018]
- * [WECHAT  a free software]
+ * [WeEngine System] Copyright (c) 2014 WE7.CC
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -58,11 +58,8 @@ function wxapp_account_create($account) {
 	);
 	pdo_insert('account_wxapp', $wxapp_data);
 	
-	if (empty($_W['isfounder'])) {
+	if (empty($_W['isfounder']) || user_is_vice_founder()) {
 		uni_user_account_role($uniacid, $_W['uid'], ACCOUNT_MANAGE_NAME_OWNER);
-	}
-	if (user_is_vice_founder()) {
-		uni_user_account_role($uniacid, $_W['uid'], ACCOUNT_MANAGE_NAME_VICE_FOUNDER);
 	}
 	if (!empty($_W['user']['owner_uid'])) {
 		uni_user_account_role($uniacid, $_W['user']['owner_uid'], ACCOUNT_MANAGE_NAME_VICE_FOUNDER);
@@ -76,6 +73,7 @@ function wxapp_account_create($account) {
 function wxapp_support_wxapp_modules() {
 	global $_W;
 	load()->model('user');
+	
 	$modules = user_modules($_W['uid']);
 	if (!empty($modules)) {
 		foreach ($modules as $module) {
@@ -91,20 +89,6 @@ function wxapp_support_wxapp_modules() {
 	if (!empty($bindings)) {
 		foreach ($bindings as $bind) {
 			$wxapp_modules[$bind['module']]['bindings'][] = array('title' => $bind['title'], 'do' => $bind['do']);
-		}
-	}
-	return $wxapp_modules;
-}
-
-
-function wxapp_support_uniacid_modules() {
-	$uni_modules = uni_modules();
-	$wxapp_modules = array();
-	if (!empty($uni_modules)) {
-		foreach ($uni_modules as $module_name => $module_info) {
-			if ($module_info['wxapp_support'] == MODULE_SUPPORT_WXAPP) {
-				$wxapp_modules[$module_name] = $module_info;
-			}
 		}
 	}
 	return $wxapp_modules;
@@ -187,19 +171,12 @@ function wxapp_version_all($uniacid) {
 function wxapp_get_some_lastversions($uniacid) {
 	$version_lasts = array();
 	$uniacid = intval($uniacid);
-	
 	if (empty($uniacid)) {
 		return $version_lasts;
 	}
-	$version_lasts = table('wxapp')->latestVersion($uniacid);
-	$last_switch_version = wxapp_last_switch_version();
-	if (!empty($last_switch_version[$uniacid]) && !empty($version_lasts[$last_switch_version[$uniacid]['version_id']])) {
-		$version_lasts[$last_switch_version[$uniacid]['version_id']]['current'] = true;
-	} else {
-		reset($version_lasts);
-		$firstkey = key($version_lasts);
-		$version_lasts[$firstkey]['current'] = true;
-	}
+	$param = array(':uniacid' => $uniacid);
+	$sql = "SELECT * FROM ". tablename('wxapp_versions'). " WHERE uniacid = :uniacid ORDER BY id DESC LIMIT 0, 4";
+	$version_lasts = pdo_fetchall($sql, $param);
 	return $version_lasts;
 }
 
@@ -359,7 +336,7 @@ function wxapp_search_link_account($module_name = '') {
 	$owned_account = uni_owned();
 	if (!empty($owned_account)) {
 		foreach ($owned_account as $key => $account) {
-			$account['role'] = permission_account_user_role($_W['uid'], $account['uniacid']);
+			$account['role'] = uni_permission($_W['uid'], $account['uniacid']);
 			if (!in_array($account['role'], array(ACCOUNT_MANAGE_NAME_OWNER, ACCOUNT_MANAGE_NAME_FOUNDER))) {
 				unset($owned_account[$key]);
 			}
@@ -374,123 +351,4 @@ function wxapp_search_link_account($module_name = '') {
 		}
 	}
 	return $owned_account;
-}
-
-
-function wxapp_last_switch_version() {
-	global $_GPC;
-	static $wxapp_cookie_uniacids;
-	if (empty($wxapp_cookie_uniacids) && !empty($_GPC['__wxappversionids'])) {
-		$wxapp_cookie_uniacids = json_decode(htmlspecialchars_decode($_GPC['__wxappversionids']), true);
-	}
-	return $wxapp_cookie_uniacids;
-}
-
-
-
-
-function wxapp_code_generate($version_id) {
-	global $_W;
-	load()->classs('cloudapi');
-	$api = new CloudApi();
-	$version_info = wxapp_version($version_id);
-	$account_wxapp_info = wxapp_fetch($version_info['uniacid'], $version_id);
-	if (empty($account_wxapp_info)) {
-		return error(1, '版本不存在');
-	}
-	$siteurl = $_W['siteroot'].'app/index.php';
-	if(!empty($account_wxapp_info['appdomain'])) {
-		$siteurl = $account_wxapp_info['appdomain'];
-	}
-	$appid = $account_wxapp_info['key'];
-	$siteinfo = array(
-		'name' => $account_wxapp_info['name'],
-		'uniacid' => $account_wxapp_info['uniacid'],
-		'acid' => $account_wxapp_info['acid'],
-		'multiid' => $account_wxapp_info['version']['multiid'],
-		'version' => $account_wxapp_info['version']['version'],
-		'siteroot' => $siteurl,
-		'design_method' => $account_wxapp_info['version']['design_method'],
-	);
-	$commit_data = array('do' => 'generate',
-		'appid' => $appid,
-		'modules' => $account_wxapp_info['version']['modules'],
-		'siteinfo' => $siteinfo,
-		'tabBar' => json_decode($account_wxapp_info['version']['quickmenu'], true),
-	);
-	$data = $api->post('wxapp', 'upload', $commit_data,
-		'json', false);
-
-	return $data;
-}
-
-
-function wxapp_check_code_isgen($code_uuid) {
-	load()->classs('cloudapi');
-	$api = new CloudApi();
-	$data = $api->get('wxapp', 'upload', array('do'=>'check_gen',
-		'code_uuid'=>$code_uuid),
-		'json', false);
-	return $data;
-}
-
-
-function wxapp_code_token() {
-	global $_W;
-	load()->classs('cloudapi');
-	$cloud_api = new CloudApi();
-	$data = $cloud_api->get('wxapp', 'upload', array('do' => 'code_token'), 'json', false);
-	return $data;
-}
-
-
-function wxapp_code_qrcode($code_token) {
-
-	$cloud_api = new CloudApi();
-	$data = $cloud_api->get('wxapp', 'upload', array('do' => 'qrcode',
-		'code_token' => $code_token),
-		'html', false);
-	return $data;
-}
-
-
-function wxapp_code_check_scan($code_token, $last) {
-	$cloud_api = new CloudApi();
-	$data = $cloud_api->get('wxapp', 'upload',
-		array('do' => 'checkscan',
-			'code_token' => $code_token,
-			'last' => $last
-		),
-		'json', false);
-	return $data;
-}
-
-function wxapp_code_preview_qrcode($code_uuid, $code_token) {
-	$cloud_api = new CloudApi();
-
-	$commit_data =  array(
-		'do' => 'preview_qrcode',
-		'code_uuid'=> $code_uuid,
-		'code_token' => $code_token,
-	);
-	$data = $cloud_api->post('wxapp', 'upload', $commit_data,
-		'json', false);
-
-	return $data;
-}
-
-function wxapp_code_commit($code_uuid, $code_token, $user_version = 3, $user_desc = '代码提交') {
-	$cloud_api = new CloudApi();
-
-	$commit_data =  array(
-		'do' => 'commitcode',
-		'code_uuid'=> $code_uuid,
-		'code_token' => $code_token,
-		'user_version' => $user_version,
-		'user_desc' => $user_desc,
-	);
-	$data = $cloud_api->post('wxapp', 'upload', $commit_data,
-		'json', false);
-
-	return $data;
 }

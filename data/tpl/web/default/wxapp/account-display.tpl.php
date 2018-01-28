@@ -3,7 +3,7 @@
 	<div class="panel-heading">
 		<i class="wi wi-small-routine" style="font-size: 24px; margin-right: 10px; vertical-align:middle;"></i>选择小程序
 		<div class="pull-right font-default">
-			<?php  if(!empty($account_info['wxapp_limit']) || $_W['isfounder'] && !user_is_vice_founder()) { ?>
+			<?php  if(!empty($account_info['wxapp_limit']) || $_W['isfounder']) { ?>
 			<a href="<?php  echo url('wxapp/post/design_method')?>" class="color-default"><i class="wi wi-registersite"></i>新建小程序</a>
 			<?php  } ?>
 		</div>
@@ -81,7 +81,7 @@
 			<div class="text-center we7-padding-vertical message-page"  ng-if="!wxapp_lists && !activeLetter">
 				<div class="icon"><span class="wi wi-sad"></span></div>
 				<div class="message-state">您还没有创建小程序</div>
-				<?php  if(!empty($account_info['wxapp_limit']) || $_W['isfounder'] && !user_is_vice_founder()) { ?>
+				<?php  if(!empty($account_info['wxapp_limit']) || $_W['isfounder']) { ?>
 				<div><a class="btn btn-primary" href="<?php  echo url('wxapp/post/design_method')?>">新建小程序</a></div>
 				<?php  } ?>
 			</div>

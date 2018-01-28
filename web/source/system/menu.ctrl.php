@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
  
 defined('IN_IA') or exit('Access Denied');
@@ -11,18 +11,13 @@ $do = in_array($do, $dos) ? $do : 'display';
 $_W['page']['title'] = '系统管理 - 菜单设置';
 
 $system_menu = cache_load('system_frame');
-$system_top_menu = array('account', 'wxapp', 'module', 'help', 'advertisement', 'store');
 if(empty($system_menu)) {
 	cache_build_frame_menu();
 	$system_menu = cache_load('system_frame');
 }
-
 $system_menu_permission = array();
 if (!empty($system_menu)) {
 	foreach ($system_menu as $menu_name => $menu) {
-		if (in_array($menu_name, $system_top_menu)) {
-			$system_menu_permission[] = $menu_name;
-		}
 		if (!empty($menu['section'])) {
 			foreach ($menu['section'] as $section_name => $section) {
 				if (!empty($section['menu'])) {
@@ -38,7 +33,7 @@ if (!empty($system_menu)) {
 }
 
 if ($do == 'display') {
-	$add_top_nav = pdo_getall('core_menu', array('group_name' => 'frame', 'is_system <>' => 1), array('title', 'url', 'permission_name'));
+	$add_top_nav = pdo_getall('core_menu', array('group_name' => 'frame'), array('title', 'url', 'permission_name'));
 	if (!empty($add_top_nav)) {
 		foreach ($add_top_nav as $menu) {
 			$system_menu[$menu['permission_name']] = array(
@@ -79,16 +74,16 @@ if ($do == 'display') {
 	} else {
 		$menu['group_name'] = $_GPC['group'];
 		$menu['is_system'] = 0;
-
+		
 		$menu_db = pdo_get('core_menu', array('permission_name' => $menu['permission_name']));
 		if (!empty($menu_db) && $menu_db['id'] != $id) {
 			iajax(-1, '菜单标识不得重复请更换', referer());
 		}
-
+		
 	}
 	$permission_name = $menu['permission_name'];
 	$menu_db = pdo_get('core_menu', array('permission_name' => $permission_name));
-
+	
 	if (!empty($menu_db)) {
 		unset($menu['permission_name']);
 		$menu['group_name'] = $menu_db['group_name'];
@@ -103,16 +98,11 @@ if ($do == 'display') {
 	$permission_name = $_GPC['permission_name'];
 	$status = intval($_GPC['status']);
 	$menu_db = pdo_get('core_menu', array('permission_name' => $permission_name));
-
+	
 	if (!empty($menu_db)) {
 		pdo_update('core_menu', array('is_display' => $status), array('permission_name' => $permission_name));
 	} else {
-		$menu_data = array('is_display' => $status, 'permission_name' => $permission_name);
-		if (in_array($permission_name, $system_top_menu)) {
-			$menu_data['is_system'] = 1;
-			$menu_data['group_name'] = 'frame';
-		}
-		pdo_insert('core_menu',  $menu_data);
+		pdo_insert('core_menu',  array('is_display' => $status, 'permission_name' => $permission_name));
 	}
 	cache_build_frame_menu();
 	iajax(0, '更新成功', referer());

@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -9,9 +9,9 @@ load()->model('extension');
 load()->model('module');
 load()->func('file');
 
-$dos = array('default', 'designer', 'module', 'template', 'copy', 'build', 'del');
+$dos = array('default', 'designer', 'module', 'createtemplate', 'template', 'copy', 'build', 'del');
 $do = in_array($do, $dos) ? $do : 'template';
-permission_check_account_user('platform_site');
+uni_user_permission_check('platform_site');
 
 $templateid = intval($_GPC['templateid']);
 
@@ -200,12 +200,7 @@ if ($do == 'designer') {
 			}
 		}
 		if (!empty($styles)) {
-			$stylekeys = array_keys($styles);
-			$stylekeys = array_map(function($item){
-				return str_replace(' ','',$item);
-			},$stylekeys);
-			$stylekeys_str = implode(',', $stylekeys);
-			pdo_query("DELETE FROM " . tablename('site_styles_vars') . " WHERE variable IN ('" . $stylekeys . "') AND styleid = :styleid AND uniacid = '{$_W['uniacid']}'", array(':styleid' => $styleid));
+			pdo_query("DELETE FROM " . tablename('site_styles_vars') . " WHERE variable IN ('" . implode("','", array_keys($styles)) . "') AND styleid = :styleid AND uniacid = '{$_W['uniacid']}'", array(':styleid' => $styleid));
 		}
 		pdo_update('site_styles', array('name' => $_GPC['name']), array('id' => $styleid));
 		itoast('更新风格成功！', url('site/style'), 'success');
@@ -257,7 +252,32 @@ if ($do == 'module') {
 	template('site/style');
 }
 
+if ($do == 'createtemplate') {
+	if (empty($_W['isfounder'])) {
+		exit('require founder');
+	}
+	$name = $_GPC['name'];
+	
+	$module = module_fetch($name);
+	if (empty($module)) {
+		exit('invalid module');
+	}
 
+	$file = $_GPC['file'];
+	$setting = uni_setting($_W['uniacid'], array('default_site'));
+	$styleid = pdo_fetchcolumn("SELECT styleid FROM ".tablename('site_multi')." WHERE id = :id", array(':id' => $setting['default_site']));
+	$templateid = pdo_fetchcolumn("SELECT templateid FROM ".tablename('site_styles')." WHERE id = :id", array(':id' => $styleid));
+
+	$ts = uni_templates();
+	$currentTemplate = !empty($ts[$templateid]) ? $ts[$templateid]['name'] : 'default';
+	$targetfile = IA_ROOT . '/app/themes/' . $currentTemplate . '/' . $module['name'] . '/' . $file;
+	if (!file_exists($targetfile)) {
+		mkdirs(dirname($targetfile));
+		file_put_contents($targetfile, '<!-- 原始文件：addons/modules/' . $module['name'] . '/template/mobile/' . $file . ' -->');
+		@chmod($targetfile, $_W['config']['setting']['filemode']);
+	}
+	itoast('操作成功！', '', 'success');
+}
 
 if ($do == 'build') {
 	$templateid = intval($_GPC['styleid']);

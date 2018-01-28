@@ -4,13 +4,11 @@
 	<div class="content clearfix">
 		<div id="head">
 			<div class="logo">
-				<img src="{if !empty($_W['setting']['copyright']['flogo'])}{php echo tomedia($_W['setting']['copyright']['flogo'])}{else}./resource/images/logo/logo-219.png{/if}" width="220px" height="50px">
+				<img src="{if !empty($_W['setting']['copyright']['flogo'])}{php echo tomedia($_W['setting']['copyright']['flogo'])}{else}./resource/images/logo/logo-219.png{/if}" width="220px" height="80px">
 			</div>
 			<div class="advertisement">
 				{if !empty($copyright['notice'])}
 					{$copyright['notice']}
-				{else}
-					再小的品牌，也有自己的微擎
 				{/if}
 			</div>
 			<div class="btns">
@@ -26,7 +24,7 @@
 				{if !empty($copyright['slides'])}
 					{php $i = 1;}
 					{loop $copyright['slides'] $slide}
-						<div class="item {if $i == 1}active{/if}" style="background-image:url({php echo tomedia($slide);});"></div>
+						<div class="item {if $i == 1}active{/if}"><img src="{php echo tomedia($slide);}" alt="" style="width:100%;"></div>
 						{php $i++;}
 					{/loop}
 				{/if}
@@ -196,33 +194,11 @@
 
 				</div>
 			</div>
-			<div class="contact panel panel-default">
-				<h4>联系我们</h4>
-				<div class="panel-body">
-					<div class="map col-xs-5" style="height:150px;">
-						<div class="img" style="width:100%; height:150px; border:#ccc solid 1px;" id="baidumap"></div>
-					</div>
-					<div class="info col-xs-7">
-						<p>联系人：{$copyright['person']}</p>
-						<p>Q&nbsp;&nbsp;&nbsp;&nbsp; Q：{$copyright['qq']}</p>
-						<p>手&nbsp;&nbsp;&nbsp;机：{$copyright['phone']}</p>
-						<p>公&nbsp;&nbsp;&nbsp;司：{$copyright['company']}</p>
-						<p>地&nbsp;&nbsp;&nbsp;址：{$copyright['address']}</p>
-					</div>
-				</div>
-			</div>
+			
 		</div>
 	</div>
-	<div class="center-block footer" role="footer">
-		<div class="text-center">
-			{if empty($copyright['footerright'])}<a href="http://www.we8.club">关于维吧</a>&nbsp;&nbsp;<a href="http://www.we8.club">维吧社区</a>&nbsp;&nbsp;<a href="tencent://message/?uin=1582077961&Site=联系客服&Menu=yes">联系客服</a>{else}{$copyright['footerright']}{/if} &nbsp; &nbsp; {if !empty($copyright['statcode'])}{$copyright['statcode']}{/if}
-		</div>
-		<div class="text-center">
-			{if empty($copyright['footerleft'])}Powered by <a href="http://www.we8.club"><b>微擎</b></a> v{IMS_VERSION} &copy; 2014-2015 <a href="http://www.we8.club">www.we8.club</a>{else}{$copyright['footerleft']}{/if}
-		</div>
-	</div>
-</div>
-<script type="text/javascript" src="http://api.map.baidu.com/api?v=1.4"></script>
+	
+
 <script>
 	var bmap = {
 		'option' : {

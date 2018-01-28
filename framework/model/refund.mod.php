@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 
 defined('IN_IA') or exit('Access Denied');
@@ -55,7 +55,7 @@ function refund($refund_id) {
 	$paylog = pdo_get('core_paylog', array('uniacid' => $_W['uniacid'], 'uniontid' => $refundlog['uniontid']));
 	if ($paylog['type'] == 'wechat') {
 		$refund_param = reufnd_wechat_build($refund_id);
-		$wechat = Pay::create('wechat');
+		$wechat = Pay::create('weixin');
 		$response = $wechat->refund($refund_param);
 		unlink(ATTACHMENT_ROOT . $_W['uniacid'] . '_wechat_refund_all.pem');
 		if (is_error($response)) {
@@ -64,49 +64,8 @@ function refund($refund_id) {
 		} else {
 			return $response;
 		}
-	} elseif ($paylog['type'] == 'alipay') {
-		$refund_param = reufnd_ali_build($refund_id);
-		$ali = Pay::create('alipay');
-		$response = $ali->refund($refund_param, $refund_id);
-		if (is_error($response)) {
-			pdo_update('core_refundlog', array('status' => '-1'), array('id' => $refund_id));
-			return $response;
-		} else {
-			return $response;
-		}
 	}
 	return error(1, '此订单退款方式不存在');
-}
-
-
-function reufnd_ali_build($refund_id) {
-	global $_W;
-	$setting = uni_setting_load('payment', $_W['uniacid']);
-	$refund_setting = $setting['payment']['ali_refund'];
-	if ($refund_setting['switch'] != 1) {
-		return error(1, '未开启支付宝退款功能！');
-	}
-	if (empty($refund_setting['private_key'])) {
-		return error(1, '缺少支付宝秘钥证书！');
-	}
-
-	$refundlog = pdo_get('core_refundlog', array('id' => $refund_id));
-	$paylog = pdo_get('core_paylog', array('uniacid' => $_W['uniacid'], 'uniontid' => $refundlog['uniontid']));
-	$refund_param = array(
-		'app_id' => $refund_setting['app_id'],
-		'method' => 'alipay.trade.refund',
-		'charset' => 'utf-8',
-		'sign_type' => 'RSA2',
-		'timestamp' => date('Y-m-d H:i:s'),
-		'version' => '1.0',
-		'biz_content' => array(
-			'out_trade_no' => $paylog['tid'],
-			'refund_amount' => $refundlog['fee'],
-			'refund_reason' => $refundlog['reason'],
-		)
-	);
-	$refund_param['biz_content'] = json_encode($refund_param['biz_content']);
-	return $refund_param;
 }
 
 

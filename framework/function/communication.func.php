@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -35,14 +35,14 @@ function ihttp_request($url, $post = '', $extra = array(), $timeout = 60) {
 	} else {
 		$fp = ihttp_socketopen($urlset['host'], $urlset['port'], $errno, $error);
 	}
-	stream_set_blocking($fp, $timeout > 0 ? true : false);
-	stream_set_timeout($fp, ini_get('default_socket_timeout'));
+	stream_set_blocking($fp, true);
+	stream_set_timeout($fp, $timeout);
 	if (!$fp) {
 		return error(1, $error);
 	} else {
 		fwrite($fp, $body);
-		$content = '';
 		if($timeout > 0) {
+			$content = '';
 			while (!feof($fp)) {
 				$content .= fgets($fp, 512);
 			}
@@ -223,39 +223,22 @@ function ihttp_parse_url($url, $set_default_port = false) {
 	}
 	if (strexists($url, 'https://') && !extension_loaded('openssl')) {
 		if (!extension_loaded("openssl")) {
-			return error(1,'请开启您PHP环境的openssl', '');
+			return error('请开启您PHP环境的openssl', '', '');
 		}
 	}
 	if (empty($urlset['host'])) {
 		$current_url = parse_url($GLOBALS['_W']['siteroot']);
 		$urlset['host'] = $current_url['host'];
 		$urlset['scheme'] = $current_url['scheme'];
-		$urlset['path'] = $current_url['path'] . 'web/' . str_replace('./', '', $urlset['path']);
+		$urlset['path'] = '/web/' . str_replace('./', '', $urlset['path']);
 		$urlset['ip'] = '127.0.0.1';
-	} else if (! ihttp_allow_host($urlset['host'])){
-		return error(1, 'host 非法');
 	}
 	
 	if ($set_default_port && empty($urlset['port'])) {
 		$urlset['port'] = $urlset['scheme'] == 'https' ? '443' : '80';
 	}
+	
 	return $urlset;
-}
-
-
-function ihttp_allow_host($host) {
-	global $_W;
-	if (strexists($host, '@')) {
-		return false;
-	}
-	$pattern = "/^(10|172|192|127)/";
-	if (preg_match($pattern, $host) && isset($_W['setting']['ip_white_list'])) {
-		$ip_white_list = $_W['setting']['ip_white_list'];
-		if ($ip_white_list && isset($ip_white_list[$host]) && !$ip_white_list[$host]['status']) {
-			return false;
-		}
-	}
-	return true;
 }
 
 
@@ -415,7 +398,7 @@ function ihttp_email($to, $subject, $body, $global = false) {
 
 	if (empty($mailer)) {
 		if (!class_exists('PHPMailer')) {
-			load()->library('phpmailer');
+			require IA_ROOT . '/framework/library/phpmailer/PHPMailerAutoload.php';
 		}
 		$mailer = new PHPMailer();
 		global $_W;

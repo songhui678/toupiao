@@ -1,7 +1,7 @@
 <?php
 /**
- * [WECHAT 2018]
- * [WECHAT  a free software]
+ * [WeEngine System] Copyright (c) 2014 WE7.CC
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -14,9 +14,9 @@ load()->model('module');
 load()->model('system');
 load()->model('user');
 
-$dos = array('platform', 'system', 'ext', 'get_fans_kpi', 'get_last_modules', 'get_system_upgrade', 'get_upgrade_modules', 'get_module_statistics', 'get_ads');
+$dos = array('platform', 'system', 'ext', 'get_fans_kpi', 'get_last_modules', 'get_system_upgrade', 'get_upgrade_modules', 'get_module_statistics');
 $do = in_array($do, $dos) ? $do : 'platform';
-if ($do == 'platform' || ($do == 'ext' && $_GPC['m'] != 'store')) {
+if ($do == 'platform' || $do == 'ext') {
 	checkaccount();
 }
 
@@ -76,7 +76,6 @@ if ($do == 'platform') {
 		$_W['current_module'] = module_fetch($modulename);
 	}
 	$site = WeUtility::createModule($modulename);
-
 	if (!is_error($site)) {
 		$method = 'welcomeDisplay';
 		if(method_exists($site, $method)){
@@ -143,11 +142,4 @@ if ($do == 'platform') {
 		)
 	);
 	iajax(0, $upgrade_module, '');
-} elseif ($do == 'get_ads') {
-	$ads = welcome_get_ads();
-	if (is_error($ads)) {
-		iajax(1, $ads['message']);
-	} else {
-		iajax(0, $ads);
-	}
 }

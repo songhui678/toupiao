@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -18,8 +18,7 @@ function code_verify($uniacid, $receiver, $code) {
 function utility_image_rename($image_source_url, $image_destination_url) {
 	global $_W;
 	load()->func('file');
-	$image_source_url = str_replace(array("\0","%00","\r"),'',$image_source_url);
-	if (empty($image_source_url) || !parse_path($image_source_url) || !file_is_image($image_source_url)) {
+	if (empty($image_source_url) || !parse_path($image_source_url)) {
 		return false;
 	}
 	if (!strexists($image_source_url, $_W['siteroot'])) {

@@ -26,21 +26,12 @@
 		<tr>
 			<td class="text-left">系统程序版本</td>
 			<td class="text-left">WeEngine <?php  echo IMS_VERSION;?> Release <?php  echo IMS_RELEASE_DATE;?> &nbsp; &nbsp;
-				<a href="javascript:;" onclick="window.open('http://bbs.we7.cc/forum.php?mod=forumdisplay&fid=2&filter=typeid&typeid=8','_blank');" style="color: #428bca;">查看最新版本</a>
+				<a href="http://www.we7.cc" target="_blank" style="color: #428bca;">查看最新版本</a>
 			</td>
 		</tr>
 		<tr>
 			<td class="text-left">产品系列</td>
-			<td class="text-left">
-				<?php  if(IMS_FAMILY == 'v') { ?>
-				您的产品是开源版, 没有购买商业授权, 不能用于商业用途
-				<?php  } else if(IMS_FAMILY == 's') { ?>
-				您的产品是授权版
-				<?php  } else if(IMS_FAMILY == 'x') { ?>
-				您的产品是商业版
-				<?php  } else { ?>
-				您的产品是单版
-				<?php  } ?>
+			<td class="text-left"><?php  if(IMS_FAMILY == 'v') { ?> 您的产品是开源版, 没有购买商业授权, 不能用于商业用途 <?php  } else { ?> 您的产品是商业版 <?php  } ?>
 			</td>
 		</tr>
 		<tr>
@@ -76,5 +67,7 @@
 			<td class="text-left"><?php  echo $info['attach']['size'];?></td>
 		</tr>
 	</table>
+
+
 </div>
 <?php (!empty($this) && $this instanceof WeModuleSite || 0) ? (include $this->template('common/footer', TEMPLATE_INCLUDEPATH)) : (include template('common/footer', TEMPLATE_INCLUDEPATH));?>

@@ -2,7 +2,7 @@
 
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 function cache_build_template() {
 	load()->func('file');
@@ -158,17 +158,15 @@ function cache_build_users_struct() {
 
 function cache_build_frame_menu() {
 	$system_menu_db = pdo_getall('core_menu', array('permission_name !=' => ''), array(), 'permission_name');
-	$system_menu = require IA_ROOT . '/web/common/frames.inc.php';
+	
+	$system_menu = require_once IA_ROOT . '/web/common/frames.inc.php';
 	if (!empty($system_menu) && is_array($system_menu)) {
-		$system_displayoser = 0;
 		foreach ($system_menu as $menu_name => $menu) {
 			$system_menu[$menu_name]['is_system'] = true;
-			$system_menu[$menu_name]['is_display'] = empty($system_menu_db[$menu_name]) || !empty($system_menu_db[$menu_name]['is_display']) ? true : false;
-			$system_menu[$menu_name]['displayorder'] = ++$system_displayoser;
-
+			$system_menu[$menu_name]['is_display'] = true;
 			foreach ($menu['section'] as $section_name => $section) {
 				$displayorder = max(count($section['menu']), 1);
-
+				
 								if (empty($section['menu'])) {
 					$section['menu'] = array();
 				}
@@ -200,7 +198,7 @@ function cache_build_frame_menu() {
 				$system_menu[$menu_name]['section'][$section_name]['menu'] = iarray_sort($system_menu[$menu_name]['section'][$section_name]['menu'], 'displayorder', 'desc');
 			}
 		}
-		$add_top_nav = pdo_getall('core_menu', array('group_name' => 'frame', 'is_system <>' => 1), array('title', 'url', 'permission_name', 'displayorder'));
+		$add_top_nav = pdo_getall('core_menu', array('group_name' => 'frame'), array('title', 'url', 'permission_name'));
 		if (!empty($add_top_nav)) {
 			foreach ($add_top_nav as $menu) {
 				$menu['blank'] = true;
@@ -208,7 +206,6 @@ function cache_build_frame_menu() {
 				$system_menu[$menu['permission_name']] = $menu;
 			}
 		}
-		$system_menu = iarray_sort($system_menu, 'displayorder', 'asc');
 		cache_delete('system_frame');
 		cache_write('system_frame', $system_menu);
 	}
@@ -282,8 +279,8 @@ function cache_build_uninstalled_module() {
 	if (!empty($cloud_module) && !is_error($cloud_module)) {
 		foreach ($cloud_module as $module) {
 			$upgrade_support_module = false;
-			$wxapp_support = !empty($module['site_branch']['wxapp_support']) && is_array($module['site_branch']['bought']) && in_array('wxapp', $module['site_branch']['bought']) ? $module['site_branch']['wxapp_support'] : 1;
-			$app_support = !empty($module['site_branch']['app_support']) && is_array($module['site_branch']['bought']) && in_array('app', $module['site_branch']['bought']) ? $module['site_branch']['app_support'] : 1;
+			$wxapp_support = !empty($module['site_branch']['wxapp_support']) && in_array('wxapp', $module['site_branch']['bought']) ? $module['site_branch']['wxapp_support'] : 1;
+			$app_support = !empty($module['site_branch']['app_support']) && in_array('app', $module['site_branch']['bought']) ? $module['site_branch']['app_support'] : 1;
 			if ($wxapp_support ==  1 && $app_support == 1) {
 				$app_support = 2;
 			}

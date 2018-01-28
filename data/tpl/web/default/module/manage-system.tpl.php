@@ -3,11 +3,11 @@
 	应用管理
 </div>
 <ul class="we7-page-tab">
-	<li <?php  if($do == 'installed') { ?>class="active"<?php  } ?>><a href="<?php  echo url('module/manage-system/installed', array('account_type' => ACCOUNT_TYPE))?>">已安装公众号应用  </a></li>
-	<?php  if(permission_check_account_user('see_module_manage_system_except_installed')) { ?>
-	<li <?php  if($do == 'not_installed' && $_GPC['status'] != 'recycle') { ?>class="active"<?php  } ?>><a href="<?php  echo url('module/manage-system/not_installed', array('account_type' => ACCOUNT_TYPE))?>">未安装公众号应用<span class="color-red">  (<?php  echo $total_uninstalled;?>) </span></a></li>
-	<li <?php  if($do == 'not_installed' && $_GPC['status'] == 'recycle') { ?>class="active"<?php  } ?>><a href="<?php  echo url('module/manage-system/not_installed', array('status' => 'recycle', 'account_type' => ACCOUNT_TYPE))?>">已停用公众号应用</a></li>
-	<li <?php  if($do == 'subscribe') { ?>class="active"<?php  } ?>><a href="<?php  echo url('module/manage-system/subscribe', array('account_type' => ACCOUNT_TYPE))?>">订阅管理</a></li>
+	<li <?php  if($do == 'installed') { ?>class="active"<?php  } ?>><a href="<?php  echo url('module/manage-system/installed')?>">已安装公众号应用  </a></li>
+	<?php  if($_W['isfounder']) { ?>
+	<li <?php  if($do == 'not_installed' && $_GPC['status'] != 'recycle') { ?>class="active"<?php  } ?>><a href="<?php  echo url('module/manage-system/not_installed')?>">未安装公众号应用<span class="color-red">  (<?php  echo $total_uninstalled;?>) </span></a></li>
+	<li <?php  if($do == 'not_installed' && $_GPC['status'] == 'recycle') { ?>class="active"<?php  } ?>><a href="<?php  echo url('module/manage-system/not_installed', array('status' => 'recycle'))?>">已停用公众号应用</a></li>
+	<li <?php  if($do == 'subscribe') { ?>class="active"<?php  } ?>><a href="<?php  echo url('module/manage-system/subscribe')?>">订阅管理</a></li>
 	<?php  } ?>
 </ul>
 <?php  if($do == 'installed') { ?>
@@ -36,7 +36,7 @@
 		<table class="table we7-table table-hover vertical-middle table-manage">
 			<col width="120px" />
 			<col width="350px"/>
-			<col width="500px" />
+			<col width="230px" />
 			<tr>
 				<th colspan="2" class="text-left filter">
 					<div class="dropdown dropdown-toggle we7-dropdown">
@@ -50,7 +50,6 @@
 					</div>
 				</th>
 				<th class="text-right">
-					<?php  if(permission_check_account_user('see_module_manage_system_ugrade')) { ?>
 					<div class="we7-form">
 						<input type="checkbox" name="" onclick="filter('new_branch')" id="filter-1" value="1">
 						<label class="checkbox-inline" for="filter-1">
@@ -62,7 +61,6 @@
 							有升级的应用
 						</label>
 					</div>
-					<?php  } ?>
 				</th>
 			</tr>
 			<tr>
@@ -81,24 +79,15 @@
 				</td>
 				<td class="text-left">
 					<p>{{ module.title }}</p>
-					<?php  if(permission_check_account_user('see_module_manage_system_newversion')) { ?>
 					<span>版本：{{ module.version }} </span><span class="color-red" ng-if="module.upgrade && isFounder == 1">发现新版本</span>
-					<?php  } ?>
 				</td>
-				<td class="vertical-middle table-manage-td">
+				<td>
 					<div class="link-group">
-						<?php  if(permission_check_account_user('see_module_manage_system_ugrade')) { ?>
 						<a ng-href="{{ './index.php?c=module&a=manage-system&do=upgrade&module_name='+module.name}}" class="color-red del" ng-if="module.upgrade && module.from != 'cloud' && isFounder == 1">升级</a>
 						<a href="<?php  echo url('module/manage-system/module_detail')?>&name={{ module.name }}&show=upgrade" class="color-red del" ng-if="module.upgrade && module.from == 'cloud' && isFounder == 1">升级</a>
-						<?php  } ?>
 						<a href="<?php  echo url('module/manage-system/module_detail')?>&name={{ module.name }}&account_type=<?php echo ACCOUNT_TYPE;?>&type=<?php echo ACCOUNT_TYPE_OFFCIAL_NORMAL;?>" ng-if="isFounder == 1">管理设置</a>
 						<!--<a href="javascript:;" ng-if="isFounder == 1" ng-click="editModule(module.mid)">编辑</a>-->
-					</div>
-					<div class="manage-option text-right">
-						<a href="<?php  echo url('module/manage-system/module_detail')?>&name={{ module.name }}&account_type=<?php echo ACCOUNT_TYPE;?>&type=<?php echo ACCOUNT_TYPE_OFFCIAL_NORMAL;?>" ng-if="isFounder == 1">基本信息</a>
-						<a href="<?php  echo url('module/manage-system/module_detail')?>&name={{ module.name }}&account_type=<?php echo ACCOUNT_TYPE;?>&type=<?php echo ACCOUNT_TYPE_OFFCIAL_NORMAL;?>&show=group" ng-if="isFounder == 1">应用权限组</a>
-						<a href="<?php  echo url('module/manage-system/module_detail')?>&name={{ module.name }}&account_type=<?php echo ACCOUNT_TYPE;?>&type=<?php echo ACCOUNT_TYPE_OFFCIAL_NORMAL;?>&show=subscribe" ng-if="isFounder == 1 && module.subscribes.length">订阅消息</a>
-						<?php  if(permission_check_account_user('see_module_manage_system_stop')) { ?>
+						<?php  if($_W['user']['founder_groupid'] != ACCOUNT_MANAGE_GROUP_VICE_FOUNDER) { ?>
 						<a href="<?php  echo url('module/manage-system/uninstall')?>&name={{ module.name }}" ng-if="isFounder == 1" onclick="return confirm('确认要停用模块吗？')">停用</a>
 						<?php  } ?>
 					</div>
@@ -298,13 +287,8 @@
 				<span>版本：{{ module.version }} </span>
 			</td>
 			<td class="text-right">
-				<?php  if(permission_check_account_user('see_module_manage_system_install')) { ?>
-				<a href="<?php  echo url('module/manage-system/upgrade')?>&module_name={{ module.name }}" ng-if="module.upgrade_support == true" class="btn btn-primary"><?php  if($_GPC['status'] == 'recycle') { ?>启用<?php  } else { ?>安装应用模块<?php  } ?></a>
-				<a href="<?php  echo url('module/manage-system/install')?>&module_name={{ module.name }}" ng-if="module.upgrade_support != true" class="btn btn-primary"><?php  if($_GPC['status'] == 'recycle') { ?>启用<?php  } else { ?>安装应用模块<?php  } ?></a>
-				<?php  if($_GPC['status'] == 'recycle') { ?>
-				<a href="<?php  echo url('module/manage-system/recycle_uninstall')?>&module_name={{ module.name }}" ng-if="module.upgrade_support != true" class="btn btn-primary">卸载模块</a>
-				<?php  } ?>
-				<?php  } ?>
+				<a href="<?php  echo url('module/manage-system/upgrade')?>&module_name={{ module.name }}" ng-if="module.upgrade_support == true" class="btn btn-primary">安装应用模块</a>
+				<a href="<?php  echo url('module/manage-system/install')?>&module_name={{ module.name }}" ng-if="module.upgrade_support != true" class="btn btn-primary">安装应用模块</a>
 			</td>
 		</tr>
 	</table>
@@ -340,7 +324,7 @@
 		</div>
 		<img ng-src="{{ moduleinfo.logo }}" class="user-avatar img-rounded pull-left" ng-if="moduleinfo.main_module == ''">
 		<h3 class="pull-left">{{ moduleinfo.title }}</h3>
-		<?php  if(permission_check_account_user('see_module_manage_system_shopinfo')) { ?>
+		<?php  if($_W['user']['founder_groupid'] != ACCOUNT_MANAGE_GROUP_VICE_FOUNDER) { ?>
 		<a ng-if="isFounder == 1 && moduleinfo.cloud_mid != ''" ng-href="{{ 'http://s.we7.cc/module-' + moduleinfo.cloud_mid + '.html' }}" target="_blank" class="btn btn-primary pull-right">查看商城详情</a>
 		<?php  } ?>
 	</div>
@@ -352,19 +336,7 @@
 		<?php  if(!empty($module_subscribes)) { ?>
 		<a href="javascript:;" ng-click="changeShow('subscribe')" class="btn " ng-class="{'active' : show == 'subscribe'}">订阅消息</a>
 		<?php  } ?>
-		<?php  if(permission_check_account_user('see_module_manage_system_ugrade')) { ?>
-		<a  href="javascript:;" ng-click="changeShow('upgrade')" class="btn " ng-class="{'active' : show == 'upgrade'}" ng-show="checkupgrade == 1">升级</a>
-		<?php  } ?>
-		<a  href="javascript:;" ng-click="changeShow('workorder')" ng-class="{'active' : show == 'workorder'}" class="btn">工单系统</a>
-	</div>
-	<div class="panel we7-panel" ng-show="show == 'workorder'">
-		<div class="panel-heading">
-			工单系统
-		</div>
-		<div class="panel-body" id="iframepanel">
-			<iframe src="" frameborder="0" width="100%"  scrolling="no" id="workorderiframe">
-			</iframe>
-		</div>
+		<a href="javascript:;" ng-click="changeShow('upgrade')" class="btn " ng-class="{'active' : show == 'upgrade'}" ng-show="checkupgrade == 1">升级</a>
 	</div>
 	<table class="table we7-table table-hover table-form" ng-show="show == 'base' || show == ''">
 		<col width="140px">
@@ -376,13 +348,11 @@
 		<tr>
 			<td class="table-label">模块标题</td>
 			<td>{{ moduleinfo.title }}</td>
-			<?php  if(permission_check_account_user('see_module_manage_system_info_edit')) { ?>
 			<td class="text-right">
 				<div class="link-group"><a href="javascript:;" ng-click="editModule('title', moduleinfo.title)">修改</a></div>
 			</td>
-			<?php  } ?>
 		</tr>
-		<?php  if(permission_check_account_user('see_module_manage_system_detailinfo')) { ?>
+		<?php  if($_W['user']['founder_groupid'] != ACCOUNT_MANAGE_GROUP_VICE_FOUNDER) { ?>
 		<tr>
 			<td class="table-label">模块作者</td>
 			<td colspan="2">{{ moduleinfo.author }}</td>
@@ -395,42 +365,34 @@
 		<tr>
 			<td class="table-label">模块简述</td>
 			<td>{{ moduleinfo.ability }}</td>
-			<?php  if(permission_check_account_user('see_module_manage_system_info_edit')) { ?>
 			<td class="text-right">
 				<div class="link-group"><a href="javascript:;" ng-click="editModule('ability', moduleinfo.ability)">修改</a></div>
 			</td>
-			<?php  } ?>
 		</tr>
 		<tr>
 			<td class="table-label">模块介绍</td>
 			<td>{{ moduleinfo.description }}</td>
-			<?php  if(permission_check_account_user('see_module_manage_system_info_edit')) { ?>
 			<td class="text-right">
 				<div class="link-group"><a href="javascript:;" ng-click="editModule('description', moduleinfo.description)">修改</a></div>
 			</td>
-			<?php  } ?>
 		</tr>
 		<tr>
 			<td class="table-label">模块缩略图</td>
 			<td><img ng-src="{{ moduleinfo.logo }}" alt="" style="width:65px; height:65px;" class="img-rounded"/></td>
-			<?php  if(permission_check_account_user('see_module_manage_system_info_edit')) { ?>
 			<td class="text-right">
 				<div class="link-group"><a href="javascript:;" ng-click="editModule('logo', moduleinfo.logo)">修改</a></div>
 			</td>
-			<?php  } ?>
 		</tr>
 		<tr>
 			<td class="table-label">模块封面</td>
 			<td><img ng-src="{{ moduleinfo.preview }}" alt="" style="width:65px; height:65px;" class="img-rounded"/></td>
-			<?php  if(permission_check_account_user('see_module_manage_system_info_edit')) { ?>
 			<td class="text-right">
 				<div class="link-group"><a href="javascript:;" ng-click="editModule('preview', moduleinfo.preview)">修改</a></div>
 			</td>
-			<?php  } ?>
 		</tr>
 	</table>
 	<?php  if(!empty($module_info['is_relation'])) { ?>
-	<table class="table we7-table table-hover vertical-middle table-manage" ng-show="show != 'workorder'">
+	<table class="table we7-table table-hover vertical-middle table-manage">
 		<col width="150px"/>
 		<col />
 		<col />
@@ -485,9 +447,7 @@
 			<td>{{ moduleinfo.version }}</td>
 			<td>{{ upgradeInfo.best_version }}</td>
 			<td class="text-right">
-				<?php  if(permission_check_account_user('see_module_manage_system_ugrade')) { ?>
 				<a href="<?php  echo url('module/manage-system/upgrade')?>module_name={{ moduleinfo.name }}" class="btn btn-danger">升级</a>
-				<?php  } ?>
 			</td>
 		</tr>
 	</table>
@@ -512,10 +472,8 @@
 			<td>{{ branch.version.version }}</td>
 			<td class="text-right">
 				<span class="text text-success" ng-if="branch.id == upgradeInfo.site_branch.id && branch.version.version ==  moduleinfo.version">无需升级</span>
-				<?php  if(permission_check_account_user('see_module_manage_system_ugrade')) { ?>
 				<a href="javascript:;" ng-click="notice(service_expire, upgradeInfo.id, upgradeInfo.name)" ng-if="branch.id == upgradeInfo.site_branch.id && branch.version.version !=  moduleinfo.version" class="btn btn-primary">升级</a>
-				<?php  } ?>
-				<a href="javascript:;" ng-click="upgrade(branch.upgrade_price, upgradeInfo.name, upgradeInfo.id)" ng-if="branch.displayorder > upgradeInfo.site_branch.displayorder || (branch.displayorder == upgradeInfo.site_branch.displayorder && branch.id > upgradeInfo.site_branch.id)" class="btn btn-danger">购买</a>
+				<a href="javascript:;" ng-click="upgrade(branch.upgrade_price, upgradeInfo.name, branch.id)" ng-if="branch.displayorder > upgradeInfo.site_branch.displayorder || (branch.displayorder == upgradeInfo.site_branch.displayorder && branch.id > upgradeInfo.site_branch.id)" class="btn btn-danger">购买</a>
 			</td>
 		</tr>
 		<tr>
@@ -565,7 +523,7 @@
 					应用权限组
 				</th>
 				<th class="text-right">
-					<?php  if(permission_check_account_user('see_module_manage_system_group_add')) { ?>
+					<?php  if($_W['user']['founder_groupid'] != ACCOUNT_MANAGE_GROUP_VICE_FOUNDER) { ?>
 					<a href="<?php  echo url('module/group')?>" class="color-default">添加</a>
 					<?php  } ?>
 				</th>
@@ -583,7 +541,7 @@
 					<span><?php  echo $group['name'];?></span>
 				</td>
 				<td class="text-right">
-					<?php  if(permission_check_account_user('see_module_manage_system_group_add')) { ?>
+					<?php  if($_W['user']['founder_groupid'] != ACCOUNT_MANAGE_GROUP_VICE_FOUNDER) { ?>
 					<div class="link-group"><a href="<?php  echo url('module/group/post', array('id' => $group['id']))?>">设置</a></div>
 					<?php  } ?>
 				</td>
@@ -707,17 +665,6 @@
 	});
 	angular.bootstrap($('.js-system-module-detail'), ['moduleApp']);
 	});
-
-	if(window.addEventListener) {
-		window.addEventListener('message', function(e){
-			$('#workorderiframe').height(e.data.height+200); //选中图片导致高度又变高了
-		});
-	}
-	$.getJSON("<?php  echo url('system/workorder/module')?>name=<?php  echo $module_info['name'];?>", function(data){
-		if(data.errno == 0) {
-			$('#workorderiframe').attr('src',data.data.url);
-		}
-	});
 </script>
 <?php  } else if($do == 'subscribe') { ?>
 <div class="alert alert-info">
@@ -752,58 +699,5 @@
 	});
 	angular.bootstrap($('.js-system-module-subscribe'), ['moduleApp']);
 </script>
-<?php  } else if($do == 'install_success') { ?>
-<div class="steps">
-	<div class="steps-item steps-status-wait">
-		<div class="steps-line"><span class="steps-num">1</span></div>
-		<div class="steps-state">安装应用</div>
-	</div>
-	<div class="steps-item steps-status-wait">
-		<div class="steps-line"><span class="steps-num">2</span></div>
-		<div class="steps-state">分配应用权限</div>
-	</div>
-	<div class="steps-item steps-status-finish">
-		<div class="steps-line"><span class="steps-num">3</span></div>
-		<div class="steps-state">安装成功</div>
-	</div>
-</div>
-<div class="distribution-steps">
-	<div class="we7-margin-bottom-sm font-lg">应用分配到公众号使用的流程说明</div>
-	<div class="steps-container">
-		<div>
-			<div class="num">1</div>
-			<div class="title">
-				<span class="wi wi-appjurisdiction"></span>添加应用权限组
-			</div>
-			<div class="content">
-				设置应用权限组名称，选择需要添加的公众号应用、小程序应用、微站模板，保存提交。
-				<div><a href="<?php  echo url('module/group/post')?>" class="color-default">去添加应用组 ></a></div>
-			</div>
-		</div>
-		<div>
-			<div class="num">2</div>
-			<div class="title">
-				<span class="wi wi-userjurisdiction"></span>添加用户权限组
-			</div>
-			<div class="content">
-				设置用户权限组名称，选择可以添加的的公众号，小程序数量、有效期并选择应用权限组，然后保存提交。
-				<div><a href="<?php  echo url('user/group/post')?>" class="color-default">去添加用户权限组 ></a></div>
-			</div>
-		</div>
-		<div>
-			<div class="num">3</div>
-			<div class="title">
-				<span class="wi wi-user-group"></span>分配用户权限组
-			</div>
-			<div class="content">
-				改用户组权限，分配成功后此用户组即可使用该应用组的所有应用。
-				<div><a href="<?php  echo url('user/group')?>" class="color-default">去分配用户组 ></a></div>
-			</div>
-		</div>
-	</div>
-</div>
-<div class="we7-margin-bottom">
-	<a class="btn btn-primary" href="<?php  echo url('module/manage-system')?>">返回已安装应用列表</a>
-</div>
 <?php  } ?>
 <?php (!empty($this) && $this instanceof WeModuleSite || 0) ? (include $this->template('common/footer', TEMPLATE_INCLUDEPATH)) : (include template('common/footer', TEMPLATE_INCLUDEPATH));?>

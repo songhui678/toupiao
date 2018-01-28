@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -54,7 +54,7 @@ if($do == 'user') {
 				$user['discount_cn'] = '商家未开启会员卡功能';
 			}
 		}
-
+		
 		$html = "姓名:{$user['realname']},会员组:{$user['groupname']}<br>";
 		if(!empty($we7_coupon_info)) {
 			$html .= "{$user['discount_cn']}<br>";
@@ -63,7 +63,7 @@ if($do == 'user') {
 		if(!empty($we7_coupon_info) && !empty($card) && $card['offset_rate'] > 0 && $card['offset_max'] > 0) {
 			$html .= "{$card['offset_rate']}积分可抵消1元。最多可抵消{$card['offset_max']}元";
 		}
-
+		
 		exit(json_encode(array('error' => 'none', 'user' => $user, 'html' => $html, 'card' => $card, 'group' => $_W['account']['groups'], 'grouplevel' => $_W['account']['grouplevel'])));
 	}
 }

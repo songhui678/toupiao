@@ -4,12 +4,12 @@
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title><?php  if(isset($title)) $_W['page']['title'] = $title?><?php  if(!empty($_W['page']['title'])) { ?><?php  echo $_W['page']['title'];?><?php  } ?><?php  if(empty($_W['page']['copyright']['sitename'])) { ?><?php  if(IMS_FAMILY != 'x') { ?><?php  if(!empty($_W['page']['title'])) { ?> - <?php  } ?>维吧活动运维系统 -  Powered by WE8<?php  } ?><?php  } else { ?><?php  if(!empty($_W['page']['title'])) { ?> - <?php  } ?><?php  echo $_W['page']['copyright']['sitename'];?><?php  } ?></title>
-	<meta name="keywords" content="<?php  if(empty($_W['page']['copyright']['keywords'])) { ?><?php  if(IMS_FAMILY != 'x') { ?>维吧活动运维系统<?php  } ?><?php  } else { ?><?php  echo $_W['page']['copyright']['keywords'];?><?php  } ?>" />
-	<meta name="description" content="<?php  if(empty($_W['page']['copyright']['description'])) { ?><?php  if(IMS_FAMILY != 'x') { ?>维吧活动运维系统，简称维吧，维吧是一款基于微信营销免费开源的活动运维系统，为现代智慧活动场景提供最为高效、完善、靠谱的saas互联网技术解决方案。<?php  } ?><?php  } else { ?><?php  echo $_W['page']['copyright']['description'];?><?php  } ?>" />
+	<title><?php  if(isset($title)) $_W['page']['title'] = $title?><?php  if(!empty($_W['page']['title'])) { ?><?php  echo $_W['page']['title'];?><?php  } ?><?php  if(empty($_W['page']['copyright']['sitename'])) { ?><?php  if(IMS_FAMILY != 'x') { ?><?php  if(!empty($_W['page']['title'])) { ?> - <?php  } ?>微信管理平台<?php  } ?><?php  } else { ?><?php  if(!empty($_W['page']['title'])) { ?> - <?php  } ?><?php  echo $_W['page']['copyright']['sitename'];?><?php  } ?></title>
+	<meta name="keywords" content="<?php  if(empty($_W['page']['copyright']['keywords'])) { ?><?php  if(IMS_FAMILY != 'x') { ?>微擎,微信,微信公众平台,we7.cc<?php  } ?><?php  } else { ?><?php  echo $_W['page']['copyright']['keywords'];?><?php  } ?>" />
+	<meta name="description" content="<?php  if(empty($_W['page']['copyright']['description'])) { ?><?php  if(IMS_FAMILY != 'x') { ?>公众平台自助引擎（www.we7.cc），简称微擎，微擎是一款免费开源的微信公众平台管理系统，是国内最完善移动网站及移动互联网技术解决方案。<?php  } ?><?php  } else { ?><?php  echo $_W['page']['copyright']['description'];?><?php  } ?>" />
 	<link rel="shortcut icon" href="<?php  if(!empty($_W['setting']['copyright']['icon'])) { ?><?php  echo $_W['attachurl'];?><?php  echo $_W['setting']['copyright']['icon'];?><?php  } else { ?>./resource/images/favicon.ico<?php  } ?>" />
-	<link href="./resource/css/bootstrap.min.css?v=20170915" rel="stylesheet">
-	<link href="./resource/css/common.css?v=20170915" rel="stylesheet">
+	<link href="./resource/css/bootstrap.min.css?v=20170719" rel="stylesheet">
+	<link href="./resource/css/common.css?v=20170719" rel="stylesheet">
 	<script type="text/javascript">
 	if(navigator.appName == 'Microsoft Internet Explorer'){
 		if(navigator.userAgent.indexOf("MSIE 5.0")>0 || navigator.userAgent.indexOf("MSIE 6.0")>0 || navigator.userAgent.indexOf("MSIE 7.0")>0) {
@@ -30,15 +30,14 @@
 		'module' : {'url' : '<?php  if(defined('MODULE_URL')) { ?><?php echo MODULE_URL;?><?php  } ?>', 'name' : '<?php  if(defined('IN_MODULE')) { ?><?php echo IN_MODULE;?><?php  } ?>'},
 		'cookie' : {'pre': '<?php  echo $_W['config']['cookie']['pre'];?>'},
 		'account' : <?php  echo json_encode($_W['account'])?>,
-		'server' : {'php' : '<?php  echo phpversion()?>'},
 	};
 	</script>
-	<script>var require = { urlArgs: 'v=20170915' };</script>
+	<script>var require = { urlArgs: 'v=20170719' };</script>
 	<script type="text/javascript" src="./resource/js/lib/jquery-1.11.1.min.js"></script>
 	<script type="text/javascript" src="./resource/js/lib/bootstrap.min.js"></script>
-	<script type="text/javascript" src="./resource/js/app/util.js?v=20170915"></script>
-	<script type="text/javascript" src="./resource/js/app/common.min.js?v=20170915"></script>
-	<script type="text/javascript" src="./resource/js/require.js?v=20170915"></script>
+	<script type="text/javascript" src="./resource/js/app/util.js?v=20170719"></script>
+	<script type="text/javascript" src="./resource/js/app/common.min.js?v=20170719"></script>
+	<script type="text/javascript" src="./resource/js/require.js?v=20170719"></script>
 </head>
 <body>
 	<div class="loader" style="display:none">

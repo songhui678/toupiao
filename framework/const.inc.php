@@ -1,7 +1,7 @@
-<?php
+<?php 
 /**
- * [WECHAT 2018]
- * [WECHAT  a free software]
+ * [WeEngine System] Copyright (c) 2014 WE7.CC
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 
 defined('IN_IA') or exit('Access Denied');
@@ -31,8 +31,6 @@ define('WEIXIN_ROOT', 'https://mp.weixin.qq.com');
 define('ACCOUNT_OPERATE_ONLINE', 1);
 define('ACCOUNT_OPERATE_MANAGER', 2);
 define('ACCOUNT_OPERATE_CLERK', 3);
-
-define('ACCOUNT_MANAGE_NAME_CLERK', 'clerk');
 define('ACCOUNT_MANAGE_TYPE_OPERATOR', 1);
 define('ACCOUNT_MANAGE_NAME_OPERATOR', 'operator');
 define('ACCOUNT_MANAGE_TYPE_MANAGER', 2);
@@ -40,11 +38,9 @@ define('ACCOUNT_MANAGE_NAME_MANAGER', 'manager');
 define('ACCOUNT_MANAGE_TYPE_OWNER', 3);
 define('ACCOUNT_MANAGE_NAME_OWNER', 'owner');
 define('ACCOUNT_MANAGE_NAME_FOUNDER', 'founder');
-define('ACCOUNT_MANAGE_GROUP_FOUNDER', 1);
 define('ACCOUNT_MANAGE_TYPE_VICE_FOUNDER', 4);
 define('ACCOUNT_MANAGE_NAME_VICE_FOUNDER', 'vice_founder');
 define('ACCOUNT_MANAGE_GROUP_VICE_FOUNDER', 2);
-define('ACCOUNT_MANAGE_GROUP_GENERAL', 0);
 define('SYSTEM_COUPON', 1);
 define('WECHAT_COUPON', 2);
 define('COUPON_TYPE_DISCOUNT', '1');define('COUPON_TYPE_CASH', '2');define('COUPON_TYPE_GROUPON', '3');define('COUPON_TYPE_GIFT', '4');define('COUPON_TYPE_GENERAL', '5');define('COUPON_TYPE_MEMBER', '6');define('COUPON_TYPE_SCENIC', '7');define('COUPON_TYPE_MOVIE', '8');define('COUPON_TYPE_BOARDINGPASS', '9');define('COUPON_TYPE_MEETING', '10');define('COUPON_TYPE_BUS', '11');
@@ -92,30 +88,3 @@ define('WXAPP_MODULE', 3);
 define('MATERIAL_LOCAL', 'local');define('MATERIAL_WEXIN', 'perm');
 define('MENU_CURRENTSELF', 1);
 define('MENU_CONDITIONAL', 3);
-
-define('USER_STATUS_CHECK', 1);
-define('USER_STATUS_NORMAL', 2);
-define('USER_STATUS_BAN', 3);
-
-define('USER_TYPE_COMMON', 1);
-define('USER_TYPE_CLERK', 3);
-
-define('PERSONAL_BASE_TYPE', 1);
-define('PERSONAL_AUTH_TYPE', 2);
-define('PERSONAL_LIST_TYPE', 3);
-
-define('STORE_TYPE_MODULE', 1);
-define('STORE_TYPE_ACCOUNT', 2);
-define('STORE_TYPE_WXAPP', 3);
-define('STORE_TYPE_WXAPP_MODULE', 4);
-define('STORE_TYPE_PACKAGE', 5);
-define('STORE_TYPE_API', 6);
-define('STORE_ORDER_PLACE', 1);
-define('STORE_ORDER_DELETE', 2);
-define('STORE_ORDER_FINISH', 3);
-define('STORE_GOODS_STATUS_OFFlINE', 0);
-define('STORE_GOODS_STATUS_ONLINE', 1);
-define('STORE_GOODS_STATUS_DELETE', 2);
-
-define('ARTICLE_PCATE', 0);
-define('ARTICLE_CCATE', 0);

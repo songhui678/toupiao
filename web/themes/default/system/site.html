@@ -25,20 +25,20 @@
 				<input type="hidden" name="reasons" value="{$settings['reason']}">
 			</div>
 		</div>
-		<h5 class="page-header">登录站点</h5>
-		<div class="form-group">
-			<label class="col-sm-2 control-label" style="text-align:left;">是否开启验证码</label>
-			<div class="col-sm-8 form-control-static">
-				<input type="radio" id="verifycode-1" name="verifycode" {if $settings['verifycode'] == 1} checked="checked" {/if} value="1" /> 
-				<label class="radio-inline" for="verifycode-1">
-					是
-				</label>
-				<input type="radio" id="verifycode-0" name="verifycode" {if $settings['verifycode'] == 0} checked="checked" {/if} value="0" /> 
-				<label class="radio-inline" for="verifycode-0">
-					否
-				</label>
-			</div>
+	<h5 class="page-header">登录站点</h5>
+	<div class="form-group">
+		<label class="col-sm-2 control-label" style="text-align:left;">是否开启验证码</label>
+		<div class="col-sm-8 form-control-static">
+			<input type="radio" id="verifycode-1" name="verifycode" {if $settings['verifycode'] == 1} checked="checked" {/if} value="1" /> 
+			<label class="radio-inline" for="verifycode-1">
+				是
+			</label>
+			<input type="radio" id="verifycode-0" name="verifycode" {if $settings['verifycode'] == 0} checked="checked" {/if} value="0" /> 
+			<label class="radio-inline" for="verifycode-0">
+				否
+			</label>
 		</div>
+	</div>
 	<h5 class="page-header">版权信息</h5>
 		<div class="form-group">
 			<label class="col-sm-2 control-label" style="text-align:left;">是否显示首页</label>
@@ -92,10 +92,8 @@
 			<label class="col-sm-2 control-label" style="text-align:left;">后台风格设置</label>
 			<div class="col-sm-8">
 				<select name="template" class="form-control">
-					{loop $template $tpl}
-					<option value="{$tpl}" {if $_W['setting']['basic']['template'] == $tpl}selected{/if}>
-						{if !empty($template_ch_name[$tpl])}{$template_ch_name[$tpl]}{else}{$tpl}{/if}
-					</option>
+					{loop $template $temp}
+					<option value="{$temp}" {if $_W['setting']['basic']['template'] == $temp}selected{/if}>{$temp}</option>
 					{/loop}
 				</select>
 				<span class="help-block">favorite icon</span>

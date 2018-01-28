@@ -1,8 +1,8 @@
 <?php
 
 /**
- * [WECHAT 2018]
- * [WECHAT  a free software]
+ * [WeEngine System] Copyright (c) 2014 WE7.CC
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 
 defined('IN_IA') or exit('Access Denied');
@@ -26,13 +26,7 @@ function alipay_build($params, $alipay = array()) {
 	$set['seller_id'] = $alipay['account'];
 	$set['payment_type'] = 1;
 	$set['body'] = $_W['uniacid'];
-	if ($params['service'] == 'create_direct_pay_by_user') {
-		$set['service'] = 'create_direct_pay_by_user';
-		$set['seller_id'] = $alipay['partner'];
-		$set['body'] = 'site_store';
-	} else {
-		$set['app_pay'] = 'Y';
-	}
+	$set['app_pay'] = 'Y';
 	$prepares = array();
 	foreach($set as $key => $value) {
 		if($key != 'sign' && $key != 'sign_type') {
@@ -149,18 +143,13 @@ function wechat_build($params, $wechat) {
 		$package['time_expire'] = date('YmdHis', TIMESTAMP + 600);
 		$package['notify_url'] = $_W['siteroot'] . 'payment/wechat/notify.php';
 		$package['trade_type'] = 'JSAPI';
-		if ($params['pay_way'] == 'web') {
-			$package['trade_type'] = 'NATIVE';
-			$package['product_id'] = $params['goodsid'];
-		} else {
-			$package['openid'] = empty($params['user']) ? $_W['fans']['from_user'] : $params['user'];
-			if (!empty($wechat['sub_mch_id'])) {
-				$package['sub_mch_id'] = $wechat['sub_mch_id'];
-			}
-			if (!empty($params['sub_user'])) {
-				$package['sub_openid'] = $params['sub_user'];
-				unset($package['openid']);
-			}
+		$package['openid'] = empty($params['user']) ? $_W['fans']['from_user'] : $params['user'];
+		if (!empty($wechat['sub_mch_id'])) {
+			$package['sub_mch_id'] = $wechat['sub_mch_id'];
+		}
+		if (!empty($params['sub_user'])) {
+			$package['sub_openid'] = $params['sub_user'];
+			unset($package['openid']);
 		}
 		ksort($package, SORT_STRING);
 		$string1 = '';
@@ -190,10 +179,6 @@ function wechat_build($params, $wechat) {
 		$wOpt['nonceStr'] = random(8);
 		$wOpt['package'] = 'prepay_id='.$prepayid;
 		$wOpt['signType'] = 'MD5';
-		if ($xml->trade_type == 'NATIVE') {
-			$code_url = $xml->code_url;
-			$wOpt['code_url'] = strval($code_url);
-		}
 		ksort($wOpt, SORT_STRING);
 		foreach($wOpt as $key => $v) {
 			$string .= "{$key}={$v}&";

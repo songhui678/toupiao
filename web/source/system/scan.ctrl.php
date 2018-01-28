@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -169,8 +169,7 @@ if ($do == 'display') {
 if ($do == 'view') {
 	$file = authcode(trim($_GPC['file'], 'DECODE'));
 	$file_tmp = $file;
-	$file = str_replace('//','',$file);
-	if (empty($file) || ! parse_path($file) || $file == 'data/config.php') {
+	if (empty($file) || strexists($file, './') || strexists($file, '../') || $file == 'data/config.php') {
 		itoast('文件不存在', referer(), 'error');
 	}
 		$file_arr = explode('/', $file);

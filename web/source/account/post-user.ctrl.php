@@ -1,7 +1,7 @@
 <?php
 /**
- * [WECHAT 2018]
- * [WECHAT  a free software]
+ * [WeEngine System] Copyright (c) 2014 WE7.CC
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 load()->model('module');
@@ -16,9 +16,8 @@ $_W['page']['title'] = '管理设置 - 微信' . ACCOUNT_TYPE_NAME . '管理';
 if (empty($uniacid) || empty($acid)) {
 	itoast('请选择要编辑的公众号', referer(), 'error');
 }
-$state = permission_account_user_role($_W['uid'], $uniacid);
-$role_permission = in_array($state, array(ACCOUNT_MANAGE_NAME_FOUNDER, ACCOUNT_MANAGE_NAME_OWNER, ACCOUNT_MANAGE_NAME_VICE_FOUNDER));
-if (!$role_permission) {
+$state = uni_permission($_W['uid'], $uniacid);
+if ($state != ACCOUNT_MANAGE_NAME_OWNER && $state != ACCOUNT_MANAGE_NAME_FOUNDER && $state != ACCOUNT_MANAGE_NAME_MANAGER) {
 	itoast('无权限操作！', referer(), 'error');
 }
 $founders = explode(',', $_W['config']['setting']['founder']);
@@ -79,7 +78,7 @@ if ($do == 'edit') {
 			iajax(1, '不可操作网站创始人！', '');
 		}
 		$addtype = intval($_GPC['addtype']);
-				if (is_error($permission = permission_create_account($user['uid'], ACCOUNT_TYPE)) && $addtype == ACCOUNT_MANAGE_TYPE_OWNER) {
+				if (is_error($permission = uni_create_permission($user['uid'], ACCOUNT_TYPE)) && $addtype == ACCOUNT_MANAGE_TYPE_OWNER) {
 			itoast(error(5, $permission['message']), '', 'error');
 		}
 
@@ -132,7 +131,7 @@ if ($do == 'edit') {
 				iajax(1, '添加失败！', '');
 			}
 		} else {
-						iajax(2, $username.'已经是该公众号的店员或操作员或管理员，请勿重复添加！', '');
+						iajax(2, $username.'已经是该公众号的操作员或管理员，请勿重复添加！', '');
 		}
 	} else  {
 		iajax(-1, '参数错误，请刷新重试！', '');
@@ -144,21 +143,21 @@ if ($do == 'edit') {
 	if (empty($user)) {
 		itoast('您操作的用户不存在或是已经被删除！', '', '');
 	}
-	$role = permission_account_user_role($_W['uid'], $uniacid);
+	$role = uni_permission($_W['uid'], $uniacid);
 	if (empty($role)) {
 		itoast('此用户没有操作该统一公众号的权限，请选指派“管理员”或是“操作员”权限！', '', '');
 	}
-
+	
 	if ($account['type'] == ACCOUNT_TYPE_OFFCIAL_NORMAL || $account['type'] == ACCOUNT_TYPE_OFFCIAL_AUTH) {
-				$user_menu_permission_account = permission_account_user_menu($uid, $uniacid, PERMISSION_ACCOUNT);
-				$module_permission = permission_account_user_menu($uid, $uniacid, 'modules');
+				$user_menu_permission_account = uni_user_menu_permission($uid, $uniacid, PERMISSION_ACCOUNT);
+				$module_permission = uni_user_menu_permission($uid, $uniacid, 'modules');
 		if (is_error($user_menu_permission_account) || is_error($module_permission)) {
 			itoast('参数错误！');
 		}
 		$module_permission_keys = array_keys($module_permission);
 		$module = uni_modules_by_uniacid($uniacid);
 	} elseif ($account['type'] == ACCOUNT_TYPE_APP_NORMAL) {
-				$user_menu_permission_wxapp = permission_account_user_menu($uid, $uniacid, PERMISSION_WXAPP);
+				$user_menu_permission_wxapp = uni_user_menu_permission($uid, $uniacid, PERMISSION_WXAPP);
 		if (is_error($user_menu_permission_wxapp)) {
 			itoast('参数错误！');
 		}
@@ -166,7 +165,7 @@ if ($do == 'edit') {
 
 	$menus = system_menu_permission_list($role);
 	if (checksubmit('submit')) {
-		$all_menu_permission = permission_menu_name();
+		$all_menu_permission = uni_permission_name();
 		$user_menu_permission_new = array();
 		if ($account['type'] == ACCOUNT_TYPE_OFFCIAL_NORMAL || $account['type'] == ACCOUNT_TYPE_OFFCIAL_AUTH) {
 						if (!empty($_GPC['system'])) {
@@ -179,7 +178,7 @@ if ($do == 'edit') {
 					'type' => PERMISSION_ACCOUNT,
 					'permission' => implode('|', $user_menu_permission_new)
 				);
-				$result = permission_update_account_user($uid, $uniacid, $data);
+				$result = uni_update_user_permission($uid, $uniacid, $data);
 				if (is_error($result)) {
 					itoast($result['message']);
 				}
@@ -221,7 +220,7 @@ if ($do == 'edit') {
 					'type' => PERMISSION_WXAPP,
 					'permission' => implode('|', $user_menu_permission_new)
 				);
-				$result = permission_update_account_user($uid, $uniacid, $data);
+				$result = uni_update_user_permission($uid, $uniacid, $data);
 				if (is_error($result)) {
 					itoast($result['message']);
 				}
@@ -229,8 +228,6 @@ if ($do == 'edit') {
 				pdo_delete('users_permission', array('uniacid' => $uniacid, 'uid' => $uid, 'type' => PERMISSION_WXAPP));
 			}
 		}
-		$cachekey = cache_system_key("permission:{$uniacid}:{$uid}");
-		cache_delete($cachekey);
 		itoast('操作菜单权限成功！', referer(), 'success');
 	}
 	template('account/set-permission');

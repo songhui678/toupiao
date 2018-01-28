@@ -1,10 +1,14 @@
 <?php
+/**
+ * [WeEngine System] Copyright (c) 2014 WE7.CC
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ */
 defined('IN_IA') or exit('Access Denied');
 
 load()->model('cloud');
 load()->func('communication');
 load()->func('db');
-$cdnip = base64_decode('d2FwaS53ZWk4ODQ4LmNvbQ');
+
 $r = cloud_prepare();
 if (is_error($r)) {
 	itoast($r['message'], url('cloud/profile'), 'error');
@@ -20,7 +24,7 @@ if (empty($_W['setting']['site']['profile_perfect'])) {
 if ($do == 'upgrade') {
 	$_W['page']['title'] = '一键更新 - 云服务';
 	if (empty($_W['setting']['cloudip']) || $_W['setting']['cloudip']['expire'] < TIMESTAMP) {
-		$cloudip = gethostbyname($cdnip);
+		$cloudip = gethostbyname('v2.addons.we7.cc');
 		if (empty($cloudip) || !preg_match('/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/', $cloudip)) {
 			itoast('云服务域名解析失败，请查看服务器DNS设置或是在“云服务诊断”中手动设置云服务IP', url('cloud/diagnose'), 'error');
 		}

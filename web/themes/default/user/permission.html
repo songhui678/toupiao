@@ -1,10 +1,6 @@
-{template 'common/header-gw'}
-<ol class="breadcrumb">
-	<li><a href="./?refresh"><i class="fa fa-home"></i></a></li>
-	<li><a href="{url 'system/welcome'}">系统</a></li>
-	<li class="active">查看用户权限</li>
-</ol>
-<ul class="nav nav-tabs">
+{template 'common/header'}
+<div class="we7-page-title">用户管理</div>
+<ul class="we7-page-tab">
 	<li><a href="{php echo url('user/display');}">用户列表</a></li>
 	<li><a href="{php echo url('user/create');}">添加用户</a></li>
 	<li><a href="{url 'user/edit' array('uid' => $uid)}">编辑用户</a></li>
@@ -93,4 +89,4 @@
 		</div>
 	</div>
 </div>
-{template 'common/footer-gw'}
+{template 'common/footer'}

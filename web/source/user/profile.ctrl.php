@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 load()->model('user');
@@ -27,10 +27,6 @@ if ($do == 'post' && $_W['isajax'] && $_W['ispost']) {
 		iajax(-1, '用户不存在或已经被删除！', '');
 	}
 
-	if ($user['status'] == USER_STATUS_CHECK || $user['status'] == USER_STATUS_BAN) {
-		iajax(-1, '访问错误，该用户未审核或者已被禁用，请先修改用户状态！', '');
-	}
-
 	$users_profile_exist = pdo_get('users_profile', array('uid' => $uid));
 
 	if ($type == 'birth') {
@@ -49,13 +45,6 @@ if ($do == 'post' && $_W['isajax'] && $_W['ispost']) {
 		case 'realname':
 		case 'address':
 		case 'qq':
-		case 'mobile':
-			if ($type == 'mobile') {
-				$match = preg_match(REGULAR_MOBILE, trim($_GPC[$type]));
-				if (empty($match)) {
-					iajax(-1, '手机号不正确', '');
-				}
-			}
 			if ($users_profile_exist) {
 				$result = pdo_update('users_profile', array($type => trim($_GPC[$type])), array('uid' => $uid));
 			} else {
@@ -85,9 +74,6 @@ if ($do == 'post' && $_W['isajax'] && $_W['ispost']) {
 				iajax(1, '创始人不存在', '');
 			}
 			$result = pdo_update('users', array('owner_uid' => $owner_uid), array('uid' => $uid));
-			break;
-		case 'remark':
-			$result = pdo_update('users', array('remark' => trim($_GPC['remark'])), array('uid' => $uid));
 			break;
 		case 'password':
 			if ($_GPC['newpwd'] !== $_GPC['renewpwd']) iajax(2, '两次密码不一致！', '');
@@ -153,29 +139,35 @@ if ($do == 'post' && $_W['isajax'] && $_W['ispost']) {
 }
 
 if ($do == 'base') {
-	$user_type = !empty($_GPC['user_type']) ? trim($_GPC['user_type']) : PERSONAL_BASE_TYPE;
 		$user = user_single($_W['uid']);
 	if (empty($user)) {
 		itoast('抱歉，用户不存在或是已经被删除！', url('user/profile'), 'error');
 	}
 	$user['last_visit'] = date('Y-m-d H:i:s', $user['lastvisit']);
-	$user['joindate'] = date('Y-m-d H:i:s', $user['joindate']);
 	$user['url'] = user_invite_register_url($_W['uid']);
 
 	$profile = pdo_get('users_profile', array('uid' => $_W['uid']));
+	if (!empty($profile)) {
+		$profile['reside'] = array(
+			'province' => $profile['resideprovince'],
+			'city' => $profile['residecity'],
+			'district' => $profile['residedist']
+		);
+		$profile['birth'] = array(
+			'year' => $profile['birthyear'],
+			'month' => $profile['birthmonth'],
+			'day' => $profile['birthday'],
+		);
+		$profile['avatar'] = tomedia($profile['avatar']);
+		$profile['resides'] = $profile['resideprovince'] .' '. $profile['residecity'] .' '. $profile['residedist'] ;
 
-	$profile = user_detail_formate($profile);
-
-	if (!$_W['isfounder'] || user_is_vice_founder()) {
-				if ($_W['user']['founder_groupid'] == ACCOUNT_MANAGE_GROUP_VICE_FOUNDER) {
-			$groups = user_founder_group();
-			$group_info = user_founder_group_detail_info($user['groupid']);
-		} else {
-			$groups = user_group();
-			$group_info = user_group_detail_info($user['groupid']);
-		}
-
-				$account_detail = user_account_detail_info($_W['uid']);
+		$profile['births'] = ($profile['birthyear'] ? $profile['birthyear'] : '--') . '年' . ($profile['birthmonth'] ? $profile['birthmonth'] : '--') . '月' . ($profile['birthday'] ? $profile['birthday'] : '--') .'日';
 	}
+
+		$groups = user_group();
+	$group_info = user_group_detail_info($user['groupid']);
+
+		$account_detail = user_account_detail_info($_W['uid']);
+
 	template('user/profile');
 }

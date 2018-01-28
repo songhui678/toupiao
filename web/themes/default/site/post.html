@@ -259,7 +259,6 @@
 							<label for="" class="control-label col-sm-2">绑定域名</label>
 							<div class="form-controls col-sm-10">
 								<input type="text" name="bindhost" class="form-control" ng-model="multi.bindhost">
-								<span class="help-block">绑定时请先将域名解析指向到本服务器，请只填写host部分，不允许为当前系统域名。例如：www.baidu.com</span>
 							</div>
 						</div>
 						<div class="form-group">
@@ -503,7 +502,6 @@
 								<span class="help-block">将导航应用在以上页面</span>
 							</div>
 						</div>
-						{if $_W['role'] != 'operator'}
 						<div class="form-group">
 							<label for="" class="control-label col-sm-2">导航隐藏:</label>
 							<div class="form-controls col-sm-10">
@@ -515,7 +513,6 @@
 								<span class="help-block">将导航隐藏在以上模块</span>
 							</div>
 						</div>
-						{/if}
 						<div class="panel we7-panel app-shopNav-edit">
 							<div class="panel-heading">
 								当前模板: 微信公众号自定义菜单模板

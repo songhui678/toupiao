@@ -1,7 +1,7 @@
 <?php
 /**
- * [WECHAT 2018]
- * [WECHAT  a free software]
+ * [WeEngine System] Copyright (c) 2014 WE7.CC
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 
 defined('IN_IA') or exit('Access Denied');
@@ -180,7 +180,7 @@ if ($do == 'install') {
 	unset($manifest['settings']);
 	$module_group = uni_groups();
 	if(!$_W['ispost'] || empty($_GPC['flag'])) {
-		template('system/module-group');
+		template('system/select-module-group');
 		exit;
 	}
 	$post_groups = $_GPC['group'];

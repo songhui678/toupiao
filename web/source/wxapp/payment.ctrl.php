@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -10,7 +10,7 @@ load()->model('wxapp');
 
 $dos = array('get_setting', 'display');
 $do = in_array($do, $dos) ? $do : 'display';
-permission_check_account_user('wxapp_payment', true, 'wxapp');
+uni_user_permission_check('wxapp_payment', true, 'wxapp');
 $_W['page']['title'] = '支付参数';
 
 $pay_setting = wxapp_payment_param();

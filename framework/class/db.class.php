@@ -1,7 +1,7 @@
 <?php
 /**
- * [WECHAT 2018]
- * [WECHAT  a free software]
+ * [WeEngine System] Copyright (c) 2014 WE7.CC
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 define('PDO_DEBUG', true);
@@ -53,29 +53,40 @@ class DB {
 			$dbclass = 'PDO';
 		}
 		$this->pdo = new $dbclass($dsn, $cfg['username'], $cfg['password'], $options);
-				$sql = "SET NAMES '{$cfg['charset']}';";
+		//$this->pdo->setAttribute(pdo::ATTR_EMULATE_PREPARES, false);
+		$sql = "SET NAMES '{$cfg['charset']}';";
 		$this->pdo->exec($sql);
 		$this->pdo->exec("SET sql_mode='';");
 		if(is_string($name)) {
 			$this->link[$name] = $this->pdo;
 		}
-		
-		$this->logging($sql);
+		if(PDO_DEBUG) {
+			$info = array();
+			$info['sql'] = $sql;
+			$info['error'] = $this->pdo->errorInfo();
+			$this->debug(false, $info);
+		}
 	}
 
 	public function prepare($sql) {
-		$sqlsafe = SqlPaser::checkquery($sql);
+		$sqlsafe = SqlChecker::checkquery($sql);
 		if (is_error($sqlsafe)) {
 			trigger_error($sqlsafe['message'], E_USER_ERROR);
 			return false;
 		}
 		$statement = $this->pdo->prepare($sql);
+		if(PDO_DEBUG) {
+			$info = array();
+			$info['sql'] = $sql;
+			$info['error'] = $this->pdo->errorInfo();
+			$this->debug(false, $info);
+		}
 		return $statement;
 	}
 
 	
 	public function query($sql, $params = array()) {
-		$sqlsafe = SqlPaser::checkquery($sql);
+		$sqlsafe = SqlChecker::checkquery($sql);
 		if (is_error($sqlsafe)) {
 			trigger_error($sqlsafe['message'], E_USER_ERROR);
 			return false;
@@ -86,14 +97,23 @@ class DB {
 		$starttime = microtime();
 		if (empty($params)) {
 			$result = $this->pdo->exec($sql);
-			$this->logging($sql, array(), $this->pdo->errorInfo());
+			if(PDO_DEBUG) {
+				$info = array();
+				$info['sql'] = $sql;
+				$info['error'] = $this->pdo->errorInfo();
+				$this->debug(false, $info);
+			}
 			return $result;
 		}
 		$statement = $this->prepare($sql);
 		$result = $statement->execute($params);
-		
-		$this->logging($sql, $params, $statement->errorInfo());
-		
+		if(PDO_DEBUG) {
+			$info = array();
+			$info['sql'] = $sql;
+			$info['params'] = $params;
+			$info['error'] = $statement->errorInfo();
+			$this->debug(false, $info);
+		}
 		$endtime = microtime();
 		$this->performance($sql, $endtime - $starttime);
 		if (!$result) {
@@ -112,9 +132,13 @@ class DB {
 		$starttime = microtime();
 		$statement = $this->prepare($sql);
 		$result = $statement->execute($params);
-		
-		$this->logging($sql, $params, $statement->errorInfo());
-		
+		if(PDO_DEBUG) {
+			$info = array();
+			$info['sql'] = $sql;
+			$info['params'] = $params;
+			$info['error'] = $statement->errorInfo();
+			$this->debug(false, $info);
+		}
 		$endtime = microtime();
 		$this->performance($sql, $endtime - $starttime);
 		if (!$result) {
@@ -135,9 +159,13 @@ class DB {
 		$starttime = microtime();
 		$statement = $this->prepare($sql);
 		$result = $statement->execute($params);
-		
-		$this->logging($sql, $params, $statement->errorInfo());
-		
+		if(PDO_DEBUG) {
+			$info = array();
+			$info['sql'] = $sql;
+			$info['params'] = $params;
+			$info['error'] = $statement->errorInfo();
+			$this->debug(false, $info);
+		}
 		$endtime = microtime();
 		$this->performance($sql, $endtime - $starttime);
 		if (!$result) {
@@ -158,9 +186,13 @@ class DB {
 		$starttime = microtime();
 		$statement = $this->prepare($sql);
 		$result = $statement->execute($params);
-
-		$this->logging($sql, $params, $statement->errorInfo());
-		
+		if(PDO_DEBUG) {
+			$info = array();
+			$info['sql'] = $sql;
+			$info['params'] = $params;
+			$info['error'] = $statement->errorInfo();
+			$this->debug(false, $info);
+		}
 		$endtime = microtime();
 		$this->performance($sql, $endtime - $starttime);
 		if (!$result) {
@@ -187,29 +219,29 @@ class DB {
 	}
 
 	public function get($tablename, $params = array(), $fields = array(), $orderby = array()) {
-		$select = SqlPaser::parseSelect($fields);
-		$condition = SqlPaser::parseParameter($params, 'AND');
-		$orderbysql = SqlPaser::parseOrderby($orderby);
+		$select = $this->parseSelect($fields);
+		$condition = $this->implode($params, 'AND');
+		$orderbysql = $this->parseOrderby($orderby);
 
-		$sql = "{$select} FROM " . $this->tablename($tablename) . (!empty($condition['fields']) ? " WHERE {$condition['fields']}" : '') . " $orderbysql LIMIT 1";
+		$sql = "SELECT {$select} FROM " . $this->tablename($tablename) . (!empty($condition['fields']) ? " WHERE {$condition['fields']}" : '') . " $orderbysql LIMIT 1";
 		return $this->fetch($sql, $condition['params']);
 	}
 
 	public function getall($tablename, $params = array(), $fields = array(), $keyfield = '', $orderby = array(), $limit = array()) {
-		$select = SqlPaser::parseSelect($fields);
-		$condition = SqlPaser::parseParameter($params, 'AND');
+		$select = $this->parseSelect($fields);
+		$condition = $this->implode($params, 'AND');
 
-		$limitsql = SqlPaser::parseLimit($limit);
-		$orderbysql = SqlPaser::parseOrderby($orderby);
+		$limitsql = $this->parseLimit($limit);
+		$orderbysql = $this->parseOrderby($orderby);
 
-		$sql = "{$select} FROM " .$this->tablename($tablename) . (!empty($condition['fields']) ? " WHERE {$condition['fields']}" : '') . $orderbysql . $limitsql;
+		$sql = "SELECT {$select} FROM " .$this->tablename($tablename) . (!empty($condition['fields']) ? " WHERE {$condition['fields']}" : '') . $orderbysql . $limitsql;
 		return $this->fetchall($sql, $condition['params'], $keyfield);
 	}
 
 	public function getslice($tablename, $params = array(), $limit = array(), &$total = null, $fields = array(), $keyfield = '', $orderby = array()) {
-		$select = SqlPaser::parseSelect($fields);
-		$condition = SqlPaser::parseParameter($params, 'AND');
-		$limitsql = SqlPaser::parseLimit($limit);
+		$select = $this->parseSelect($fields);
+		$condition = $this->implode($params, 'AND');
+		$limitsql = $this->parseLimit($limit);
 
 		if (!empty($orderby)) {
 			if (is_array($orderby)) {
@@ -218,7 +250,7 @@ class DB {
 				$orderbysql = $orderby;
 			}
 		}
-		$sql = "{$select} FROM " . $this->tablename($tablename) . (!empty($condition['fields']) ? " WHERE {$condition['fields']}" : '') . (!empty($orderbysql) ? " ORDER BY $orderbysql " : '') . $limitsql;
+		$sql = "SELECT {$select} FROM " . $this->tablename($tablename) . (!empty($condition['fields']) ? " WHERE {$condition['fields']}" : '') . (!empty($orderbysql) ? " ORDER BY $orderbysql " : '') . $limitsql;
 		$total = pdo_fetchcolumn("SELECT COUNT(*) FROM " . tablename($tablename) . (!empty($condition['fields']) ? " WHERE {$condition['fields']}" : ''), $condition['params']);
 		return $this->fetchall($sql, $condition['params'], $keyfield);
 	}
@@ -238,19 +270,18 @@ class DB {
 
 	
 	public function update($table, $data = array(), $params = array(), $glue = 'AND') {
-		$fields = SqlPaser::parseParameter($data, ',');
-		$condition = SqlPaser::parseParameter($params, $glue);
+		$fields = $this->implode($data, ',');
+		$condition = $this->implode($params, $glue);
 		$params = array_merge($fields['params'], $condition['params']);
 		$sql = "UPDATE " . $this->tablename($table) . " SET {$fields['fields']}";
 		$sql .= $condition['fields'] ? ' WHERE '.$condition['fields'] : '';
-
 		return $this->query($sql, $params);
 	}
 
 	
 	public function insert($table, $data = array(), $replace = FALSE) {
 		$cmd = $replace ? 'REPLACE INTO' : 'INSERT INTO';
-		$condition = SqlPaser::parseParameter($data, ',');
+		$condition = $this->implode($data, ',');
 		return $this->query("$cmd " . $this->tablename($table) . " SET {$condition['fields']}", $condition['params']);
 	}
 
@@ -261,26 +292,10 @@ class DB {
 
 	
 	public function delete($table, $params = array(), $glue = 'AND') {
-		$condition = SqlPaser::parseParameter($params, $glue);
+		$condition = $this->implode($params, $glue);
 		$sql = "DELETE FROM " . $this->tablename($table);
 		$sql .= $condition['fields'] ? ' WHERE '.$condition['fields'] : '';
 		return $this->query($sql, $condition['params']);
-	}
-	
-	
-	public function exists($tablename, $params = array()) {
-		$row = $this->get($tablename, $params);
-		if (empty($row) || !is_array($row) || count($row) == 0) {
-			return false;
-		} else {
-			return true;
-		}
-	}
-	
-	
-	public function count($tablename, $params = array(), $cachetime = 30) {
-		$total = pdo_getcolumn($tablename, $params, 'count(*)');
-		return intval($total);
 	}
 
 	
@@ -296,6 +311,142 @@ class DB {
 	
 	public function rollback() {
 		$this->pdo->rollBack();
+	}
+
+	
+	private function implode($params, $glue = ',') {
+		$result = array('fields' => ' 1 ', 'params' => array());
+		$split = '';
+		$suffix = '';
+		$allow_operator = array('>', '<', '<>', '!=', '>=', '<=', '+=', '-=', 'LIKE', 'like');
+		if (in_array(strtolower($glue), array('and', 'or'))) {
+			$suffix = '__';
+		}
+		if (!is_array($params)) {
+			$result['fields'] = $params;
+			return $result;
+		}
+		if (is_array($params)) {
+			$result['fields'] = '';
+			$index = 0; 			foreach ($params as $fields => $value) {
+				$index++;
+				$operator = '';
+				if (strpos($fields, ' ') !== FALSE) {
+					list($fields, $operator) = explode(' ', $fields, 2);
+					if (!in_array($operator, $allow_operator)) {
+						$operator = '';
+					}
+				}
+				if (empty($operator)) {
+					$fields = trim($fields);
+					if (is_array($value) && !empty($value)) {
+						$operator = 'IN';
+					} else {
+						$operator = '=';
+					}
+				} elseif ($operator == '+=') {
+					$operator = " = `$fields` + ";
+				} elseif ($operator == '-=') {
+					$operator = " = `$fields` - ";
+				} elseif ($operator == '!=' || $operator == '<>') {
+										if (is_array($value) && !empty($value)) {
+						$operator = 'NOT IN';
+					}
+				}
+				if (is_array($value) && !empty($value)) {
+					$insql = array();
+										$value = array_values($value);
+					foreach ($value as $v) {
+						$insql[] = ":{$suffix}{$fields}_{$index}";
+						$result['params'][":{$suffix}{$fields}_{$index}"] = is_null($v) ? '' : $v;
+						$index++;
+					}
+					$result['fields'] .= $split . "`$fields` {$operator} (".implode(",", $insql).")";
+					$split = ' ' . $glue . ' ';
+				} else {
+					$result['fields'] .= $split . "`$fields` {$operator}  :{$suffix}{$fields}_{$index}";
+					$split = ' ' . $glue . ' ';
+					$result['params'][":{$suffix}{$fields}_{$index}"] = is_null($value) || is_array($value) ? '' : $value;
+				}
+			}
+		}
+		return $result;
+	}
+
+	private function parseSelect($field = array()) {
+		if (empty($field)) {
+			return '*';
+		}
+		if (!is_array($field)) {
+			$field = array($field);
+		}
+		$select = array();
+		$index = 0;
+		foreach ($field as $field_row) {
+			if (strexists($field_row, '*')) {
+				if (!strexists(strtolower($field_row), 'as')) {
+					$field_row .= " AS '{$index}'";
+				}
+			} elseif (strexists(strtolower($field_row), 'select')) {
+								if ($field_row[0] != '(') {
+					$field_row = "($field_row) AS '{$index}'";
+				}
+			} elseif (strexists($field_row, '(')) {
+				$field_row = str_replace(array('(', ')'), array('(`',  '`)'), $field_row);
+								if (!strexists(strtolower($field_row), 'as')) {
+					$field_row .= " AS '{$index}'";
+				}
+			} else {
+				$field_row = '`'. $field_row. '`';
+			}
+			$select[] = $field_row;
+			$index++;
+		}
+		return implode(',', $select);
+	}
+
+	private function parseLimit($limit) {
+		$limitsql = '';
+		if (empty($limit)) {
+			return $limitsql;
+		}
+		if (is_array($limit)) {
+			$limit[0] = intval($limit[0]);
+			$limit[1] = intval($limit[1]);
+
+			if (empty($limit[0]) && empty($limit[1])) {
+				$limitsql = '';
+			} elseif (!empty($limit[0]) && empty($limit[1])) {
+				$limitsql = " LIMIT " . $limit[0];
+			} else {
+				$limitsql = " LIMIT " . ($limit[0] - 1) * $limit[1] . ', ' . $limit[1];
+			}
+		} else {
+			$limit = trim($limit);
+			if (preg_match('/^(?:limit)?[\s,0-9]+$/i', $limit)) {
+				$limitsql = strexists(strtoupper($limit), 'LIMIT') ? " $limit " : " LIMIT $limit";
+			}
+		}
+		return $limitsql;
+	}
+
+	private function parseOrderby($orderby) {
+		$orderbysql = '';
+		if (empty($orderby)) {
+			return $orderbysql;
+		}
+
+		if (!is_array($orderby)) {
+			$orderby = explode(',', $orderby);
+		}
+		foreach ($orderby as $i => $row) {
+			$row = strtolower($row);
+			if (substr($row, -3) != 'asc' && substr($row, -4) != 'desc') {
+				unset($orderby[$i]);
+			}
+		}
+		$orderbysql = implode(',', $orderby);
+		return !empty($orderbysql) ? " ORDER BY $orderbysql " : '';
 	}
 
 	
@@ -397,17 +548,6 @@ class DB {
 			}
 		}
 		return $this->errors;
-	}
-	
-	private function logging($sql, $params = array(), $message = '') {
-		if(PDO_DEBUG) {
-			$info = array();
-			$info['sql'] = $sql;
-			$info['params'] = $params;
-			$info['error'] = empty($message) ? $this->pdo->errorInfo() : $message;
-			$this->debug(false, $info);
-		}
-		return true;
 	}
 
 	
@@ -522,7 +662,7 @@ class DB {
 }
 
 
-class SqlPaser {
+class SqlChecker {
 	private static $checkcmd = array('SELECT', 'UPDATE', 'INSERT', 'REPLAC', 'DELETE');
 	private static $disable = array(
 		'function' => array('load_file', 'floor', 'hex', 'substring', 'if', 'ord', 'char', 'benchmark', 'reverse', 'strcmp', 'datadir', 'updatexml', 'extractvalue', 'name_const', 'multipoint', 'database', 'user'),
@@ -617,195 +757,5 @@ class SqlPaser {
 			$clean .= $mark ? '' : $str;
 		}
 		return $clean;
-	}
-	
-	
-	public static function parseParameter($params, $glue = ',', $alias = '') {
-		$result = array('fields' => ' 1 ', 'params' => array());
-		$split = '';
-		$suffix = '';
-		$allow_operator = array('>', '<', '<>', '!=', '>=', '<=', '+=', '-=', 'LIKE', 'like');
-		if (in_array(strtolower($glue), array('and', 'or'))) {
-			$suffix = '__';
-		}
-		if (!is_array($params)) {
-			$result['fields'] = $params;
-			return $result;
-		}
-		if (is_array($params)) {
-			$result['fields'] = '';
-			foreach ($params as $fields => $value) {
-								if ($glue == ',') {
-					$value = $value === null ? '' : $value;
-				}
-				$operator = '';
-				if (strpos($fields, ' ') !== FALSE) {
-					list($fields, $operator) = explode(' ', $fields, 2);
-					if (!in_array($operator, $allow_operator)) {
-						$operator = '';
-					}
-				}
-				if (empty($operator)) {
-					$fields = trim($fields);
-					if (is_array($value) && !empty($value)) {
-						$operator = 'IN';
-					} elseif ($value === null) {
-						$operator = 'IS';
-					} else {
-						$operator = '=';
-					}
-				} elseif ($operator == '+=') {
-					$operator = " = `$fields` + ";
-				} elseif ($operator == '-=') {
-					$operator = " = `$fields` - ";
-				} elseif ($operator == '!=' || $operator == '<>') {
-										if (is_array($value) && !empty($value)) {
-						$operator = 'NOT IN';
-					} elseif ($value === null) {
-						$operator = 'IS NOT';
-					}
-				}
-				
-								$select_fields = self::parseFieldAlias($fields, $alias);
-				if (is_array($value) && !empty($value)) {
-					$insql = array();
-										$value = array_values($value);
-					foreach ($value as $v) {
-						$placeholder = self::parsePlaceholder($fields, $suffix);
-						$insql[] = $placeholder;
-						$result['params'][$placeholder] = is_null($v) ? '' : $v;
-					}
-					$result['fields'] .= $split . "$select_fields {$operator} (".implode(",", $insql).")";
-					$split = ' ' . $glue . ' ';
-				} else {
-					$placeholder = self::parsePlaceholder($fields, $suffix);
-					$result['fields'] .= $split . "$select_fields {$operator} " . (is_null($value) ? 'NULL' : $placeholder);
-					$split = ' ' . $glue . ' ';
-					if (!is_null($value)) {
-						$result['params'][$placeholder] = is_array($value) ? '' : $value;
-					}
-				}
-			}
-		}
-		return $result;
-	}
-	
-	
-	private static function parsePlaceholder($field, $suffix = '') {
-		static $params_index = 0;
-		$params_index++;
-	
-		$illegal_str = array('(', ')', '.', '*');
-		$placeholder = ":{$suffix}" . str_replace($illegal_str, '_', $field) . "_{$params_index}";
-		return $placeholder;
-	}
-	
-	private static function parseFieldAlias($field, $alias = '') {
-		if (strexists($field, '.') || strexists($field, '*')) {
-			return $field;
-		}
-		if (strexists($field, '(')) {
-			$select_fields = str_replace(array('(', ')'), array('(' . (!empty($alias) ? "`{$alias}`." : '') .'`',  '`)'), $field);
-		} else {
-			$select_fields = (!empty($alias) ? "`{$alias}`." : '') . "`$field`";
-		}
-		return $select_fields;
-	}
-	
-	
-	public static function parseSelect($field = array(), $alias = '') {
-		if (empty($field) || $field == '*') {
-			return ' SELECT *';
-		}
-		if (!is_array($field)) {
-			$field = array($field);
-		}
-		$select = array();
-		$index = 0;
-		foreach ($field as $field_row) {
-			if (strexists($field_row, '*')) {
-				if (!strexists(strtolower($field_row), 'as')) {
-					$field_row .= " AS '{$index}'";
-				}
-			} elseif (strexists(strtolower($field_row), 'select')) {
-								if ($field_row[0] != '(') {
-					$field_row = "($field_row) AS '{$index}'";
-				}
-			} elseif (strexists($field_row, '(')) {
-				$field_row = str_replace(array('(', ')'), array('(' . (!empty($alias) ? "`{$alias}`." : '') . '`',  '`)'), $field_row);
-								if (!strexists(strtolower($field_row), 'as')) {
-					$field_row .= " AS '{$index}'";
-				}
-			} else {
-				$field_row = self::parseFieldAlias($field_row, $alias);
-			}
-			$select[] = $field_row;
-			$index++;
-		}
-		return " SELECT " . implode(',', $select);
-	}
-	
-	public static function parseLimit($limit, $inpage = true) {
-		$limitsql = '';
-		if (empty($limit)) {
-			return $limitsql;
-		}
-		if (is_array($limit)) {
-			$limit[0] = max(intval($limit[0]), 1);
-			!empty($limit[1]) && $limit[1] = max(intval($limit[1]), 1);
-			if (empty($limit[0]) && empty($limit[1])) {
-				$limitsql = '';
-			} elseif (!empty($limit[0]) && empty($limit[1])) {
-				$limitsql = " LIMIT " . $limit[0];
-			} else {
-				$limitsql = " LIMIT " . ($inpage ? ($limit[0] - 1) * $limit[1] : $limit[0]) . ', ' . $limit[1];
-			}
-		} else {
-			$limit = trim($limit);
-			if (preg_match('/^(?:limit)?[\s,0-9]+$/i', $limit)) {
-				$limitsql = strexists(strtoupper($limit), 'LIMIT') ? " $limit " : " LIMIT $limit";
-			}
-		}
-		return $limitsql;
-	}
-	
-	public static function parseOrderby($orderby, $alias = '') {
-		$orderbysql = '';
-		if (empty($orderby)) {
-			return $orderbysql;
-		}
-	
-		if (!is_array($orderby)) {
-			$orderby = explode(',', $orderby);
-		}
-		foreach ($orderby as $i => &$row) {
-			$row = strtolower($row);
-			list($field, $orderbyrule) = explode(' ', $row);
-			
-			if ($orderbyrule != 'asc' && $orderbyrule != 'desc') {
-				unset($orderby[$i]);
-			}
-			$field = self::parseFieldAlias($field, $alias);
-			$row = "{$field} {$orderbyrule}";
-		}
-		$orderbysql = implode(',', $orderby);
-		return !empty($orderbysql) ? " ORDER BY $orderbysql " : '';
-	}
-	
-	public static function parseGroupby($statement, $alias = '') {
-		if (empty($statement)) {
-			return $statement;
-		}
-		if (!is_array($statement)) {
-			$statement = explode(',', $statement);
-		}
-		foreach ($statement as $i => &$row) {
-			$row = self::parseFieldAlias($row, $alias);
-			if (strexists($row, ' ')) {
-				unset($statement[$i]);
-			}
-		}
-		$statementsql = implode(', ', $statement);
-		return !empty($statementsql) ? " GROUP BY $statementsql " : '';
 	}
 }

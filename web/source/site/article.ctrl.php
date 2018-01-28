@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 load()->func('file');
@@ -9,13 +9,14 @@ load()->func('file');
 $dos = array('display', 'post', 'del');
 $do = in_array($do, $dos) ? $do : 'display';
 
-permission_check_account_user('platform_site');
+uni_user_permission_check('platform_site');
 $_W['page']['title'] = '文章管理 - 微官网';
 $category = pdo_fetchall("SELECT id,parentid,name FROM ".tablename('site_category')." WHERE uniacid = '{$_W['uniacid']}' ORDER BY parentid ASC, displayorder ASC, id ASC ", array(), 'id');
 $parent = array();
 $children = array();
 
 if (!empty($category)) {
+	$children = '';
 	foreach ($category as $cid => $cate) {
 		if (!empty($cate['parentid'])) {
 			$children[$cate['parentid']][] = $cate;
@@ -108,7 +109,7 @@ if ($do == 'display') {
 			}
 		} elseif (!empty($_GPC['autolitpic'])) {
 			$match = array();
-			preg_match('/&lt;img.*?src=&quot;?(.+\.(jpg|jpeg|gif|bmp|png))&quot;/', $_GPC['content'], $match);
+			preg_match('/&lt;img.*?src=&quot;(.*?)&quot;/', $_GPC['content'], $match);
 			if (!empty($match[1])) {
 				$url = $match[1];
 				$file = file_remote_attach_fetch($url);
@@ -206,13 +207,15 @@ if ($do == 'display') {
 			if (empty($row)) {
 				itoast('抱歉，文章不存在或是已经被删除！', '', '');
 			}
-
+			if (!empty($row['thumb']) && file_is_image($row['thumb'])) {
+				file_delete($row['thumb']);
+			}
 			if (!empty($row['rid'])) {
 				pdo_delete('rule', array('id' => $row['rid'], 'uniacid' => $_W['uniacid']));
 				pdo_delete('rule_keyword', array('rid' => $row['rid'], 'uniacid' => $_W['uniacid']));
 				pdo_delete('news_reply', array('rid' => $row['rid']));
 			}
-			pdo_delete('site_article', array('id' => $id, 'uniacid'=>$_W['uniacid']));
+			pdo_delete('site_article', array('id' => $id));
 		}
 		itoast('批量删除成功！', referer(), 'success');
 	} else {
@@ -222,16 +225,18 @@ if ($do == 'display') {
 		if (empty($row)) {
 			itoast('抱歉，文章不存在或是已经被删除！', '', '');
 		}
-
+		if (!empty($row['thumb'])) {
+			file_delete($row['thumb']);
+		}
 		if (!empty($row['rid'])) {
 			pdo_delete('rule', array('id' => $row['rid'], 'uniacid' => $_W['uniacid']));
 			pdo_delete('rule_keyword', array('rid' => $row['rid'], 'uniacid' => $_W['uniacid']));
 			pdo_delete('news_reply', array('rid' => $row['rid']));
 		}
-		if (pdo_delete('site_article', array('id' => $id,'uniacid'=>$_W['uniacid']))){
+		if (pdo_delete('site_article', array('id' => $id))){
 			itoast('删除成功！', referer(), 'success');
 		} else {
 			itoast('删除失败！', referer(), 'error');
-		}
+		}				
 	}
 }

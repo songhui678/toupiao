@@ -1,11 +1,9 @@
-<?php
+﻿<?php 
 /**
- * [WECHAT 2018]
- * [WECHAT  a free software]
+ * [WeEngine System] Copyright (c) 2014 WE7.CC
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
-
-load()->model('system');
 
 $dos = array('copyright');
 $do = in_array($do, $dos) ? $do : 'copyright';
@@ -33,7 +31,6 @@ if(is_dir($path)) {
 }
 
 if ($do == 'copyright') {
-	$template_ch_name = system_template_ch_name();
 	if (checksubmit('submit')) {
 		$data = array(
 			'status' => intval($_GPC['status']),

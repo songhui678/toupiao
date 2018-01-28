@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -24,11 +24,6 @@ function pdo() {
 		}
 	}
 	return $db;
-}
-
-
-function pdos($table = '') {
-	return load()->singleton('Query');
 }
 
 
@@ -64,16 +59,6 @@ function pdo_getslice($tablename, $condition = array(), $limit = array(), &$tota
 
 function pdo_getcolumn($tablename, $condition = array(), $field) {
 	return pdo()->getcolumn($tablename, $condition, $field);
-}
-
-
-function pdo_exists($tablename, $condition = array()) {
-	return pdo()->exists($tablename, $condition);
-}
-
-
-function pdo_count($tablename, $condition = array(), $cachetime = 15) {
-	return pdo()->count($tablename, $condition, $cachetime);
 }
 
 

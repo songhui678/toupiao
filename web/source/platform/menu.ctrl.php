@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -10,6 +10,7 @@ load()->model('menu');
 
 $dos = array('display', 'delete', 'refresh', 'post', 'push', 'copy', 'current_menu');
 $do = in_array($do, $dos) ? $do : 'display';
+uni_user_permission_check('platform_menu');
 $_W['page']['title'] = '公众号 - 自定义菜单';
 
 if($_W['isajax']) {
@@ -204,7 +205,7 @@ if ($do == 'post') {
 		$account_api = WeAccount::create();
 		$result = $account_api->menuCreate($menu);
 		if (is_error($result)) {
-			iajax($result['errno'], $result['message']);
+			iajax(1, $result);
 		} else {
 						if ($post['matchrule']['group_id'] != -1) {
 				$menu['matchrule']['groupid'] = $menu['matchrule']['tag_id'];

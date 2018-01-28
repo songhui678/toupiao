@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -11,7 +11,7 @@ load()->func('communication');
 
 $dos = array('save_setting', 'display', 'test_alipay', 'get_setting');
 $do = in_array($do, $dos) ? $do : 'display';
-permission_check_account_user('profile_pay_setting');
+uni_user_permission_check('profile_setting');
 $_W['page']['title'] = '支付参数 - 公众号选项';
 
 if ($do == 'get_setting') {

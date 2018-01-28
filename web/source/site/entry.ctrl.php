@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -30,25 +30,25 @@ if (empty($entry) || empty($entry['do'])) {
 if (!$entry['direct']) {
 	checklogin();
 	checkaccount();
-
+	
 	$module = module_fetch($entry['module']);
 	if (empty($module)) {
 		itoast("访问非法, 没有操作权限. (module: {$entry['module']})", '', '');
 	}
-
+	
 	if ($entry['entry'] == 'menu') {
-		$permission = permission_check_account_user_module($entry['module'] . '_menu_' . $entry['do'], $entry['module']);
+		$permission = uni_user_module_permission_check($entry['module'] . '_menu_' . $entry['do'], $entry['module']);
 	} else {
-		$permission = permission_check_account_user_module($entry['module'] . '_rule', $entry['module']);
+		$permission = uni_user_module_permission_check($entry['module'] . '_rule', $entry['module']);
 	}
 	if (!$permission) {
 		itoast('您没有权限进行该操作', '', '');
 	}
-
+	
 		define('CRUMBS_NAV', 1);
-
+	
 	$_W['page']['title'] = $entry['title'];
-	define('ACTIVE_FRAME_URL', url('site/entry/', array('eid' => $entry['eid'], 'version_id' => $_GPC['version_id'])));
+	define('ACTIVE_FRAME_URL', url('site/entry/', array('eid' => $entry['eid'])));
 }
 
 if (!empty($entry['module']) && !empty($_W['founder'])) {

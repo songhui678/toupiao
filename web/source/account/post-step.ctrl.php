@@ -1,20 +1,19 @@
 <?php
 /**
- * [WECHAT 2018]
- * [WECHAT  a free software]
+ * [WeEngine System] Copyright (c) 2014 WE7.CC
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
 load()->func('file');
 load()->model('module');
 load()->model('user');
-load()->model('account');
 load()->classs('weixin.platform');
 
 $_W['page']['title'] = '添加/编辑公众号 - 公众号管理';
 $uniacid = intval($_GPC['uniacid']);
 $step = intval($_GPC['step']) ? intval($_GPC['step']) : 1;
-$account_info = permission_user_account_num();
+$account_info = uni_user_account_permission();
 
 if($step == 1) {
 		if (!$_W['isfounder']) {
@@ -35,16 +34,16 @@ if($step == 1) {
 	}
 } elseif ($step == 2) {
 	if (!empty($uniacid)) {
-		$state = permission_account_user_role($uid, $uniacid);
+		$state = uni_permission($uid, $uniacid);
 		if ($state != ACCOUNT_MANAGE_NAME_FOUNDER && $state != ACCOUNT_MANAGE_NAME_OWNER) {
 			itoast('没有该公众号操作权限！', '', '');
 		}
-		if (is_error($permission = permission_create_account($_W['uid'], 2))) {
+		if (is_error($permission = uni_create_permission($_W['uid'], 2))) {
 			itoast($permission['message'], '' , 'error');
 		}
 	} else {
-		if (empty($_W['isfounder']) && is_error($permission = permission_create_account($_W['uid'], 1))) {
-			if (is_error($permission = permission_create_account($_W['uid'], 2))) {
+		if (empty($_W['isfounder']) && is_error($permission = uni_create_permission($_W['uid'], 1))) {
+			if (is_error($permission = uni_create_permission($_W['uid'], 2))) {
 				itoast($permission['message'], '' , 'error');
 			}
 		}
@@ -182,7 +181,7 @@ if($step == 1) {
 				$uid = intval($_GPC['uid']);
 		$groupid = intval($_GPC['groupid']);
 		if (!empty($uid)) {
-						$account_info = permission_user_account_num($uid);
+						$account_info = uni_user_account_permission($uid);
 			if ($account_info['uniacid_limit'] <= 0) {
 				itoast("您所设置的主管理员所在的用户组可添加的主公号数量已达上限，请选择其他人做主管理员！", referer(), 'error');
 			}
@@ -310,7 +309,7 @@ if($step == 1) {
 	}
 	$extend['package'] = pdo_getall('uni_account_group', array('uniacid' => $uniacid), array(), 'groupid');
 	$groups = user_group();
-	$modules = user_uniacid_modules($_W['uid']);
+	$modules = pdo_fetchall("SELECT mid, name, title FROM " . tablename('modules') . ' WHERE issystem != 1', array(), 'name');
 	$templates  = pdo_fetchall("SELECT * FROM ".tablename('site_templates'));
 } elseif($step == 4) {
 	$uniacid = intval($_GPC['uniacid']);

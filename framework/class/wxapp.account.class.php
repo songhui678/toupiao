@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
  
 defined('IN_IA') or exit('Access Denied');
@@ -23,17 +23,7 @@ class WxappAccount extends WeAccount {
 		$url = "https://api.weixin.qq.com/sns/jscode2session?appid={$this->account['key']}&secret={$this->account['secret']}&js_code={$code}&grant_type=authorization_code";
 		return $response = $this->requestApi($url);
 	}
-
 	
-	public function checkSign() {
-		$token = $this->account['token'];
-		$signkey = array($token, $_GET['timestamp'], $_GET['nonce']);
-		sort($signkey, SORT_STRING);
-		$signString = implode($signkey);
-		$signString = sha1($signString);
-		return $signString == $_GET['signature'];
-	}
-
 	
 	public function pkcs7Encode($encrypt_data, $iv) {
 		$key = base64_decode($_SESSION['session_key']);

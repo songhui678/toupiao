@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -12,37 +12,33 @@ $do = in_array($_GPC['do'], $dos)? $do : 'display';
 
 
 $_W['page']['title'] = $account_typename . '列表 - ' . $account_typename;
-$account_info = permission_user_account_num();
+$account_info = uni_user_account_permission();
 
 if ($do == 'display') {
 	$pindex = max(1, intval($_GPC['page']));
 	$psize = 20;
 
-	$account_table = table('account');
+	$condition = array();
 	
+
 	$type_condition = array(
 		ACCOUNT_TYPE_APP_NORMAL => array(ACCOUNT_TYPE_APP_NORMAL),
 		ACCOUNT_TYPE_OFFCIAL_NORMAL => array(ACCOUNT_TYPE_OFFCIAL_NORMAL, ACCOUNT_TYPE_OFFCIAL_AUTH),
 	);
-	$account_table->searchWithType($type_condition[ACCOUNT_TYPE]);
+	$condition['type'] = $type_condition[ACCOUNT_TYPE];
 	
 	$keyword = trim($_GPC['keyword']);
 	if (!empty($keyword)) {
-		$account_table->searchWithKeyword($keyword);
+		$condition['keyword'] = $keyword;
 	}
 	
 	if(isset($_GPC['letter']) && strlen($_GPC['letter']) == 1) {
-		$account_table->searchWithLetter($_GPC['letter']);
-	}
-	$account_table->searchWithPage($pindex, $psize);
-	$list = $account_table->searchAccountList();
-	
-	foreach($list as &$account) {
-		$account = uni_fetch($account['uniacid']);
-		$account['role'] = permission_account_user_role($_W['uid'], $account['uniacid']);
+		$condition['letter'] = trim($_GPC['letter']);
 	}
 	
-	$total = $account_table->getLastQueryTotal();
+	$account_lists = uni_account_list($condition, array($pindex, $psize));
+	$list = $account_lists['list'];
+	$total = $account_lists['total'];
 	$pager = pagination($total, $pindex, $psize);
 	template('account/manage-display' . ACCOUNT_TYPE_TEMPLATE);
 }
@@ -51,7 +47,7 @@ if ($do == 'delete') {
 	$acid = intval($_GPC['acid']);
 	$uid = $_W['uid'];
 	$type = intval($_GPC['type']);
-		$state = permission_account_user_role($uid, $uniacid);
+		$state = uni_permission($uid, $uniacid);
 	if ($state != ACCOUNT_MANAGE_NAME_OWNER && $state != ACCOUNT_MANAGE_NAME_FOUNDER) {
 		itoast('无权限操作！', url('account/manage'), 'error');
 	}
@@ -73,7 +69,7 @@ if ($do == 'delete') {
 		if (empty($account)) {
 			itoast('抱歉，帐号不存在或是已经被删除', url('account/manage', array('account_type' => ACCOUNT_TYPE)), 'error');
 		}
-		$state = permission_account_user_role($uid, $uniacid);
+		$state = uni_permission($uid, $uniacid);
 		if($state != ACCOUNT_MANAGE_NAME_FOUNDER && $state != ACCOUNT_MANAGE_NAME_OWNER) {
 			itoast('没有该'. ACCOUNT_TYPE_NAME . '操作权限！', url('account/manage', array('account_type' => ACCOUNT_TYPE)), 'error');
 		}

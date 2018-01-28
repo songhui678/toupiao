@@ -1,7 +1,7 @@
 <?php
 /**
- * [WECHAT 2018]
- * [WECHAT  a free software]
+ * [WeEngine System] Copyright (c) 2014 WE7.CC
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -15,83 +15,109 @@ function load() {
 }
 
 
-function table($name) {
-	load()->classs('table');
-	load()->table($name);
-	$service = false;
-	
-	$class_name = "{$name}Table";
-	if (class_exists($class_name)) {
-		$service = new $class_name();
-	}
-	return $service;
-}
-
-
 class Loader {
 	
 	private $cache = array();
-	private $singletonObject = array();
-	private $libraryMap = array(
-		'agent' => 'agent/agent.class',
-		'captcha' => 'captcha/captcha.class',
-		'pdo' => 'pdo/PDO.class',
-		'qrcode' => 'qrcode/phpqrcode',
-		'ftp' => 'ftp/ftp',
-		'pinyin' => 'pinyin/pinyin',
-		'pkcs7' => 'pkcs7/pkcs7Encoder',
-		'json' => 'json/JSON',
-		'phpmailer' => 'phpmailer/PHPMailerAutoload',
-	);
-	private $loadTypeMap = array(
-		'func' => '/framework/function/%s.func.php',
-		'model' => '/framework/model/%s.mod.php',
-		'classs' => '/framework/class/%s.class.php',
-		'library' => '/framework/library/%s.php',
-		'table' => '/framework/table/%s.table.php',
-		'web' => '/web/common/%s.func.php',
-		'app' => '/app/common/%s.func.php',
-	);
 	
-	public function __call($type, $params) {
+	function func($name) {
 		global $_W;
-		$name = array_shift($params);
-		if (!empty($this->cache[$type]) && isset($this->cache[$type][$name])) {
+		if (isset($this->cache['func'][$name])) {
 			return true;
 		}
-		if (empty($this->loadTypeMap[$type])) {
-			return true;
-		}
-				if ($type == 'library' && !empty($this->libraryMap[$name])) {
-			$name = $this->libraryMap[$name];
-		}
-		$file = sprintf($this->loadTypeMap[$type], $name);
-		if (file_exists(IA_ROOT . $file)) {
-			include IA_ROOT . $file;
-			$this->cache[$type][$name] = true;
+		$file = IA_ROOT . '/framework/function/' . $name . '.func.php';
+		if (file_exists($file)) {
+			include $file;
+			$this->cache['func'][$name] = true;
 			return true;
 		} else {
-			trigger_error('Invalid ' . ucfirst($type) . $file, E_USER_ERROR);
+			trigger_error('Invalid Helper Function /framework/function/' . $name . '.func.php', E_USER_ERROR);
 			return false;
 		}
 	}
 	
-	
-	function singleton($name) {
-		if (isset($this->singletonObject[$name])) {
-			return $this->singletonObject[$name];
+	function model($name) {
+		global $_W;
+		if (isset($this->cache['model'][$name])) {
+			return true;
 		}
-		$this->singletonObject[$name] = $this->object($name);
-		return $this->singletonObject[$name];
+		$file = IA_ROOT . '/framework/model/' . $name . '.mod.php';
+		if (file_exists($file)) {
+			include $file;
+			$this->cache['model'][$name] = true;
+			return true;
+		} else {
+			trigger_error('Invalid Model /framework/model/' . $name . '.mod.php', E_USER_ERROR);
+			return false;
+		}
 	}
 	
-	
-	function object($name) {
-		$this->classs(strtolower($name));
-		if (class_exists($name)) {
-			return new $name();
+	function classs($name) {
+		global $_W;
+		if (isset($this->cache['class'][$name])) {
+			return true;
+		}
+		$file = IA_ROOT . '/framework/class/' . $name . '.class.php';
+		if (file_exists($file)) {
+			include $file;
+			$this->cache['class'][$name] = true;
+			return true;
 		} else {
+			trigger_error('Invalid Class /framework/class/' . $name . '.class.php', E_USER_ERROR);
 			return false;
+		}
+	}
+	
+	function web($name) {
+		global $_W;
+		if (isset($this->cache['web'][$name])) {
+			return true;
+		}
+		$file = IA_ROOT . '/web/common/' . $name . '.func.php';
+		if (file_exists($file)) {
+			include $file;
+			$this->cache['web'][$name] = true;
+			return true;
+		} else {
+			trigger_error('Invalid Web Helper /web/common/' . $name . '.func.php', E_USER_ERROR);
+			return false;
+		}
+	}
+	
+	function app($name) {
+		global $_W;
+		if (isset($this->cache['app'][$name])) {
+			return true;
+		}
+		$file = IA_ROOT . '/app/common/' . $name . '.func.php';
+		if (file_exists($file)) {
+			include $file;
+			$this->cache['app'][$name] = true;
+			return true;
+		} else {
+			trigger_error('Invalid App Function /app/common/' . $name . '.func.php', E_USER_ERROR);
+			return false;
+		}
+	}
+	
+	function module($module, $file) {
+		if (isset($this->cache['encrypte'][$name])) {
+			return true;
+		}
+		if (strexists(file_get_contents($name), '<?php')) {
+			$this->cache['encrypte'][$name] = true;
+			require $name;
+		} else {
+			$key = cache_load('module:cloud:key:1');
+			$vars = cache_load('module:cloud:vars:1');
+			if (empty($vars)) {
+				trigger_error('Module is missing critical files , please reinstall');
+			}
+			echo <<<EOF
+\$_ENV = unserialize(base64_decode('$vars'));
+EOF;
+			
+			
+			exit;
 		}
 	}
 }

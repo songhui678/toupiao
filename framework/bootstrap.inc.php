@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 define('IN_IA', true);
 define('STARTTIME', microtime());
@@ -18,7 +18,7 @@ if(!file_exists($configfile)) {
 		require IA_ROOT . '/framework/version.inc.php';
 		echo '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
 		echo "·如果你还没安装本程序，请运行<a href='".(strpos($_SERVER['SCRIPT_NAME'], 'web') === false ? './install.php' : '../install.php')."'> install.php 进入安装&gt;&gt; </a><br/><br/>";
-		echo "&nbsp;&nbsp;<a href='http://www.we8.club' style='font-size:12px' target='_blank'>Power by WE8 " . IMS_VERSION . " &nbsp;维吧公众平台自助开源引擎</a>";
+		echo "&nbsp;&nbsp;<a href='http://www.we7.cc' style='font-size:12px' target='_blank'>Power by WE7 " . IMS_VERSION . " &nbsp;微擎公众平台自助开源引擎</a>";
 		exit();
 	} else {
 		header('Content-Type: text/html; charset=utf-8');
@@ -34,12 +34,10 @@ load()->func('global');
 load()->func('compat');
 load()->func('pdo');
 load()->classs('account');
+load()->classs('agent');
 load()->model('cache');
 load()->model('account');
 load()->model('setting');
-load()->library('agent');
-
-
 
 define('CLIENT_IP', getip());
 
@@ -60,7 +58,6 @@ if(DEVELOPMENT) {
 } else {
 	error_reporting(0);
 }
-
 
 if(!in_array($_W['config']['setting']['cache'], array('mysql', 'memcache', 'redis'))) {
 	$_W['config']['setting']['cache'] = 'mysql';
@@ -170,5 +167,5 @@ if(Agent::isMicroMessage() == Agent::MICRO_MESSAGE_YES) {
 $controller = $_GPC['c'];
 $action = $_GPC['a'];
 $do = $_GPC['do'];
-header('Content-Type: text/html; charset=' . $_W['charset']);
 
+header('Content-Type: text/html; charset=' . $_W['charset']);

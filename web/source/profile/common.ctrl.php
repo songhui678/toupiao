@@ -1,18 +1,18 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 
 defined('IN_IA') or exit('Access Denied');
 
 $dos = array('uc_setting', 'upload_file');
 $do = in_array($do, $dos) ? $do : 'uc_setting';
-permission_check_account_user('profile_setting');
+uni_user_permission_check('profile_setting');
 $_W['page']['title'] = '系统 - 参数设置';
 
 if ($do == 'uc_setting') {
-	$_W['page']['title'] = 'uc站点整合';
+		$_W['page']['title'] = 'uc站点整合';
 	$setting = uni_setting_load('uc');
 	$uc = $setting['uc'];
 	if(!is_array($uc)) {
@@ -78,3 +78,8 @@ if ($do == 'upload_file') {
 }
 
 template('profile/uc');
+
+
+
+
+

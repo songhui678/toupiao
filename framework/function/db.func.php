@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 $GLOBALS['_W']['config']['db']['tablepre'] = empty($GLOBALS['_W']['config']['db']['tablepre']) ? $GLOBALS['_W']['config']['db']['master']['tablepre'] : $GLOBALS['_W']['config']['db']['tablepre'];
@@ -24,13 +24,15 @@ function db_table_schema($db, $tablename = '') {
 		$temp['type'] = $pieces[0];
 		$temp['length'] = rtrim($pieces[1], ')');
 		$temp['null'] = $value['Null'] != 'NO';
-										$temp['signed'] = empty($type[1]);
+        $temp['signed'] = empty($type[1]);
+		$temp['default'] = $value['Default'];
 		$temp['increment'] = $value['Extra'] == 'auto_increment';
 		$ret['fields'][$value['Field']] = $temp;
 	}
 	$result = $db->fetchall("SHOW INDEX FROM " . $db->tablename($tablename));
 	foreach($result as $value) {
 		$ret['indexes'][$value['Key_name']]['name'] = $value['Key_name'];
+        $index = $value['Index_type'] == "FULLTEXT" ? 'fulltext index' : 'index';
 		$ret['indexes'][$value['Key_name']]['type'] = ($value['Key_name'] == 'PRIMARY') ? 'primary' : ($value['Non_unique'] == 0 ? 'unique' : 'index');
 		$ret['indexes'][$value['Key_name']]['fields'][] = $value['Column_name'];
 	}
@@ -64,6 +66,9 @@ function db_table_create_sql($schema) {
 	}
 	foreach ($schema['indexes'] as $value) {
 		$fields = implode('`,`', $value['fields']);
+      if($value['type'] == 'fulltext index') {
+            $sql .= "FULLTEXT KEY `{$value['name']}` (`{$fields}`),\n";
+        }
 		if($value['type'] == 'index') {
 			$sql .= "KEY `{$value['name']}` (`{$fields}`),\n";
 		}
@@ -239,6 +244,9 @@ function db_table_fix_sql($schema1, $schema2, $strict = false) {
 function _db_build_index_sql($index) {
 	$piece = '';
 	$fields = implode('`,`', $index['fields']);
+    if($index['type'] == 'fulltext index') {
+        $piece .= " FULLTEXT `{$index['name']}` (`{$fields}`)";
+    }
 	if($index['type'] == 'index') {
 		$piece .= " INDEX `{$index['name']}` (`{$fields}`)";
 	}

@@ -1,13 +1,13 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
 $dos = array('category_post', 'category', 'category_del', 'list', 'post', 'batch_post', 'del');
 $do = in_array($do, $dos) ? $do : 'list';
-permission_check_account_user('system_article_news');
+uni_user_permission_check('system_article_news');
 
 if ($do == 'category_post') {
 	$_W['page']['title'] = '编辑分类-新闻分类-文章管理';

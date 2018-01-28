@@ -4,13 +4,11 @@
 	<div class="content clearfix">
 		<div id="head">
 			<div class="logo">
-				<img src="<?php  if(!empty($_W['setting']['copyright']['flogo'])) { ?><?php  echo tomedia($_W['setting']['copyright']['flogo'])?><?php  } else { ?>./resource/images/logo/logo-219.png<?php  } ?>" width="220px" height="50px">
+				<img src="<?php  if(!empty($_W['setting']['copyright']['flogo'])) { ?><?php  echo tomedia($_W['setting']['copyright']['flogo'])?><?php  } else { ?>./resource/images/logo/logo-219.png<?php  } ?>" width="220px" height="80px">
 			</div>
 			<div class="advertisement">
 				<?php  if(!empty($copyright['notice'])) { ?>
 					<?php  echo $copyright['notice'];?>
-				<?php  } else { ?>
-					再小的品牌，也有自己的微擎
 				<?php  } ?>
 			</div>
 			<div class="btns">
@@ -72,7 +70,7 @@
 							<div class="col-xs-6">
 								<ul class="list-unstyled">
 									<?php  if(is_array($notices)) { foreach($notices as $notice) { ?>
-										<li><span class="style-2">公告</span><a href="<?php  echo url('article/notice-show/detail', array('id' => $notice['id']));?>" style="<?php  if(!empty($notice['style'])) { ?><?php  if(!empty($notice['style']['color'])) { ?>color: <?php  echo $notice['style']['color']?>;<?php  } ?><?php  if(!empty($notice['style']['bold'])) { ?>font-weight:bold;<?php  } ?><?php  } ?>"><?php  echo $notice['title'];?></a></li>
+										<li><span class="style-2">公告</span><a href="<?php  echo url('article/notice-show/detail', array('id' => $notice['id']));?>"><?php  echo $notice['title'];?></a></li>
 									<?php  } } ?>
 								</ul>
 							</div>
@@ -196,33 +194,11 @@
 
 				</div>
 			</div>
-			<div class="contact panel panel-default">
-				<h4>联系我们</h4>
-				<div class="panel-body">
-					<div class="map col-xs-5" style="height:150px;">
-						<div class="img" style="width:100%; height:150px; border:#ccc solid 1px;" id="baidumap"></div>
-					</div>
-					<div class="info col-xs-7">
-						<p>联系人：<?php  echo $copyright['person'];?></p>
-						<p>Q&nbsp;&nbsp;&nbsp;&nbsp; Q：<?php  echo $copyright['qq'];?></p>
-						<p>手&nbsp;&nbsp;&nbsp;机：<?php  echo $copyright['phone'];?></p>
-						<p>公&nbsp;&nbsp;&nbsp;司：<?php  echo $copyright['company'];?></p>
-						<p>地&nbsp;&nbsp;&nbsp;址：<?php  echo $copyright['address'];?></p>
-					</div>
-				</div>
-			</div>
+			
 		</div>
 	</div>
-	<div class="center-block footer" role="footer">
-		<div class="text-center">
-			<?php  if(empty($copyright['footerright'])) { ?><a href="http://www.we7.cc">关于微擎</a>&nbsp;&nbsp;<a href="http://bbs.we7.cc">微擎论坛</a>&nbsp;&nbsp;<a href="http://wpa.b.qq.com/cgi/wpa.php?ln=1&key=XzkzODAwMzEzOV8xNzEwOTZfNDAwMDgyODUwMl8yXw">联系客服</a><?php  } else { ?><?php  echo $copyright['footerright'];?><?php  } ?> &nbsp; &nbsp; <?php  if(!empty($copyright['statcode'])) { ?><?php  echo $copyright['statcode'];?><?php  } ?>
-		</div>
-		<div class="text-center">
-			<?php  if(empty($copyright['footerleft'])) { ?>Powered by <a href="http://www.we7.cc"><b>微擎</b></a> v<?php echo IMS_VERSION;?> &copy; 2014-2015 <a href="http://www.we7.cc">www.we7.cc</a><?php  } else { ?><?php  echo $copyright['footerleft'];?><?php  } ?>
-		</div>
-	</div>
-</div>
-<script type="text/javascript" src="//api.map.baidu.com/api?v=1.4"></script>
+	
+
 <script>
 	var bmap = {
 		'option' : {

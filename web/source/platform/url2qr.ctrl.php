@@ -1,17 +1,16 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 
 defined('IN_IA') or exit('Access Denied');
 load()->model('account');
 load()->func('communication');
-load()->library('qrcode');
 
 $dos = array('display', 'change', 'qr', 'chat', 'down_qr');
 $do = !empty($_GPC['do']) && in_array($do, $dos) ? $do : 'display';
-permission_check_account_user('platform_qr');
+uni_user_permission_check('platform_qr');
 $_W['page']['title'] = '长链接转二维码';
 
 if ($do == 'display') {
@@ -47,6 +46,7 @@ if ($do == 'change') {
 
 if ($do == 'qr') {
 	$url = $_GPC['url'];
+	require(IA_ROOT . '/framework/library/qrcode/phpqrcode.php');
 	$errorCorrectionLevel = "L";
 	$matrixPointSize = "5";
 	QRcode::png($url, false, $errorCorrectionLevel, $matrixPointSize);
@@ -55,6 +55,7 @@ if ($do == 'qr') {
 
 if ($do == 'down_qr') {
 	$qrlink = $_GPC['qrlink'];
+	require(IA_ROOT . '/framework/library/qrcode/phpqrcode.php');
 	$errorCorrectionLevel = "L";
 	$matrixPointSize = "5";
 	$qr_pic = QRcode::png($qrlink, false, $errorCorrectionLevel, $matrixPointSize);

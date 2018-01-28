@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 define('IN_API', true);
 require_once './framework/bootstrap.inc.php';
@@ -45,6 +45,7 @@ $_W['uniaccount'] = uni_fetch($_W['uniacid']);
 $_W['account']['groupid'] = $_W['uniaccount']['groupid'];
 $_W['account']['qrcode'] = $_W['attachurl'].'qrcode_'.$_W['acid'].'.jpg?time='.$_W['timestamp'];
 $_W['account']['avatar'] = $_W['attachurl'].'headimg_'.$_W['acid'].'.jpg?time='.$_W['timestamp'];
+$_W['modules'] = uni_modules();
 
 $engine = new WeEngine();
 if (!empty($_W['setting']['copyright']['status'])) {
@@ -79,14 +80,11 @@ class WeEngine {
 	public function __construct() {
 		global $_W;
 		$this->account = WeAccount::create($_W['account']);
-		if(strtolower($_SERVER['REQUEST_METHOD']) == 'post') {
-			$_W['modules'] = uni_modules();
-			$this->modules = array_keys($_W['modules']);
-			$this->modules[] = 'cover';
-			$this->modules[] = 'default';
-			$this->modules[] = 'reply';
-			$this->modules = array_unique ($this->modules);
-		}
+		$this->modules = array_keys($_W['modules']);
+		$this->modules[] = 'cover';
+		$this->modules[] = 'default';
+		$this->modules[] = 'reply';
+		$this->modules = array_unique($this->modules);
 	}
 
 	
@@ -404,9 +402,6 @@ class WeEngine {
 			@$obj->receive();
 		}
 		load()->func('communication');
-		if (empty($subscribe[$this->message['type']])) {
-			$subscribe[$this->message['type']] = $subscribe[$this->message['event']];
-		}
 		if (!empty($subscribe[$this->message['type']])) {
 			foreach ($subscribe[$this->message['type']] as $modulename) {
 								$response = ihttp_request(wurl('utility/subscribe/receive'), array(
@@ -601,6 +596,9 @@ EOF;
 			$message['content'] = strval($message['eventkey']);
 			return $this->analyzeClick($message);
 		}
+		if (strtolower($message['event']) == 'user_gifting_card') {
+			return $this->analyzeCoupon($message);
+		}
 		if (in_array($message['event'], array('pic_photo_or_album', 'pic_weixin', 'pic_sysphoto'))) {
 			pdo_query("DELETE FROM ".tablename('menu_event')." WHERE createtime < '".($GLOBALS['_W']['timestamp'] - 100)."' OR openid = '{$message['from']}'");
 			if (!empty($message['sendpicsinfo']['count'])) {
@@ -686,6 +684,72 @@ EOF;
 		} else {
 			return $params;
 		}
+	}
+	
+	public function analyzeCoupon(&$message) {
+		global $_W;
+		$data = array();
+				if ($message['event'] == 'poi_check_notify') {
+			$data['status'] = ($message['result'] == 'succ') ? 1 : 3;
+			$data['location_id'] = trim($message['poiid']);
+			$data['message'] = trim($message['msg']);
+			$id = intval($message['uniqid']);
+			pdo_update('activity_stores', $data, array('id' => $id, 'uniacid' => $_W['uniacid']));
+		} elseif (in_array($message['event'], array('card_pass_check', 'card_not_pass_check'))) {
+						$data['status'] = ($message['event'] == 'card_pass_check') ? 3 : 2;
+			$card_id = trim($message['cardid']);
+			$is_exist = pdo_getcolumn('coupon', array('card_id' => $card_id));
+			if(!empty($is_exist)) {
+				pdo_update('coupon', $data, array('card_id' => $card_id));
+			}
+		} elseif ($message['event'] == 'user_get_card') {
+						load()->model('activity');
+			if (empty($message['isgivebyfriend'])) {
+				$coupon_record = pdo_get('coupon_record', array('card_id' => trim($message['cardid']), 'openid' => trim($message['fromusername']), 'status' => '1', 'code' => ''), array('id'));
+				if (!empty($coupon_record)) {
+					pdo_update('coupon_record', array('code' => trim($message['usercardcode'])),array('id' => $coupon_record['id']));
+				} else {
+					$fans_info = mc_fansinfo($message['fromusername']);
+					$coupon_info = pdo_get('coupon', array('card_id' => $message['cardid']));
+					$pcount = pdo_fetchcolumn("SELECT count(*) FROM " . tablename('coupon_record') . " WHERE `openid` = :openid AND `couponid` = :couponid", array(':couponid' => $coupon_info['id'], ':openid' => trim($message['fromusername'])));
+					if ($pcount < $coupon_info['get_limit'] && $coupon_info['quantity'] > 0) {
+						$insert_data = array(
+							'uniacid' => $fans_info['uniacid'],
+							'card_id' => $message['cardid'],
+							'openid' => $message['fromusername'],
+							'code' => $message['usercardcode'],
+							'addtime' => TIMESTAMP,
+							'status' => '1',
+							'uid' => $fans_info['uid'],
+							'remark' => '用户通过投放扫码',
+							'couponid' => $coupon_info['id']
+						);
+						pdo_insert('coupon_record', $insert_data);
+						pdo_update('coupon', array('quantity' => $coupon_info['quantity'] - 1, 'dosage' => $coupon_info['dosage'] + 1), array('uniacid' => $fans_info['uniacid'],'id' => $coupon_info['id']));
+					}
+				}
+			} else {
+				$old_record = pdo_get('coupon_record', array('openid' => trim($message['friendusername']), 'card_id' => trim($message['cardid']), 'code' => trim($message['oldusercardcode'])));
+				pdo_update('coupon_record', array('addtime' => TIMESTAMP, 'givebyfriend' => intval($message['isgivebyfriend']), 'openid' => trim($message['fromusername']), 'code' => trim($message['usercardcode']), 'status' => '1'), array('id' => $old_record['id']));
+			}
+			$this->receive();
+		} elseif ($message['event'] == 'user_del_card') {
+						$card_id = trim($message['cardid']);
+			$openid = trim($message['fromusername']);
+			$code = trim($message['usercardcode']);
+			pdo_update('coupon_record', array('status' => 4), array('card_id' => $card_id, 'openid' => $openid, 'code' => $code));
+			$this->receive();
+		} elseif ($message['event'] == 'user_consume_card') {
+						$card_id = trim($message['cardid']);
+			$openid = trim($message['fromusername']);
+			$code = trim($message['usercardcode']);
+			if (!empty($message['locationid'])) {
+				$stores_info = pdo_get('activity_stores', array('location_id' => $message['locationid']), array('id'));
+			}
+			pdo_update('coupon_record', array('status' => 3, 'usetime' => TIMESTAMP, 'store_id' => $stores_info['id']), array('card_id' => $card_id, 'openid' => $openid, 'code' => $code));
+			$this->receive();
+		}
+				exit('success');
 	}
 
 	

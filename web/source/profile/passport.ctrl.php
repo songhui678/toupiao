@@ -1,13 +1,14 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 
 defined('IN_IA') or exit('Access Denied');
 
 $dos = array('oauth', 'save_oauth', 'uc_setting', 'upload_file');
 $do = in_array($do, $dos) ? $do : 'oauth';
+uni_user_permission_check('profile_setting');
 $_W['page']['title'] = '公众平台oAuth选项 - 会员中心';
 
 if ($do == 'save_oauth') {
@@ -34,17 +35,29 @@ if ($do == 'save_oauth') {
 }
 
 if ($do == 'oauth') {
-	$user_have_accounts = uni_user_accounts($_W['uid']);
+	$where = '';
+	$params = array();
+	if(empty($_W['isfounder'])) {
+		$where = " WHERE `uniacid` IN (SELECT `uniacid` FROM " . tablename('uni_account_users') . " WHERE `uid`=:uid)";
+		$params[':uid'] = $_W['uid'];
+	}
+	$sql = "SELECT * FROM " . tablename('uni_account') . $where;
+	$user_have_accounts = pdo_fetchall($sql, $params);
 	$oauth_accounts = array();
 	$jsoauth_accounts = array();
 	if(!empty($user_have_accounts)) {
-		foreach($user_have_accounts as $account) {
-			if(!empty($account['key']) && !empty($account['secret'])) {
-				if (in_array($account['level'], array(4))) {
-					$oauth_accounts[$account['acid']] = $account['name'];
-				}
-				if (in_array($account['level'], array(3, 4))) {
-					$jsoauth_accounts[$account['acid']] = $account['name'];
+		foreach($user_have_accounts as $uniaccount) {
+			$accountlist = uni_accounts($uniaccount['uniacid']);
+			if(!empty($accountlist)) {
+				foreach($accountlist as $account) {
+					if(!empty($account['key']) && !empty($account['secret'])) {
+						if (in_array($account['level'], array(4))) {
+							$oauth_accounts[$account['acid']] = $account['name'];
+						}
+						if (in_array($account['level'], array(3, 4))) {
+							$jsoauth_accounts[$account['acid']] = $account['name'];
+						}
+					}
 				}
 			}
 		}

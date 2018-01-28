@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -12,7 +12,7 @@ $do = in_array($do, $dos) ? $do : 'home';
 
 $system_modules = system_modules();
 if (!in_array($_GPC['m'], $system_modules)) {
-	permission_check_account_user('', true, 'nav');
+	uni_user_permission_check('', true, 'nav');
 }
 $modulename = $_GPC['m'];
 

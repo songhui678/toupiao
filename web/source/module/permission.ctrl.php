@@ -1,7 +1,7 @@
 <?php
 /**
- * [WECHAT 2018]
- * [WECHAT  a free software]
+ * [WeEngine System] Copyright (c) 2014 WE7.CC
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -14,12 +14,18 @@ $module = $_W['current_module'] = $modulelist[$module_name];
 if(empty($module)) {
 	itoast('抱歉，你操作的模块不能被访问！');
 }
-if(!permission_check_account_user_module($module_name.'_permissions', $module_name)) {
+if(!uni_user_module_permission_check($module_name.'_permissions', $module_name)) {
 	itoast('您没有权限进行该操作');
 }
 
 if ($do == 'display') {
-	$user_permissions = module_clerk_info($module_name);
+	$entries = module_entries($module_name);
+	$user_permissions = pdo_getall('users_permission', array('uniacid' => $_W['uniacid'], 'type' => $module_name, 'uid <>' => ''), '', 'uid');
+	$uids = !empty($user_permissions) && is_array($user_permissions) ? array_keys($user_permissions) : array();
+	$users_lists = array();
+	if (!empty($uids)) {
+		$users_lists = pdo_getall('users', array('uid' => $uids), '', 'uid');
+	}
 	$current_module_permission = module_permission_fetch($module_name);
 	$permission_name = array();
 	if (!empty($current_module_permission)) {
@@ -36,6 +42,7 @@ if ($do == 'display') {
 					unset($permission['permission'][$k]);
 				}
 			}
+			$permission['user_info'] = $users_lists[$key];
 		}
 		unset($permission);
 	}
@@ -45,7 +52,7 @@ if ($do == 'post') {
 	$uid = intval($_GPC['uid']);
 	$user = user_single($uid);
 	if (!empty($uid)) {
-		$have_permission = permission_account_user_menu($uid, $_W['uniacid'], $module_name);
+		$have_permission = uni_user_menu_permission($uid, $_W['uniacid'], $module_name);
 		if (is_error($have_permission)) {
 			itoast($have_permission['message']);
 		}
@@ -57,7 +64,7 @@ if ($do == 'post') {
 				'remark' => trim($_GPC['remark']),
 				'password' => trim($_GPC['password']),
 				'repassword' => trim($_GPC['repassword']),
-				'type' => ACCOUNT_OPERATE_CLERK
+				'type' => 3
 			);
 		if (empty($insert_user['username'])) {
 			itoast('必须输入用户名，格式为 1-15 位字符，可以包括汉字、字母（不区分大小写）、数字、下划线和句点。');
@@ -108,11 +115,11 @@ if ($do == 'post') {
 			pdo_update('users_permission', array('permission' => $permission), array('uniacid' => $_W['uniacid'], 'uid' => $uid, 'type' => $module_name));
 		}
 
-		$role = table('users')->userOwnedAccountRole($uid, $_W['uniacid']);
+		$role = uni_permission($uid, $_W['uniacid']);
 		if (empty($role)) {
-			pdo_insert('uni_account_users', array('uniacid' => $_W['uniacid'], 'uid' => $uid, 'role' => 'clerk'));
+			pdo_insert('uni_account_users', array('uniacid' => $_W['uniacid'], 'uid' => $uid, 'role' => 'operator'));
 		} else {
-			pdo_update('uni_account_users', array('role' => 'clerk'), array('uniacid' => $_W['uniacid'], 'uid' => $uid));
+			pdo_update('uni_account_users', array('role' => 'operator'), array('uniacid' => $_W['uniacid'], 'uid' => $uid));
 		}
 		itoast('编辑店员资料成功', url('module/permission', array('m' => $module_name)), 'success');
 	}
@@ -135,7 +142,7 @@ if ($do == 'delete') {
 	} else {
 		$user = pdo_get('users', array('uid' => $operator_id), array('uid'));
 		if (!empty($user)) {
-			$delete_account_users = pdo_delete('uni_account_users', array('uid' => $operator_id, 'role' => 'clerk', 'uniacid' => $_W['uniacid']));
+			$delete_account_users = pdo_delete('uni_account_users', array('uid' => $operator_id, 'role' => 'operator', 'uniacid' => $_W['uniacid']));
 			$delete_user_permission = pdo_delete('users_permission', array('uid' => $operator_id, 'type' => $module_name, 'uniacid' => $_W['uniacid']));
 			if (!empty($delete_account_users) && !empty($delete_user_permission)) {
 				pdo_delete('users', array('uid' => $operator_id));

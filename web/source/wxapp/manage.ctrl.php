@@ -1,7 +1,7 @@
 <?php
 /**
- * [WECHAT 2018]
- * [WECHAT  a free software]
+ * [WeEngine System] Copyright (c) 2014 WE7.CC
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -18,9 +18,8 @@ if (empty($uniacid)) {
 	itoast('请选择要编辑的小程序', referer(), 'error');
 }
 
-$state = permission_account_user_role($_W['uid'], $uniacid);
-$role_permission = in_array($state, array(ACCOUNT_MANAGE_NAME_OWNER, ACCOUNT_MANAGE_NAME_FOUNDER, ACCOUNT_MANAGE_NAME_MANAGER, ACCOUNT_MANAGE_NAME_VICE_FOUNDER));
-if (!$role_permission) {
+$state = uni_permission($_W['uid'], $uniacid);
+if ($state != ACCOUNT_MANAGE_NAME_OWNER && $state != ACCOUNT_MANAGE_NAME_FOUNDER && $state != ACCOUNT_MANAGE_NAME_MANAGER) {
 	itoast('无权限操作！', referer(), 'error');
 }
 
@@ -33,7 +32,7 @@ if ($do == 'display') {
 		$version_exist = wxapp_fetch($account['uniacid']);
 		if (!empty($version_exist)) {
 			$wxapp_version_lists = wxapp_version_all($account['uniacid']);
-			$wxapp_modules = wxapp_support_uniacid_modules();
+			$wxapp_modules = wxapp_support_wxapp_modules();
 		}
 	}
 	template('wxapp/manage');
@@ -123,30 +122,24 @@ if ($do == 'delete') {
 }
 
 if($do == 'getpackage') {
-
 	$versionid = intval($_GPC['versionid']);
 	if(empty($versionid)) {
 		itoast('参数错误！', '', '');
 	}
+
 	$account_wxapp_info = wxapp_fetch($uniacid, $versionid);
 	if (empty($account_wxapp_info)) {
 		itoast('版本不存在！', referer(), 'error');
 	}
-	$siteurl = $_W['siteroot'].'app/index.php';
-	if(!empty($account_wxapp_info['appdomain'])) {
-		$siteurl = $account_wxapp_info['appdomain'];
-	}
-
 	$request_cloud_data = array(
 		'name' => $account_wxapp_info['name'],
 		'modules' => $account_wxapp_info['version']['modules'],
 		'siteInfo' => array(
-			'name' => $account_wxapp_info['name'],
 			'uniacid' => $account_wxapp_info['uniacid'],
 			'acid' => $account_wxapp_info['acid'],
 			'multiid' => $account_wxapp_info['version']['multiid'],
 			'version' => $account_wxapp_info['version']['version'],
-			'siteroot' => $siteurl,
+			'siteroot' => $_W['siteroot'].'app/index.php',
 			'design_method' => $account_wxapp_info['version']['design_method']
 		),
 		'tabBar' => json_decode($account_wxapp_info['version']['quickmenu'], true),

@@ -27,9 +27,6 @@
 							</li>
 							{if $_W['isfounder']}
 							<li class="divider"></li>
-							{if uni_user_see_more_info(ACCOUNT_MANAGE_NAME_VICE_FOUNDER, false)}
-							<li><a href="{url 'cloud/upgrade'}" target="_blank"><i class="wi wi-update color-gray"></i> 自动更新</a></li>
-							{/if}
 							<li><a href="{url 'system/updatecache'}" target="_blank"><i class="wi wi-cache color-gray"></i> 更新缓存</a></li>
 							<li class="divider"></li>
 							{/if}
@@ -56,7 +53,7 @@
 	<div class="container text-right">
 		<div class="alert-info">
 			<a href="{if $_W['isfounder']}{php echo url('user/edit', array('uid' => $_W['account']['uid']));}{else}javascript:void(0);{/if}">
-				该公众号管理员服务有效期：{php echo date('Y-m-d', $_W['account']['starttime']);} ~ {php echo date('Y-m-d', $_W['account']['endtime']);}.
+				您的服务有效期限：{php echo date('Y-m-d', $_W['account']['starttime']);} ~ {php echo date('Y-m-d', $_W['account']['endtime']);}.
 				{if $_W['account']['endtime'] < TIMESTAMP}
 				目前已到期，请联系管理员续费
 				{else}
@@ -79,7 +76,7 @@
 {if !defined('IN_MESSAGE')}
 <div class="container">
 	<a href="javascript:;" class="js-big-main button-to-big color-gray" title="加宽">{if $_GPC['main-lg']}正常{else}宽屏{/if}</a>
-	{if in_array(FRAME, array('account', 'system', 'advertisement', 'wxapp', 'site', 'store')) && !in_array($_GPC['a'], array('news-show', 'notice-show'))}
+	{if in_array(FRAME, array('account', 'system', 'advertisement', 'wxapp', 'site')) && !in_array($_GPC['a'], array('news-show', 'notice-show'))}
 	<div class="panel panel-content main-panel-content {if !empty($frames['section']['platform_module_menu']['plugin_menu'])}panel-content-plugin{/if}">
 		<div class="content-head panel-heading main-panel-heading">
 			{if ($_GPC['c'] != 'cloud' && !empty($_GPC['m']) && !in_array($_GPC['m'], array('keyword', 'special', 'welcome', 'default', 'userapi', 'service'))) || defined('IN_MODULE')}
@@ -93,9 +90,6 @@
 			{if empty($frames['section']['platform_module_menu']['plugin_menu'])}
 			<div class="left-menu-content">
 				{loop $frames['section'] $frame_section_id $frame_section}
-				{if FRAME == 'store' && !($_W['isfounder'] && !user_is_vice_founder()) && !empty($frame_section['founder'])}
-					{php continue;}
-				{/if}
 				{if !isset($frame_section['is_display']) || !empty($frame_section['is_display'])}
 				<div class="panel panel-menu">
 					{if $frame_section['title']}
@@ -111,7 +105,7 @@
 										<a href="{url 'module/manage-account'}"><span class="label label-more">更多应用</span></a>
 									</li>
 									{else}
-									{if (in_array($_W['role'], array(ACCOUNT_MANAGE_NAME_OWNER, ACCOUNT_MANAGE_NAME_FOUNDER)) && $menu_id == 'front_download' || $menu_id != 'front_download') && !($menu_id == 'platform_menu' && $_W['account']['level'] == ACCOUNT_SUBSCRIPTION)}
+									{if in_array($_W['role'], array(ACCOUNT_MANAGE_NAME_OWNER, ACCOUNT_MANAGE_NAME_FOUNDER)) && $menu_id == 'front_download' || $menu_id != 'front_download'}
 									<li class="list-group-item {if $menu['active']}active{/if}">
 										<a href="{$menu['url']}" class="text-over" {if $frame_section_id == 'platform_module'}target="_blank"{/if}>
 										{if $menu['icon']}

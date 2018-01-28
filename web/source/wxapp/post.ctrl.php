@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -11,7 +11,7 @@ load()->model('wxapp');
 $dos = array('design_method', 'post', 'get_wxapp_modules');
 $do = in_array($do, $dos) ? $do : 'post';
 $_W['page']['title'] = '小程序 - 新建版本';
-$account_info = permission_user_account_num();
+$account_info = uni_user_account_permission();
 
 if ($do == 'design_method') {
 	$uniacid = intval($_GPC['uniacid']);
@@ -21,19 +21,19 @@ if ($do == 'design_method') {
 if($do == 'post') {
 	$uniacid = intval($_GPC['uniacid']);
 	$design_method = intval($_GPC['design_method']);
-
+	
 	if (empty($design_method)) {
 		itoast('请先选择要添加小程序类型', referer(), 'error');
 	}
 	if ($design_method == WXAPP_TEMPLATE) {
 		itoast('拼命开发中。。。', referer(), 'info');
 	}
-
+	
 	if (checksubmit('submit')) {
 		if ($account_info['wxapp_limit'] <= 0 && empty($uniacid) && !$_W['isfounder']) {
 			iajax(-1, '创建的小程序已达上限！');
 		}
-		if ($design_method == WXAPP_TEMPLATE && empty($_GPC['choose']['modules'])) {
+		if ($design_method == WXAPP_TEMPLATE && empty($_GPC['select']['modules'])) {
 			iajax(2, '请选择要打包的模块应用', url('wxapp/post'));
 		}
 				if (empty($uniacid)) {
@@ -60,7 +60,7 @@ if($do == 'post') {
 				iajax(4, '小程序不存在或是已经被删除', url('wxapp/post'));
 			}
 		}
-
+		
 						$wxapp_version = array(
 			'uniacid' => $uniacid,
 			'multiid' => '0',
@@ -70,7 +70,7 @@ if($do == 'post') {
 			'design_method' => $design_method,
 			'quickmenu' => '',
 			'createtime' => TIMESTAMP,
-			'template' => $design_method == WXAPP_TEMPLATE ? intval($_GPC['choose']['template']) : 0,
+			'template' => $design_method == WXAPP_TEMPLATE ? intval($_GPC['select']['template']) : 0,
 		);
 				if ($design_method == WXAPP_TEMPLATE) {
 			$multi_data = array(
@@ -81,9 +81,9 @@ if($do == 'post') {
 			pdo_insert('site_multi', $multi_data);
 			$wxapp_version['multiid'] = pdo_insertid();
 		}
-				if (!empty($_GPC['choose']['modules'])) {
+				if (!empty($_GPC['select']['modules'])) {
 			$select_modules = array();
-			foreach ($_GPC['choose']['modules'] as $module) {
+			foreach ($_GPC['select']['modules'] as $module) {
 				$module = module_fetch($module['module']);
 				if (empty($module) || $module['wxapp_support'] != MODULE_SUPPORT_WXAPP) {
 					continue;

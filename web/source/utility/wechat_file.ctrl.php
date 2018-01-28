@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 
 defined('IN_IA') or exit('Access Denied');
@@ -128,12 +128,10 @@ if ($do == 'upload') {
 		$result['message'] = '上传失败, 请选择要上传的文件！';
 		die(json_encode($result));
 	}
-
 	if ($_FILES['file']['error'] != 0) {
 		$result['message'] = '上传失败, 请重试.';
 		die(json_encode($result));
 	}
-
 	$ext = pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);
 	$ext = strtolower($ext);
 	$size = intval($_FILES['file']['size']);
@@ -162,14 +160,13 @@ if ($do == 'upload') {
 	}
 	if($mode == 'perm' || $mode == 'temp') {
 		$sendapi = $apis[$mode]['add'] . "?access_token={$token}&type={$type}";
-		$media = '@'.$fullname;
 		$data = array(
-			'media' => $media
+			'media' => '@'.$fullname
 		);
 		if($type == 'video') {
 			$description = array(
-				'title' => $filename,
-				'introduction' =>  $filename,
+				'title' => urlencode(trim($_GPC['title'])),
+				'introduction' => urlencode(trim($_GPC['introduction']))
 			);
 			$data['description'] = urldecode(json_encode($description));
 		}

@@ -1,4 +1,8 @@
 <?php
+/**
+ * [WeEngine System] Copyright (c) 2014 WE7.CC
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ */
 defined('IN_IA') or exit('Access Denied');
 
 load()->model('cloud');
@@ -6,12 +10,11 @@ load()->func('communication');
 
 class CloudApi {
 
-	private $url = 'http://wapi.wei8848.com/wapi/wapis';
-	private $cloud_api_url = 'http://wapi.wei8848.com/wapi/wapis';
+	private $url = 'http://addons2.weizancms.com/index.php?c=%s&a=%s&access_token=%s&';
 	private $development = false;
 	private $module = null;
 	private $sys_call = false;
-	private $default_token = '8848';
+	private $default_token = '91ec1f9324753048c0096d036a694f86';
 
 	const ACCESS_TOKEN_EXPIRE_IN = 7200;
 
@@ -43,7 +46,7 @@ class CloudApi {
 	private function developerCerContent(){
 		$cer = $this->getCerContent('developer.cer');
 		if (is_error($cer)) {
-			return error(1, '访问云API获取授权失败,模块中没有开发者数字证书,请下载数字证书!');
+			return error(1, '访问云API获取授权失败,模块中没有开发者数字证书,请到 <a href="http://s.we7.cc/index.php?c=develop&a=auth" target="_blank">开发者中心</a> 下载数字证书!');
 		}
 
 		return $cer;
@@ -68,7 +71,7 @@ class CloudApi {
 			$pars = _cloud_build_params();
 			$pars['method'] = 'api.oauth';
 			$pars['module'] = $this->module;
-			$data = cloud_request($this->cloud_api_url, $pars);
+			$data = cloud_request('http://v2.addons.we7.cc/gateway.php', $pars);
 			if (is_error($data)) {
 				return $data;
 			}
@@ -112,7 +115,7 @@ class CloudApi {
 			$pars = _cloud_build_params();
 			$pars['method'] = 'api.oauth';
 			$pars['module'] = $this->module;
-			$data = cloud_request($this->cloud_api_url, $pars);
+			$data = cloud_request('http://v2.addons.we7.cc/gateway.php', $pars);
 			if (is_error($data)) {
 				return $data;
 			}

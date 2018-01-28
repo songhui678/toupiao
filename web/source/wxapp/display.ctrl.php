@@ -1,7 +1,7 @@
 <?php
 /**
- * [WECHAT 2018]
- * [WECHAT  a free software]
+ * [WeEngine System] Copyright (c) 2014 WE7.CC
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 load()->model('wxapp');
@@ -26,43 +26,44 @@ if ($do == 'home') {
 	if (empty($last_uniacid)) {
 		itoast('', $url, 'info');
 	}
-	$permission = permission_account_user_role($_W['uid'], $last_uniacid);
+	$permission = uni_permission($_W['uid'], $last_uniacid);
 	if (empty($permission)) {
 		itoast('', $url, 'info');
 	}
 	$last_version = wxapp_fetch($last_uniacid);
 	if (!empty($last_version)) {
+		uni_account_switch($last_uniacid);
 		$url = url('wxapp/version/home', array('version_id' => $last_version['version']['id']));
 	}
 	itoast('', $url, 'info');
 } elseif ($do == 'display') {
-		$account_info = permission_user_account_num();
+		$account_info = uni_user_account_permission();
 
 	$pindex = max(1, intval($_GPC['page']));
 	$psize = 20;
-
-	$account_table = table('account');
-	$account_table->searchWithType(array(ACCOUNT_TYPE_APP_NORMAL));
-
+	$condition = array();
 	$keyword = trim($_GPC['keyword']);
+
+	$condition['type'] = array(ACCOUNT_TYPE_APP_NORMAL);
+
 	if (!empty($keyword)) {
-		$account_table->searchWithKeyword($keyword);
+		$condition['keyword'] = trim($_GPC['keyword']);
+	}
+	if(isset($_GPC['letter']) && strlen($_GPC['letter']) == 1) {
+		$condition['letter'] = trim($_GPC['letter']);
 	}
 
-	$account_table->searchWithPage($pindex, $psize);
-	$wxapp_lists = $account_table->searchAccountList();
-	$total = $account_table->getLastQueryTotal();
-
+	$wxapp_account_lists = uni_account_list($condition, array($pindex, $psize));
+	
+	$wxapp_lists = $wxapp_account_lists['list'];
+	$total = $wxapp_account_lists['total'];
+	
 	if (!empty($wxapp_lists)) {
-		foreach ($wxapp_lists as &$account) {
-			$account = uni_fetch($account['uniacid']);
-			$account['versions'] = wxapp_get_some_lastversions($account['uniacid']);
-			if (!empty($account['versions'])) {
-				foreach ($account['versions'] as $version) {
-					if (!empty($version['current'])) {
-						$account['current_version'] = $version;
-					}
-				}
+		$wxapp_cookie_uniacids = array();
+		if (!empty($_GPC['__wxappversionids'])) {
+			$wxappversionids = json_decode(htmlspecialchars_decode($_GPC['__wxappversionids']), true);
+			foreach ($wxappversionids as $version_val) {
+				$wxapp_cookie_uniacids[] = $version_val['uniacid'];
 			}
 		}
 	}
@@ -87,6 +88,7 @@ if ($do == 'home') {
 		$uniacid = !empty($module_info['account']['uniacid']) ? $module_info['account']['uniacid'] : $version_info['uniacid'];
 		uni_account_switch($uniacid, url('home/welcome/ext/', array('m' => $module_name, 'version_id' => $version_id)));
 	}
+	uni_account_switch($uniacid);
 	wxapp_save_switch($uniacid);
 	wxapp_update_last_use_version($uniacid, $version_id);
 	header('Location: ' . url('wxapp/version/home', array('version_id' => $version_id)));

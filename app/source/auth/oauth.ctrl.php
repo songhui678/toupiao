@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 load()->func('communication');
@@ -84,7 +84,6 @@ if (intval($_W['account']['level']) == 4) {
 				'follow' => $userinfo['subscribe'],
 				'followtime' => $userinfo['subscribe_time'],
 				'unfollowtime' => 0,
-				'unionid' => $userinfo['unionid'],
 				'tag' => base64_encode(iserializer($userinfo))
 			);
 			if (!isset($unisetting['passport']) || empty($unisetting['passport']['focusreg'])) {

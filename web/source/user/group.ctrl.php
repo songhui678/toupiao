@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -11,6 +11,7 @@ $dos = array('display', 'post', 'del');
 $do = !empty($_GPC['do']) ? $_GPC['do'] : 'display';
 
 if ($do == 'display') {
+	uni_user_permission_check('system_user_group');
 	$_W['page']['title'] = '用户组列表 - 用户组 - 用户管理';
 	$condition = '' ;
 	$params = array();
@@ -22,12 +23,47 @@ if ($do == 'display') {
 		$condition .= "WHERE owner_uid = :owner_uid";
 		$params[':owner_uid'] = $_W['uid'];
 	}
+	if (checksubmit('submit')) {
+		if (!empty($_GPC['delete'])) {
+			pdo_query("DELETE FROM ".tablename('users_group')." WHERE id IN ('".implode("','", $_GPC['delete'])."')");
+		}
+		itoast('用户组更新成功！', referer(), 'success');
+	}
+	$module_num = pdo_fetchcolumn("SELECT COUNT(*) FROM ".tablename('modules') . "WHERE type = :type AND issystem = :issystem", array(':type' => 'system','issystem' => 1));
 	$lists = pdo_fetchall("SELECT * FROM " . tablename('users_group').$condition, $params);
-	$lists = user_group_format($lists);
+	if (!empty($lists)) {
+		foreach ($lists as $key => $group) {
+			$package = iunserializer($group['package']);
+			$group['package'] = uni_groups($package);
+			if (empty($package)) {
+				$lists[$key]['module_nums'] = '系统默认';
+				$lists[$key]['wxapp_nums'] = '系统默认';
+				continue;
+			}
+			if (is_array($package) && in_array(-1, $package)) {
+				$lists[$key]['module_nums'] = -1;
+				$lists[$key]['wxapp_nums'] = -1;
+				continue;
+			}
+			$names = array();
+			if (!empty($group['package'])) {
+				foreach ($group['package'] as $modules) {
+					$names[] = $modules['name'];
+					$lists[$key]['module_nums'] = count($modules['modules']);
+					$lists[$key]['wxapp_nums'] = count($modules['wxapp']);
+				}
+			}else {
+				pdo_update('users_group', array('package' => 'N;'), array('id' => $group['id']));
+			}
+
+			$lists[$key]['packages'] = implode(',', $names);
+		}
+	}
 	template('user/group-display');
 }
 
 if ($do == 'post') {
+	uni_user_permission_check('system_user_group_post');
 	$id = is_array($_GPC['id']) ? 0 : intval($_GPC['id']);
 	$_W['page']['title'] = $id ? '编辑用户组 - 用户组 - 用户管理' : '添加用户组 - 用户组 - 用户管理';
 	if (!empty($id)) {
@@ -61,13 +97,13 @@ if ($do == 'post') {
 		if (is_error($user_group_info)) {
 			itoast($user_group_info['message'], '', '');
 		}
-		cache_clean(cache_system_key('user_modules'));
 		itoast('用户组更新成功！', url('user/group/display'), 'success');
 	}
 	template('user/group-post');
 }
 
 if ($do == 'del') {
+	uni_user_permission_check('system_user_group_del');
 	$id = intval($_GPC['id']);
 	$result = pdo_delete('users_group', array('id' => $id));
 	if(!empty($result)){

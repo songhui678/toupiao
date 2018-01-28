@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -9,7 +9,7 @@ load()->model('article');
 
 $do = !empty($do) ? $do : 'display';
 $do = in_array($do, array('display', 'post', 'delete', 'change_status')) ? $do : 'display';
-permission_check_account_user('platform_site');
+uni_user_permission_check('platform_site');
 
 if ($do == 'display') {
 	$children = array();
