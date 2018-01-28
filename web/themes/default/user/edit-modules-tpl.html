@@ -14,7 +14,9 @@
 	</div>
 	<div class="btn-group we7-btn-group we7-padding-bottom">
 		<a href="{php echo url('user/edit/edit_base', array('uid' => $_GPC['uid']))}" class="btn btn-default">基础信息</a>
+		{if empty($user['isfounder'])}
 		<a href="{php echo url('user/edit/edit_modules_tpl', array('uid' => $_GPC['uid']))}" class="btn btn-default active">应用模板权限</a>
+		{/if}
 		<a href="{php echo url('user/edit/edit_account', array('uid' => $_GPC['uid']))}" class="btn btn-default">使用账号列表</a>
 	</div>
 
@@ -58,21 +60,10 @@
 				<col width="90px" />
 				<col width="835px" />
 				<tr class="permission-apply">
-					<td class="vertical-middle">公众号应用</td>
+					<td class="vertical-middle">应用</td>
 					<td>
 						<ul>
 							<li ng-repeat="module in pack.modules" class="col-sm-2 text-over text-left">
-								<img ng-src="{{ module.logo }}" alt="">
-								{{ module.title }}
-							</li>
-						</ul>
-					</td>
-				</tr>
-				<tr class="permission-apply">
-					<td class="vertical-middle">小程序应用</td>
-					<td>
-						<ul>
-							<li ng-repeat="module in pack.wxapp" class="col-sm-2 text-over text-left">
 								<img ng-src="{{ module.logo }}" alt="">
 								{{ module.title }}
 							</li>

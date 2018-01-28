@@ -1,7 +1,7 @@
 <?php
 /**
- * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * [WECHAT 2018]
+ * [WECHAT  a free software]
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -71,9 +71,6 @@ function app_update_today_visit($module_name) {
 
 function app_pass_visit_limit($uniacid = 0) {
 	global $_W;
-	if ($_W['isajax'] || $_W['ispost'] || strpos($_W['siteurl'], 'c=utility&a=visit') !== false) {
-		return false;
-	}
 	$uniacid = intval($uniacid) > 0 ? intval($uniacid) : $_W['uniacid'];
 
 	$limit = uni_setting_load('statistics', $uniacid);
@@ -81,13 +78,6 @@ function app_pass_visit_limit($uniacid = 0) {
 	if (empty($limit)) {
 		return false;
 	}
-	$cachekey = cache_system_key("statistics:{$uniacid}");
-	$cache = cache_load($cachekey);
-	if (!empty($cache) && ($cache['time'] + $limit['interval'] > TIMESTAMP)) {
-		return $cache['limit'];
-	}
-	$data = array('time'=> TIMESTAMP, 'limit' => false);
-
 	$today_num = app_today_visit($uniacid);
 	if (!empty($limit['founder'])) {
 		$order_num = 0;
@@ -98,24 +88,22 @@ function app_pass_visit_limit($uniacid = 0) {
 			}
 		}
 				$before_num = app_month_visit_till_today($uniacid);
-		$sum_num = intval($limit['founder']) + $order_num - intval($limit['use']);
-		if ($sum_num <= 0) {
-			$data['limit'] = true;
-			cache_write($cachekey, $data);
+		$remain_num = intval($limit['founder']) + $order_num - intval($limit['use']);
+		if ($before_num > $remain_num) {
+			return true;
+		}
+		if (($before_num + $today_num) > $remain_num) {
 			return true;
 		}
 	}
 		if (!empty($limit['owner']) && $today_num > $limit['owner']) {
-		$data['limit'] = true;
-		cache_write($cachekey, $data);
 		return true;
 	}
 
-	if (!empty($limit['founder']) && ($before_num + $today_num) > $limit['founder']) {
+	if (!empty($limit['founder']) && $before_num > $limit['founder']) {
 		$limit['use'] = !empty($limit['use']) ? (intval($limit['use']) + 1) : 1;
 		uni_setting_save('statistics', $limit);
 	}
-	cache_write($cachekey, $data);
 	return false;
 }
 
@@ -132,7 +120,7 @@ function app_month_visit_till_today($uniacid = 0) {
 	}
 	$start = date('Ym01', strtotime(date("Ymd")));
 	$end = date('Ymd', strtotime('-1 day'));
-	$visit = pdo_getall('stat_visit', array('date >=' => $start, 'date <=' => $end, 'uniacid' => $uniacid));
+	$visit = pdo_getall('stat_visit', array('date >=' => $start, 'date <=' => $end));
 	if (!empty($visit)) {
 		foreach ($visit as $val) {
 			$result += $val['count'];

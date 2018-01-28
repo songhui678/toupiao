@@ -1,15 +1,13 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
 load()->model('mc');
 load()->model('card');
 load()->model('module');
-
-permission_check_account_user('mc_member');
 
 $_W['page']['title'] = '会员交易-会员管理';
 $dos = array('consume', 'user', 'modal', 'credit', 'card', 'cardsn', 'tpl', 'cardconsume');

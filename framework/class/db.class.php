@@ -1,7 +1,7 @@
 <?php
 /**
- * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * [WECHAT 2018]
+ * [WECHAT  a free software]
  */
 defined('IN_IA') or exit('Access Denied');
 define('PDO_DEBUG', true);
@@ -22,9 +22,6 @@ class DB {
 	public function __construct($name = 'master') {
 		global $_W;
 		$this->cfg = $_W['config']['db'];
-				unset($_W['config']['db']);
-		
-		$_W['config']['db']['tablepre'] = $this->cfg['tablepre'];
 		$this->connect($name);
 	}
 
@@ -83,6 +80,9 @@ class DB {
 			trigger_error($sqlsafe['message'], E_USER_ERROR);
 			return false;
 		}
+				if (in_array(strtolower(substr($sql, 0, 6)), array('update', 'delete', 'insert', 'replac'))) {
+			$this->cacheNameSpace($sql, true);
+		}
 		$starttime = microtime();
 		if (empty($params)) {
 			$result = $this->pdo->exec($sql);
@@ -105,6 +105,10 @@ class DB {
 
 	
 	public function fetchcolumn($sql, $params = array(), $column = 0) {
+		$cachekey = $this->cacheKey($sql, $params);
+		if (($cache = $this->cacheRead($cachekey)) !== false) {
+			return $cache['data'];
+		}
 		$starttime = microtime();
 		$statement = $this->prepare($sql);
 		$result = $statement->execute($params);
@@ -117,12 +121,17 @@ class DB {
 			return false;
 		} else {
 			$data = $statement->fetchColumn($column);
+			$this->cacheWrite($cachekey, $data);
 			return $data;
 		}
 	}
 
 	
 	public function fetch($sql, $params = array()) {
+		$cachekey = $this->cacheKey($sql, $params);
+		if (($cache = $this->cacheRead($cachekey)) !== false) {
+			return $cache['data'];
+		}
 		$starttime = microtime();
 		$statement = $this->prepare($sql);
 		$result = $statement->execute($params);
@@ -135,12 +144,17 @@ class DB {
 			return false;
 		} else {
 			$data = $statement->fetch(pdo::FETCH_ASSOC);
+			$this->cacheWrite($cachekey, $data);
 			return $data;
 		}
 	}
 
 	
 	public function fetchall($sql, $params = array(), $keyfield = '') {
+		$cachekey = $this->cacheKey($sql, $params);
+		if (($cache = $this->cacheRead($cachekey)) !== false) {
+			return $cache['data'];
+		}
 		$starttime = microtime();
 		$statement = $this->prepare($sql);
 		$result = $statement->execute($params);
@@ -167,6 +181,7 @@ class DB {
 					}
 				}
 			}
+			$this->cacheWrite($cachekey, $result);
 			return $result;
 		}
 	}
@@ -377,6 +392,7 @@ class DB {
 					load()->web('common');
 					load()->web('template');
 				}
+				WeUtility::logging('SQL Error', "SQL: <br/>{$append['sql']}<hr/>Params: <br/>{$params}<hr/>SQL Error: <br/>{$append['error'][2]}<hr/>Traces: <br/>{$ts}");
 				trigger_error("SQL: <br/>{$append['sql']}<hr/>Params: <br/>{$params}<hr/>SQL Error: <br/>{$append['error'][2]}<hr/>Traces: <br/>{$ts}", E_USER_WARNING);
 			}
 		}
@@ -436,6 +452,72 @@ class DB {
 			$this->insert('core_performance', $sqldata);
 		}
 		return true;
+	}
+
+	private function cacheRead($cachekey) {
+		global $_W;
+		if (empty($cachekey) || $_W['config']['setting']['cache'] != 'memcache' || empty($_W['config']['setting']['memcache']['sql'])) {
+			return false;
+		}
+		$data = cache_read($cachekey, true);
+		if (empty($data) || empty($data['data'])) {
+			return false;
+		}
+		return $data;
+	}
+
+	private function cacheWrite($cachekey, $data) {
+		global $_W;
+		if (empty($data) || empty($cachekey) || $_W['config']['setting']['cache'] != 'memcache' || empty($_W['config']['setting']['memcache']['sql'])) {
+			return false;
+		}
+		$cachedata = array(
+			'data' => $data,
+			'expire' => TIMESTAMP + 2592000,
+		);
+		cache_write($cachekey, $cachedata, 0, true);
+		return true;
+	}
+
+	private function cacheKey($sql, $params) {
+		global $_W;
+		if ($_W['config']['setting']['cache'] != 'memcache' || empty($_W['config']['setting']['memcache']['sql'])) {
+			return false;
+		}
+		$namespace = $this->cacheNameSpace($sql);
+		if (empty($namespace)) {
+			return false;
+		}
+		return $namespace . ':' . md5($sql . serialize($params));
+	}
+
+	
+	private function cacheNameSpace($sql, $forcenew = false) {
+		global $_W;
+		if ($_W['config']['setting']['cache'] != 'memcache' || empty($_W['config']['setting']['memcache']['sql'])) {
+			return false;
+		}
+		$skip_tablename = array(
+			$this->tablename('core_cache'),
+			$this->tablename('core_queue'),
+			$this->tablename('mc_member'),
+			$this->tablename('mc_mapping_fans'),
+		);
+				$table_prefix = str_replace('`', '', tablename(''));
+		preg_match_all('/(?!from|insert into|replace into|update) `?('.$table_prefix.'[a-zA-Z0-9_-]+)/i', $sql, $match);
+		$tablename = implode(':', $match[1]);
+		if (empty($tablename) || in_array("`{$tablename}`", $skip_tablename)) {
+			return false;
+		}
+		$tablename = str_replace($this->tablepre, '', $tablename);
+				$db_cache_key = 'we7:dbkey:'.$tablename;
+		$namespace = $this->getColumn('core_cache', array('key' => $db_cache_key), 'value');
+		if (empty($namespace) || $forcenew) {
+			$namespace = random(8);
+			$this->delete('core_cache', array('key LIKE' => "%{$tablename}%", 'key !=' => $db_cache_key));
+			$this->insert('core_cache', array('key' => $db_cache_key, 'value' => $namespace), true);
+		}
+		return $tablename . ':' . $namespace;
 	}
 }
 
@@ -643,7 +725,8 @@ class SqlPaser {
 		foreach ($field as $field_row) {
 			if (strexists($field_row, '*')) {
 				if (!strexists(strtolower($field_row), 'as')) {
-														}
+					$field_row .= " AS '{$index}'";
+				}
 			} elseif (strexists(strtolower($field_row), 'select')) {
 								if ($field_row[0] != '(') {
 					$field_row = "($field_row) AS '{$index}'";
@@ -668,18 +751,14 @@ class SqlPaser {
 			return $limitsql;
 		}
 		if (is_array($limit)) {
-						if (empty($limit[0]) && !empty($limit[1])) {
-				$limitsql = " LIMIT " . $limit[1];
+			$limit[0] = max(intval($limit[0]), 1);
+			!empty($limit[1]) && $limit[1] = max(intval($limit[1]), 1);
+			if (empty($limit[0]) && empty($limit[1])) {
+				$limitsql = '';
+			} elseif (!empty($limit[0]) && empty($limit[1])) {
+				$limitsql = " LIMIT " . $limit[0];
 			} else {
-				$limit[0] = max(intval($limit[0]), 1);
-				!empty($limit[1]) && $limit[1] = max(intval($limit[1]), 1);
-				if (empty($limit[0]) && empty($limit[1])) {
-					$limitsql = '';
-				} elseif (!empty($limit[0]) && empty($limit[1])) {
-					$limitsql = " LIMIT " . $limit[0];
-				} else {
-					$limitsql = " LIMIT " . ($inpage ? ($limit[0] - 1) * $limit[1] : $limit[0]) . ', ' . $limit[1];
-				}
+				$limitsql = " LIMIT " . ($inpage ? ($limit[0] - 1) * $limit[1] : $limit[0]) . ', ' . $limit[1];
 			}
 		} else {
 			$limit = trim($limit);

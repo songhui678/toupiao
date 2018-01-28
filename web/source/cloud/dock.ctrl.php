@@ -1,8 +1,4 @@
-<?php 
-/**
- * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
- */
+<?php
 defined('IN_IA') or exit('Access Denied');
 
 load()->model('cloud');
@@ -10,7 +6,6 @@ load()->model('setting');
 
 $dos = array(
 	'auth',
-	'callback',
 	'build',
 	'init',
 	'schema',
@@ -28,16 +23,6 @@ $dos = array(
 	'api.oauth',
 );
 $do = in_array($do, $dos) ? $do : '';
-
-
-if($do == 'callback') {
-	$secret = $_GPC['token'];
-	if(!empty($secret)) {
-			$site = json_decode(base64_decode($secret),true);
-			setting_save($site, 'site');
-			exit("1");
-	}
-}
 
 if($do != 'auth') {
 	if(is_error(cloud_prepare())) {
@@ -90,10 +75,11 @@ if($do == 'download') {
 	$ret = iunserializer($data);
 	$gz = function_exists('gzcompress') && function_exists('gzuncompress');
 	$file = base64_decode($ret['file']);
-
 	if($gz) {
 		$file = gzuncompress($file);
 	}
+	
+	$_W['setting']['site']['token'] = authcode(cache_load('cloud:transtoken'), 'DECODE');
 	$string = (md5($file) . $ret['path'] . $_W['setting']['site']['token']);
 	if(!empty($_W['setting']['site']['token']) && md5($string) === $ret['sign']) {
 		$path = IA_ROOT . $ret['path'];
@@ -105,7 +91,7 @@ if($do == 'download') {
 			exit('success');
 		}
 	}
-	exit("failed$post ".$_W['setting']['site']['token']);
+	exit('failed');
 }
 
 if(in_array($do, array('module.query', 'module.info', 'module.build', 'theme.query', 'theme.info', 'theme.build', 'application.build'))) {

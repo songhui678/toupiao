@@ -1,13 +1,14 @@
 <?php
 /**
- * [WeEngine System] Copyright (c) 20180112104051 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * [WeEngine System] Copyright (c) 2014 WE7.CC
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 define('IN_MOBILE', true);
 
 require '../framework/bootstrap.inc.php';
 load()->app('common');
 load()->app('template');
+load()->model('app');
 require IA_ROOT . '/app/common/bootstrap.app.inc.php';
 
 $acl = array(

@@ -1,7 +1,7 @@
 <?php
 /**
- * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * [WECHAT 2018]
+ * [WECHAT  a free software]
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -101,6 +101,7 @@ if($do == 'display') {
 } elseif ($do == 'setting') {
 	$modulename = $_GPC['m'];
 	$module = $_W['current_module'] = $modulelist[$modulename];
+
 	if(empty($module)) {
 		itoast('抱歉，你操作的模块不能被访问！', '', '');
 	}
@@ -109,7 +110,6 @@ if($do == 'display') {
 		itoast('您没有权限进行该操作', '', '');
 	}
 
-	define('IN_MODULE', $modulename);
 		define('CRUMBS_NAV', 1);
 
 	$config = $module['config'];

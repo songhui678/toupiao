@@ -1,7 +1,7 @@
 <?php
 /**
- * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * [WECHAT 2018]
+ * [WECHAT  a free software]
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -14,11 +14,19 @@ load()->classs('weixin.platform');
 $_W['page']['title'] = '添加/编辑公众号 - 公众号管理';
 $uniacid = intval($_GPC['uniacid']);
 $step = intval($_GPC['step']) ? intval($_GPC['step']) : 1;
-$user_create_account_info = permission_user_account_num();
+$account_info = permission_user_account_num();
 
 if($step == 1) {
-	if ($user_create_account_info['uniacid_limit'] <= 0 && !$_W['isfounder']) {
-		$authurl = "javascript:alert('创建公众号已达上限！');";
+		if (!$_W['isfounder']) {
+				$max_tsql = "SELECT COUNT(*) FROM " . tablename('uni_account'). " as a LEFT JOIN". tablename('account'). " as b ON a.default_acid = b.acid LEFT JOIN ". tablename('uni_account_users')." as c ON a.uniacid = c.uniacid WHERE a.default_acid <> 0 AND c.uid = :uid AND b.isdeleted <> 1";
+		$max_pars[':uid'] = $_W['uid'];
+		$max_total = pdo_fetchcolumn($max_tsql, $max_pars);
+
+
+		$maxaccount = pdo_fetchcolumn('SELECT `maxaccount` FROM '. tablename('users_group') .' WHERE id = :groupid', array(':groupid' => $_W['user']['groupid']));
+		if($max_total >= $maxaccount) {
+			$authurl = "javascript:alert('您所在会员组最多只能添加 {$maxaccount} 个公众号);";
+		}
 	}
 
 	if (empty($authurl) && !empty($_W['setting']['platform']['authstate'])) {
@@ -42,7 +50,7 @@ if($step == 1) {
 		}
 	}
 		if (checksubmit('submit')) {
-		if ($user_create_account_info['uniacid_limit'] <= 0 && !$_W['isfounder']) {
+		if ($account_info['uniacid_limit'] <= 0 && !$_W['isfounder']) {
 			itoast('创建公众号已达上限！');
 		}
 		$update = array();
@@ -60,10 +68,7 @@ if($step == 1) {
 				'title_initial' => get_first_pinyin($name),
 				'groupid' => 0,
 			);
-						$account_table = table('account');
-			$account_table->searchWithTitle($name);
-			$account_table->searchWithType(ACCOUNT_TYPE_OFFCIAL_NORMAL);
-			$check_uniacname = $account_table->searchAccountList();
+						$check_uniacname = pdo_get('uni_account', array('name' => $name), 'name');
 			if (!empty($check_uniacname)) {
 				itoast('该公众号名称已经存在', '', '');
 			}
@@ -105,7 +110,7 @@ if($step == 1) {
 				);
 				pdo_insert('mc_member_fields', $data);
 			}
-
+			
 		}
 		$update['account'] = trim($_GPC['account']);
 		$update['original'] = trim($_GPC['original']);
@@ -114,12 +119,9 @@ if($step == 1) {
 		$update['secret'] = trim($_GPC['secret']);
 		$update['type'] = ACCOUNT_TYPE_OFFCIAL_NORMAL;
 		$update['encodingaeskey'] = trim($_GPC['encodingaeskey']);
-		
-			if (user_is_vice_founder()) {
-				uni_user_account_role($uniacid, $_W['uid'], ACCOUNT_MANAGE_NAME_VICE_FOUNDER);
-			}
-		
-
+		if (user_is_vice_founder()) {
+			uni_user_account_role($uniacid, $_W['uid'], ACCOUNT_MANAGE_NAME_VICE_FOUNDER);
+		}
 		if (empty($acid)) {
 			$acid = account_create($uniacid, $update);
 			if(is_error($acid)) {
@@ -129,11 +131,9 @@ if($step == 1) {
 			if (empty($_W['isfounder'])) {
 				uni_user_account_role($uniacid, $_W['uid'], ACCOUNT_MANAGE_NAME_OWNER);
 			}
-			
-				if (!empty($_W['user']['owner_uid'])) {
-					uni_user_account_role($uniacid, $_W['user']['owner_uid'], ACCOUNT_MANAGE_NAME_VICE_FOUNDER);
-				}
-			
+			if (!empty($_W['user']['owner_uid'])) {
+				uni_user_account_role($uniacid, $_W['user']['owner_uid'], ACCOUNT_MANAGE_NAME_VICE_FOUNDER);
+			}
 		} else {
 			pdo_update('account', array('type' => ACCOUNT_TYPE_OFFCIAL_NORMAL, 'hash' => ''), array('acid' => $acid, 'uniacid' => $uniacid));
 			unset($update['type']);
@@ -182,9 +182,9 @@ if($step == 1) {
 				$uid = intval($_GPC['uid']);
 		$groupid = intval($_GPC['groupid']);
 		if (!empty($uid)) {
-						$create_account_info = permission_user_account_num($uid);
-			if ($create_account_info['uniacid_limit'] <= 0) {
-				itoast("您所设置的主管理员所在的用户组可添加的公众号数量已达上限，请选择其他人做主管理员！", referer(), 'error');
+						$account_info = permission_user_account_num($uid);
+			if ($account_info['uniacid_limit'] <= 0) {
+				itoast("您所设置的主管理员所在的用户组可添加的主公号数量已达上限，请选择其他人做主管理员！", referer(), 'error');
 			}
 			pdo_delete('uni_account_users', array('uniacid' => $uniacid, 'uid' => $uid));
 			$owner = pdo_get('uni_account_users', array('uniacid' => $uniacid, 'role' => 'owner'));
@@ -194,11 +194,9 @@ if($step == 1) {
 				uni_user_account_role($uniacid, $uid, ACCOUNT_MANAGE_NAME_OWNER);
 			}
 			$user_vice_id = pdo_getcolumn('users', array('uid' => $uid), 'owner_uid');
-			
-				if ($_W['user']['founder_groupid'] != ACCOUNT_MANAGE_GROUP_VICE_FOUNDER && !empty($user_vice_id)) {
-					uni_user_account_role($uniacid, $user_vice_id, ACCOUNT_MANAGE_NAME_VICE_FOUNDER);
-				}
-			
+			if ($_W['user']['founder_groupid'] != ACCOUNT_MANAGE_GROUP_VICE_FOUNDER && !empty($user_vice_id)) {
+				uni_user_account_role($uniacid, $user_vice_id, ACCOUNT_MANAGE_NAME_VICE_FOUNDER);
+			}
 		}
 		if (!empty($_GPC['signature'])) {
 			$signature = trim($_GPC['signature']);
@@ -260,8 +258,6 @@ if($step == 1) {
 		cache_delete("accesstoken:{$acid}");
 		cache_delete("jsticket:{$acid}");
 		cache_delete("cardticket:{$acid}");
-		cache_delete(cache_system_key('proxy_wechatpay_account:'));
-		cache_clean(cache_system_key('user_accounts'));
 
 		if (!empty($_GPC['from'])) {
 			itoast('公众号权限修改成功', url('account/post-step/', array('uniacid' => $uniacid, 'step' => 3, 'from' => 'list')), 'success');

@@ -16,10 +16,9 @@
 	</div>
 </div>
 <table class="table we7-table table-hover table-manage vertical-middle" id="js-users-display" ng-controller="UsersDisplay" ng-cloak>
-	<col width="150px"/>
+	<col width="120px"/>
 	<col width="150px">
 	<col width="180px"/>
-	<col width="140px"/>
 	<col width="140px"/>
 	<col width="140px"/>
 	<col width="160px"/>
@@ -31,17 +30,12 @@
 		<th>用户权限组</th>
 		<th>创建公众号</th>
 		<th>创建小程序</th>
-		<th>创建pc</th>
 		<th>注册时间</th>
 		<th>到期时间</th>
 		<th class="text-right">操作</th>
 	</tr>
 	<tr ng-repeat="user in users" ng-if="users">
-		<td class="td-link">
-			<a ng-href="{{links.edit}}uid={{user.uid}}">
-				<img src="{{user.avatar}}" alt="" class="img-responsive icon"/>
-			</a>
-		</td>
+		<td><img src="{{user.avatar}}" alt="" class="img-responsive icon"/></td>
 		<td class="text-left" ng-bind="user.username">{$user['username']}</td>
 		<td>
 			<span class="color-default" ng-if="user.founder">管理员</span>
@@ -50,7 +44,6 @@
 		</td>
 		<td class="color-default" ng-bind="user.maxaccount"></td>
 		<td class="color-default" ng-bind="user.maxwxapp"></td>
-		<td class="color-default" ng-bind="user.maxwebapp"></td>
 		<td>
 			<span ng-bind="user.joindate"></span>
 		</td>

@@ -1,7 +1,7 @@
 <?php
 /**
- * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * [WECHAT 2018]
+ * [WECHAT  a free software]
  */
 defined('IN_IA') or exit('Access Denied');
 load()->model('reply');
@@ -17,7 +17,6 @@ if (in_array($m, array('keyword', 'special', 'welcome', 'default', 'apply', 'ser
 	permission_check_account_user('', true, 'reply');
 	$modules = uni_modules();
 	$_W['current_module'] = $modules[$m];
-	define('IN_MODULE', $m);
 }
 $_W['page']['title'] = '自动回复';
 if (empty($m)) {
@@ -162,14 +161,7 @@ if ($do == 'post') {
 	if ($m == 'keyword' || $m == 'userapi' || !in_array($m, $sysmods)) {
 		$module['title'] = '关键字自动回复';
 		if ($_W['isajax'] && $_W['ispost']) {
-			$keyword = safe_gpc_string($_GPC['keyword']);
-			$sensitive_word = detect_sensitive_word($keyword);
-			if (!empty($sensitive_word)) {
-				iajax(-2, '含有敏感词:' . $sensitive_word);
-			}
-			$keyword = preg_replace('/，/', ',', $keyword);
-			$keyword_arr = explode(',', $keyword);
-			$result = pdo_getall('rule_keyword', array('uniacid' => $_W['uniacid'], 'content IN' => $keyword_arr), array('rid'));
+			$result = pdo_getall('rule_keyword', array('uniacid' => $_W['uniacid'], 'content' => trim($_GPC['keyword'])), array('rid'));
 			if (!empty($result)) {
 				$keywords = array();
 				foreach ($result as $reply) {
@@ -178,9 +170,9 @@ if ($do == 'post') {
 				$rids = implode($keywords, ',');
 				$sql = "SELECT `id`, `name` FROM " . tablename('rule') . " WHERE `id` IN ($rids)";
 				$rules = pdo_fetchall($sql);
-				iajax(-1, $rules, '');
+				iajax(0, @json_encode($rules), '');
 			}
-			iajax(0, '');
+			iajax(-1, '');
 		}
 		$rid = intval($_GPC['rid']);
 		if (!empty($rid)) {
@@ -198,11 +190,9 @@ if ($do == 'post') {
 		if (checksubmit('submit')) {
 
 			$keywords = @json_decode(htmlspecialchars_decode($_GPC['keywords']), true);
-
 			if (empty($keywords)) {
 				itoast('必须填写有效的触发关键字.');
 			}
-
 			$rulename = trim($_GPC['rulename']);
 			$containtype = '';
 			$_GPC['reply'] = (array)$_GPC['reply'];
@@ -304,11 +294,10 @@ if ($do == 'post') {
 			if (is_error($result)) {
 				itoast($result['message'], '', 'info');
 			}
-
 			if ($reply_type == 'module') {
 				$setting[$type] = array('type' => 'module', 'module' => $module);
 			} else {
-				$rule = pdo_get('rule_keyword', array('id' => $rule_id, 'uniacid' => $_W['uniacid']));
+				$rule = pdo_get('rule_keyword', array('rid' => $rule_id, 'uniacid' => $_W['uniacid']));
 				$setting[$type] = array('type' => 'keyword', 'keyword' => $rule['content']);
 			}
 			uni_setting_save('default_message', $setting);
@@ -340,7 +329,6 @@ if ($do == 'post') {
 				pdo_insert('uni_settings', $settings);
 			}
 			cache_delete("unisetting:{$_W['uniacid']}");
-			cache_delete('we7:' . $_W['uniacid'] . ':keyword:' . md5($rule['content']));
 			itoast('系统回复更新成功！', url('platform/reply', array('m' => $m)), 'success');
 		}
 	}
@@ -348,11 +336,10 @@ if ($do == 'post') {
 		$module['title'] = '应用关键字';
 		$installedmodulelist = uni_modules();
 		foreach ($installedmodulelist as $key => &$value) {
-			if ($value['type'] == 'system' || in_array($value['name'], $sysmods)) {
+			if ($value['type'] == 'system') {
 				unset($installedmodulelist[$key]);
-				continue;
 			}
-			$value['official'] = empty($value['issystem']) && (strexists($value['author'], 'WeEngine Team') || strexists($value['author'], '微擎团队'));
+			$value['official'] = empty($value['issystem']) && (strexists($value['author'], 'WeEngine Team') || strexists($value['author'], '维吧社区'));
 		}
 		unset($value);
 		foreach ($installedmodulelist as $name => $module) {

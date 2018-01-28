@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -53,7 +53,7 @@ function template_compile($from, $to, $inmodule = false) {
 	}
 	$content = template_parse(file_get_contents($from), $inmodule);
 	if(IMS_FAMILY == 'x' && !preg_match('/(footer|header|account\/welcome|login|register|home\/welcome)+/', $from)) {
-		$content = str_replace('微擎', '系统', $content);
+		$content = str_replace('维吧', '系统', $content);
 	}
 	file_put_contents($to, $content);
 }

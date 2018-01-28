@@ -1,116 +1,82 @@
 <?php
 /**
- * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * [WECHAT 2018]
+ * [WECHAT  a free software]
  */
 defined('IN_IA') or exit('Access Denied');
-
+load()->model('module');
 
 abstract class WeAccount {
-		public $account;
-	public $uniacid = 0;
-		public $menuFrame;
-		public $type;
-		public $typeName;
-		public $typeTempalte;
-
 	
-	public static function create($acidOrAccount = array()) {
+	public static function create($acidOrAccount = '') {
 		global $_W;
-		$uniaccount = array();
-		if (is_array($acidOrAccount) && !empty($acidOrAccount)) {
-			$uniaccount = $acidOrAccount;
+		if(empty($acidOrAccount)) {
+			$acidOrAccount = $_W['account'];
+		}
+		if (is_array($acidOrAccount)) {
+			$account = $acidOrAccount;
 		} else {
-			$acidOrAccount = empty($acidOrAccount) ? $_W['account']['acid'] : intval($acidOrAccount);
-			$uniaccount = table('account')->getUniAccountByAcid($acidOrAccount);
+			$account = account_fetch($acidOrAccount);
 		}
-		if (is_error($uniaccount) || empty($uniaccount)) {
-			$uniaccount = $_W['account'];
+		if (is_error($account)) {
+			$account = $_W['account'];
 		}
-
-		if(!empty($uniaccount) && isset($uniaccount['type'])) {
-			return self::includes($uniaccount);
-		} else {
-			return error('-1', '公众号不存在或是已经被删除');
+		if(!empty($account) && isset($account['type'])) {
+			if($account['type'] == ACCOUNT_TYPE_OFFCIAL_NORMAL) {
+				load()->classs('weixin.account');
+				return new WeiXinAccount($account);
+			}
+			if($account['type'] == ACCOUNT_TYPE_OFFCIAL_AUTH) {
+				load()->classs('weixin.platform');
+				return new WeiXinPlatform($account);
+			}
+			if($account['type'] == ACCOUNT_TYPE_APP_NORMAL) {
+				load()->classs('wxapp.account');
+				return new WxappAccount($account);
+			}
 		}
+		return null;
 	}
-
-	public static function createByType($account_type = ACCOUNT_TYPE_OFFCIAL_NORMAL) {
-		$account_type = !empty($account_type) ? $account_type : ACCOUNT_TYPE_OFFCIAL_NORMAL;
-		return self::includes(array('type' => $account_type));
-	}
-
-	static public function createByUniacid($uniacid = 0) {
-		global $_W;
-		$uniacid = intval($uniacid);
-		if (empty($uniacid)) {
-			$uniacid = $_W['uniacid'];
-		}
-		$uniaccount = table('account')->getUniAccountByUniacid($uniacid);
-		if (is_error($uniaccount) || empty($uniaccount)) {
-			$uniaccount = $_W['account'];
-		}
-
-		if(!empty($uniaccount) && isset($uniaccount['type'])) {
-			return self::includes($uniaccount);
-		} else {
-			return error('-1', '公众号不存在或是已经被删除');
-		}
-	}
-
+	
 	static public function token($type = 1) {
-		$obj = self::includes(array('type' => $type));
+		$classname = self::includes($type);
+		$obj = new $classname();
 		return $obj->fetch_available_token();
 	}
-
-	static public function includes($uniaccount) {
-		$type = $uniaccount['type'];
-
-		if($type == ACCOUNT_TYPE_OFFCIAL_NORMAL) {
+	
+	static public function includes($type = 1) {
+		if($type == '1') {
 			load()->classs('weixin.account');
-			$account_obj = new WeiXinAccount();
+			return 'WeiXinAccount';
 		}
-		if($type == ACCOUNT_TYPE_OFFCIAL_AUTH) {
-			load()->classs('weixin.platform');
-			$account_obj = new WeiXinPlatform();
+		if($type == '2') {
+			load()->classs('yixin.account');
+			return 'YiXinAccount';
 		}
-		if($type == ACCOUNT_TYPE_APP_NORMAL) {
-			load()->classs('wxapp.account');
-			$account_obj = new WxappAccount();
-		}
-		if($type == ACCOUNT_TYPE_WEBAPP_NORMAL) {
-			load()->classs('webapp.account');
-			$account_obj = new WebappAccount();
-		}
-		$account_obj->uniacid = $uniaccount['uniacid'];
-		$account_obj->uniaccount = $uniaccount;
-		$account_obj->account = $account_obj->fetchAccountInfo();
-		$account_obj->account['type'] = $account_obj->uniaccount['type'];
-		$account_obj->account['isconnect'] = $account_obj->uniaccount['isconnect'];
-		$account_obj->account['isdeleted'] = $account_obj->uniaccount['isdeleted'];
-		$account_obj->account['endtime'] = $account_obj->uniaccount['endtime'];
+	}
+	
+	
+	abstract public function __construct($account);
 
-		return $account_obj;
+	
+	public function checkSign() {
+		trigger_error('not supported.', E_USER_WARNING);
 	}
 
 	
-	abstract public function __construct();
+	public function fetchAccountInfo() {
+		trigger_error('not supported.', E_USER_WARNING);
+	}
 
 	
 	public function queryAvailableMessages() {
 		return array();
 	}
-
 	
-	abstract function accountDisplayUrl();
-
 	
 	public function queryAvailablePackets() {
 		return array();
 	}
-
-	
-	abstract function checkIntoManage();
 
 	
 	public function parse($message) {
@@ -136,7 +102,7 @@ abstract class WeAccount {
 					$packet['thumb'] = $message['ThumbMediaId'];
 					break;
 			}
-
+	
 			switch ($packet['event']) {
 				case 'subscribe':
 					$packet['type'] = 'subscribe';
@@ -150,7 +116,7 @@ abstract class WeAccount {
 							$packet['scene'] = '"' . str_replace('\\u', '\u', $packet['scene']) . '"';
 							$packet['scene'] = json_decode($packet['scene']);
 						}
-
+	
 					}
 					break;
 				case 'unsubscribe':
@@ -187,7 +153,7 @@ abstract class WeAccount {
 		}
 		return $packet;
 	}
-
+	
 	
 	public function response($packet) {
 		if (is_error($packet)) {
@@ -210,137 +176,132 @@ abstract class WeAccount {
 		return array2xml($packet);
 	}
 
-	public function errorCode($code, $errmsg = '未知错误') {
-		$errors = array(
-			'-1' => '系统繁忙',
-			'0' => '请求成功',
-			'40001' => '获取access_token时AppSecret错误，或者access_token无效',
-			'40002' => '不合法的凭证类型',
-			'40003' => '不合法的OpenID',
-			'40004' => '不合法的媒体文件类型',
-			'40005' => '不合法的文件类型',
-			'40006' => '不合法的文件大小',
-			'40007' => '不合法的媒体文件id',
-			'40008' => '不合法的消息类型',
-			'40009' => '不合法的图片文件大小',
-			'40010' => '不合法的语音文件大小',
-			'40011' => '不合法的视频文件大小',
-			'40012' => '不合法的缩略图文件大小',
-			'40013' => '不合法的APPID',
-			'40014' => '不合法的access_token',
-			'40015' => '不合法的菜单类型',
-			'40016' => '不合法的按钮个数',
-			'40017' => '不合法的按钮个数',
-			'40018' => '不合法的按钮名字长度',
-			'40019' => '不合法的按钮KEY长度',
-			'40020' => '不合法的按钮URL长度',
-			'40021' => '不合法的菜单版本号',
-			'40022' => '不合法的子菜单级数',
-			'40023' => '不合法的子菜单按钮个数',
-			'40024' => '不合法的子菜单按钮类型',
-			'40025' => '不合法的子菜单按钮名字长度',
-			'40026' => '不合法的子菜单按钮KEY长度',
-			'40027' => '不合法的子菜单按钮URL长度',
-			'40028' => '不合法的自定义菜单使用用户',
-			'40029' => '不合法的oauth_code',
-			'40030' => '不合法的refresh_token',
-			'40031' => '不合法的openid列表',
-			'40032' => '不合法的openid列表长度',
-			'40033' => '不合法的请求字符，不能包含\uxxxx格式的字符',
-			'40035' => '不合法的参数',
-			'40038' => '不合法的请求格式',
-			'40039' => '不合法的URL长度',
-			'40050' => '不合法的分组id',
-			'40051' => '分组名字不合法',
-			'40155' => '请勿添加其他公众号的主页链接',
-			'41001' => '缺少access_token参数',
-			'41002' => '缺少appid参数',
-			'41003' => '缺少refresh_token参数',
-			'41004' => '缺少secret参数',
-			'41005' => '缺少多媒体文件数据',
-			'41006' => '缺少media_id参数',
-			'41007' => '缺少子菜单数据',
-			'41008' => '缺少oauth code',
-			'41009' => '缺少openid',
-			'42001' => 'access_token超时',
-			'42002' => 'refresh_token超时',
-			'42003' => 'oauth_code超时',
-			'43001' => '需要GET请求',
-			'43002' => '需要POST请求',
-			'43003' => '需要HTTPS请求',
-			'43004' => '需要接收者关注',
-			'43005' => '需要好友关系',
-			'44001' => '多媒体文件为空',
-			'44002' => 'POST的数据包为空',
-			'44003' => '图文消息内容为空',
-			'44004' => '文本消息内容为空',
-			'45001' => '多媒体文件大小超过限制',
-			'45002' => '消息内容超过限制',
-			'45003' => '标题字段超过限制',
-			'45004' => '描述字段超过限制',
-			'45005' => '链接字段超过限制',
-			'45006' => '图片链接字段超过限制',
-			'45007' => '语音播放时间超过限制',
-			'45008' => '图文消息超过限制',
-			'45009' => '接口调用超过限制',
-			'45010' => '创建菜单个数超过限制',
-			'45015' => '回复时间超过限制',
-			'45016' => '系统分组，不允许修改',
-			'45017' => '分组名字过长',
-			'45018' => '分组数量超过上限',
-			'45056' => '创建的标签数过多，请注意不能超过100个',
-			'45057' => '该标签下粉丝数超过10w，不允许直接删除',
-			'45058' => '不能修改0/1/2这三个系统默认保留的标签',
-			'45059' => '有粉丝身上的标签数已经超过限制',
-			'45065' => '24小时内不可给该组人群发该素材',
-			'45157' => '标签名非法，请注意不能和其他标签重名',
-			'45158' => '标签名长度超过30个字节',
-			'45159' => '非法的标签',
-			'46001' => '不存在媒体数据',
-			'46002' => '不存在的菜单版本',
-			'46003' => '不存在的菜单数据',
-			'46004' => '不存在的用户',
-			'47001' => '解析JSON/XML内容错误',
-			'48001' => 'api功能未授权',
-			'48003' => '请在微信平台开启群发功能',
-			'50001' => '用户未授权该api',
-			'40070' => '基本信息baseinfo中填写的库存信息SKU不合法。',
-			'41011' => '必填字段不完整或不合法，参考相应接口。',
-			'40056' => '无效code，请确认code长度在20个字符以内，且处于非异常状态（转赠、删除）。',
-			'43009' => '无自定义SN权限，请参考开发者必读中的流程开通权限。',
-			'43010' => '无储值权限,请参考开发者必读中的流程开通权限。',
-			'43011' => '无积分权限,请参考开发者必读中的流程开通权限。',
-			'40078' => '无效卡券，未通过审核，已被置为失效。',
-			'40079' => '基本信息base_info中填写的date_info不合法或核销卡券未到生效时间。',
-			'45021' => '文本字段超过长度限制，请参考相应字段说明。',
-			'40080' => '卡券扩展信息cardext不合法。',
-			'40097' => '基本信息base_info中填写的参数不合法。',
-			'49004' => '签名错误。',
-			'43012' => '无自定义cell跳转外链权限，请参考开发者必读中的申请流程开通权限。',
-			'40099' => '该code已被核销。',
-			'61005' => '缺少接入平台关键数据，等待微信开放平台推送数据，请十分钟后再试或是检查“授权事件接收URL”是否写错（index.php?c=account&amp;a=auth&amp;do=ticket地址中的&amp;符号容易被替换成&amp;amp;）',
-			'61023' => '请重新授权接入该公众号',
-		);
-		$code = strval($code);
-		if($code == '40001' || $code == '42001') {
-			$cachekey = "accesstoken:{$this->account['acid']}";
-			cache_delete($cachekey);
-			return '微信公众平台授权异常, 系统已修复这个错误, 请刷新页面重试.';
-		}
-		if($errors[$code]) {
-			return $errors[$code];
-		} else {
-			return $errmsg;
-		}
+	
+	public function isPushSupported() {
+		return false;
+	}
+	
+	
+	public function push($uniid, $packet) {
+		trigger_error('not supported.', E_USER_WARNING);
+	}
+	
+	
+	public function isBroadcastSupported() {
+		return false;
+	}
+	
+	
+	public function broadcast($packet, $targets = array()) {
+		trigger_error('not supported.', E_USER_WARNING);
+	}
+
+	
+	public function isMenuSupported() {
+		return false;
+	}
+	
+	
+	public function menuCreate($menu) {
+		trigger_error('not supported.', E_USER_WARNING);
+	}
+	
+	
+	public function menuDelete() {
+		trigger_error('not supported.', E_USER_WARNING);
+	}
+	
+	
+	public function menuModify($menu) {
+		trigger_error('not supported.', E_USER_WARNING);
+	}
+	
+	
+	public function menuQuery() {
+		trigger_error('not supported.', E_USER_WARNING);
+	}
+	
+	
+	public function queryFansActions() {
+		return array();
+	}
+	
+	
+	public function fansGroupAll() {
+		trigger_error('not supported.', E_USER_WARNING);
+	}
+	
+	
+	public function fansGroupCreate($group) {
+		trigger_error('not supported.', E_USER_WARNING);
+	}
+	
+	
+	public function fansGroupModify($group) {
+		trigger_error('not supported.', E_USER_WARNING);
+	}
+	
+	
+	public function fansMoveGroup($uniid, $group) {
+		trigger_error('not supported.', E_USER_WARNING);
+	}
+	
+	
+	public function fansQueryGroup($uniid) {
+		trigger_error('not supported.', E_USER_WARNING);
+	}
+	
+	
+	public function fansQueryInfo($uniid, $isPlatform) {
+		trigger_error('not supported.', E_USER_WARNING);
+	}
+	
+	
+	public function fansAll() {
+		trigger_error('not supported.', E_USER_WARNING);
+	}
+	
+	
+	public function queryTraceActions() {
+		return array();
+	}
+	
+	
+	public function traceCurrent($uniid) {
+		trigger_error('not supported.', E_USER_WARNING);
+	}
+	
+	
+	public function traceHistory($uniid, $time) {
+		trigger_error('not supported.', E_USER_WARNING);
+	}
+	
+	
+	public function queryBarCodeActions() {
+		return array();
+	}
+	
+	
+	public function barCodeCreateDisposable($barcode) {
+		trigger_error('not supported.', E_USER_WARNING);
+	}
+	
+	
+	public function barCodeCreateFixed($barcode) {
+		trigger_error('not supported.', E_USER_WARNING);
+	}
+	
+	public function downloadMedia($media){
+		trigger_error('not supported.', E_USER_WARNING);
 	}
 }
 
 
 class WeUtility {
-
+	
 	private static function defineConst($obj){
 		global $_W;
-
+		
 		if ($obj instanceof WeBase && $obj->modulename != 'core') {
 			if (!defined('MODULE_ROOT')) {
 				define('MODULE_ROOT', dirname($obj->__define));
@@ -350,7 +311,7 @@ class WeUtility {
 			}
 		}
 	}
-
+	
 	
 	public static function createModule($name) {
 		global $_W;
@@ -510,7 +471,7 @@ class WeUtility {
 		}
 		self::defineConst($o);
 		$o->inMobile = defined('IN_MOBILE');
-		if($o instanceof WeModuleSite || ($o->inMobile && $o instanceof WeModuleMobile)) {
+		if($o instanceof WeModuleSite) {
 			return $o;
 		} else {
 			trigger_error('ModuleReceiver Class Definition Error', E_USER_WARNING);
@@ -620,77 +581,6 @@ class WeUtility {
 			return null;
 		}
 	}
-
-	
-	public static function createModuleWebapp($name) {
-		global $_W;
-		static $file;
-		$classname = "{$name}ModuleWebapp";
-		if(!class_exists($classname)) {
-			$file = IA_ROOT . "/addons/{$name}/webapp.php";
-			if(!is_file($file)) {
-				$file = IA_ROOT . "/framework/builtin/{$name}/webapp.php";
-			}
-			if(!is_file($file)) {
-				trigger_error('ModuleWebapp Definition File Not Found '.$file, E_USER_WARNING);
-				return null;
-			}
-			require $file;
-		}
-		if(!class_exists($classname)) {
-			trigger_error('ModuleWebapp Definition Class Not Found', E_USER_WARNING);
-			return null;
-		}
-		$o = new $classname();
-		$o->uniacid = $o->weid = $_W['uniacid'];
-		$o->modulename = $name;
-		$o->module = module_fetch($name);
-		$o->__define = $file;
-		self::defineConst($o);
-		$o->inMobile = defined('IN_MOBILE');
-		if($o instanceof WeModuleWebapp) {
-			return $o;
-		} else {
-			trigger_error('ModuleWebapp Class Definition Error', E_USER_WARNING);
-			return null;
-		}
-	}
-
-	
-	public static function createModuleSystemWelcome($name) {
-		global $_W;
-		static $file;
-		$classname = "{$name}ModuleSystemWelcome";
-		if(!class_exists($classname)) {
-			$file = IA_ROOT . "/addons/{$name}/systemWelcome.php";
-			if(!is_file($file)) {
-				$file = IA_ROOT . "/framework/builtin/{$name}/systemWelcome.php";
-			}
-			if(!is_file($file)) {
-				trigger_error('ModuleSystemWelcome Definition File Not Found '.$file, E_USER_WARNING);
-				return null;
-			}
-			require $file;
-		}
-		if(!class_exists($classname)) {
-			trigger_error('ModuleSystemWelcome Definition Class Not Found', E_USER_WARNING);
-			return null;
-		}
-		$o = new $classname();
-		$o->uniacid = $o->weid = $_W['uniacid'];
-		$o->modulename = $name;
-		$o->module = module_fetch($name);
-		$o->__define = $file;
-		self::defineConst($o);
-		$o->inMobile = defined('IN_MOBILE');
-		if($o instanceof WeModuleSystemWelcome) {
-			return $o;
-		} else {
-			trigger_error('ModuleSystemWelcome Class Definition Error', E_USER_WARNING);
-			return null;
-		}
-	}
-
 	
 	public static function logging($level = 'info', $message = '') {
 		$filename = IA_ROOT . '/data/logs/' . date('Ymd') . '.log';
@@ -797,9 +687,6 @@ abstract class WeBase {
 				$source = $defineDir . "/template/mobile/{$filename}.html";
 			}
 			if(!is_file($source)) {
-				$source = $defineDir . "/template/webapp/{$filename}.html";
-			}
-			if(!is_file($source)) {
 				$source = IA_ROOT . "/app/themes/{$_W['template']}/{$filename}.html";
 			}
 			if(!is_file($source)) {
@@ -821,14 +708,14 @@ abstract class WeBase {
 		}
 		return $compile;
 	}
-
+	
 	
 	protected function fileSave($file_string, $type = 'jpg', $name = 'auto') {
 		global $_W;
 		load()->func('file');
-
+		
 		$allow_ext = array(
-			'images' => array('gif', 'jpg', 'jpeg', 'bmp', 'png', 'ico'),
+			'images' => array('gif', 'jpg', 'jpeg', 'bmp', 'png', 'ico'), 
 			'audios' => array('mp3', 'wma', 'wav', 'amr'),
 			'videos' => array('wmv', 'avi', 'mpg', 'mpeg', 'mp4'),
 		);
@@ -839,21 +726,21 @@ abstract class WeBase {
 		} elseif (in_array($type, $allow_ext['videos'])) {
 			$type_path = 'videos';
 		}
-
+		
 		if (empty($type_path)) {
 			return error(1, '禁止保存文件类型');
 		}
-
+		
 		if (empty($name) || $name == 'auto') {
 			$uniacid = intval($_W['uniacid']);
 			$path = "{$type_path}/{$uniacid}/{$this->module['name']}/" . date('Y/m/');
 			mkdirs(ATTACHMENT_ROOT . '/' . $path);
-
+			
 			$filename = file_random_name(ATTACHMENT_ROOT . '/' . $path, $type);
 		} else {
 			$path = "{$type_path}/{$uniacid}/{$this->module['name']}/";
 			mkdirs(dirname(ATTACHMENT_ROOT . '/' . $path));
-
+			
 			$filename = $name;
 			if (!strexists($filename, $type)) {
 				$filename .= '.' . $type;
@@ -866,36 +753,10 @@ abstract class WeBase {
 			return false;
 		}
 	}
-
+	
 	protected function fileUpload($file_string, $type = 'image') {
 		$types = array('image', 'video', 'audio');
-	}
-
-
-	protected function getFunctionFile($name) {
-		$module_type = str_replace('wemodule', '', strtolower(get_parent_class($this)));
-		if ($module_type == 'site') {
-			$module_type = stripos($name, 'doWeb') === 0 ? 'web' : 'mobile';
-			$function_name = $module_type == 'web' ? strtolower(substr($name, 5)) : strtolower(substr($name, 8));
-		} else {
-			$function_name = strtolower(substr($name, 6));
-		}
-		$dir = IA_ROOT . '/framework/builtin/' . $this->modulename . '/inc/' . $module_type;
-		$file = "$dir/{$function_name}.inc.php";
-		if(!file_exists($file)) {
-			$file = str_replace("framework/builtin", "addons", $file);
-		}
-		return $file;
-	}
-
-	public function __call($name, $param) {
-		$file = $this->getFunctionFile($name);
-		if(file_exists($file)) {
-			require $file;
-			exit;
-		}
-		trigger_error('模块方法' . $name . '不存在.', E_USER_WARNING);
-		return false;
+	
 	}
 }
 
@@ -934,14 +795,14 @@ abstract class WeModuleProcessor extends WeBase {
 
 	public function __construct(){
 		global $_W;
-
+		
 		$_W['member'] = array();
 		if(!empty($_W['openid'])){
 			load()->model('mc');
 			$_W['member'] = mc_fetch($_W['openid']);
 		}
 	}
-
+	
 	
 	protected function beginContext($expire = 1800) {
 		if($this->inContext) {
@@ -954,7 +815,7 @@ abstract class WeModuleProcessor extends WeBase {
 		$_SESSION['__contextexpire'] = TIMESTAMP + $expire;
 		$_SESSION['__contextpriority'] = $this->priority;
 		$this->inContext = true;
-
+		
 		return true;
 	}
 	
@@ -965,7 +826,7 @@ abstract class WeModuleProcessor extends WeBase {
 		$expire = intval($expire);
 		WeSession::$expire = $expire;
 		$_SESSION['__contextexpire'] = TIMESTAMP + $expire;
-
+		
 		return true;
 	}
 	
@@ -1135,20 +996,20 @@ abstract class WeModuleProcessor extends WeBase {
 			$pass = array();
 			$pass['openid'] = $this->message['from'];
 			$pass['acid'] = $_W['acid'];
-
+			
 			$sql = 'SELECT `fanid`,`salt`,`uid` FROM ' . tablename('mc_mapping_fans') . ' WHERE `acid`=:acid AND `openid`=:openid';
 			$pars = array();
 			$pars[':acid'] = $_W['acid'];
 			$pars[':openid'] = $pass['openid'];
 			$fan = pdo_fetch($sql, $pars);
 			if(empty($fan) || !is_array($fan) || empty($fan['salt'])) {
-				$fan = array('salt' => '');
+				$fan = array('salt' => ''); 
 			}
 			$pass['time'] = TIMESTAMP;
 			$pass['hash'] = md5("{$pass['openid']}{$pass['time']}{$fan['salt']}{$_W['config']['setting']['authkey']}");
 			$auth = base64_encode(json_encode($pass));
 		}
-
+		
 		$vars = array();
 		$vars['uniacid'] = $_W['uniacid'];
 		$vars['__auth'] = $auth;
@@ -1160,7 +1021,7 @@ abstract class WeModuleProcessor extends WeBase {
 	
 	protected function extend_W(){
 		global $_W;
-
+		
 		if(!empty($_W['openid'])){
 			load()->model('mc');
 			$_W['member'] = mc_fetch($_W['openid']);
@@ -1168,7 +1029,7 @@ abstract class WeModuleProcessor extends WeBase {
 		if(empty($_W['member'])){
 			$_W['member'] = array();
 		}
-
+		
 		if(!empty($_W['acid'])){
 			load()->model('account');
 			if (empty($_W['uniaccount'])) {
@@ -1232,6 +1093,7 @@ abstract class WeModuleSite extends WeBase {
 		trigger_error("访问的方法 {$name} 不存在.", E_USER_WARNING);
 		return null;
 	}
+	
 	public function __get($name) {
 		if ($name == 'module') {
 			if (!empty($this->module)) {
@@ -1433,7 +1295,15 @@ abstract class WeModuleCron extends WeBase {
 abstract class WeModuleWxapp extends WeBase {
 	public $appid;
 	public $version;
-
+	
+	public function result($errno, $message, $data = '') {
+		exit(json_encode(array(
+			'errno' => $errno,
+			'message' => $message,
+			'data' => $data,
+		)));
+	}
+	
 	public function __call($name, $arguments) {
 		$dir = IA_ROOT . '/addons/' . $this->modulename . '/inc/wxapp';
 		$function_name = strtolower(substr($name, 6));
@@ -1458,15 +1328,7 @@ abstract class WeModuleWxapp extends WeBase {
 		}
 		return null;
 	}
-
-	public function result($errno, $message, $data = '') {
-		exit(json_encode(array(
-			'errno' => $errno,
-			'message' => $message,
-			'data' => $data,
-		)));
-	}
-
+	
 	public function checkSign() {
 		global $_GPC;
 		if (!empty($_GET) && !empty($_GPC['sign'])) {
@@ -1482,13 +1344,13 @@ abstract class WeModuleWxapp extends WeBase {
 			return false;
 		}
 	}
-
+	
 	protected function pay($order) {
 		global $_W, $_GPC;
-
+	
 		load()->model('payment');
 		load()->model('account');
-
+		
 		$moduels = uni_modules();
 		if(empty($order) || !array_key_exists($this->module['name'], $moduels)) {
 			return error(1, '模块不存在');
@@ -1496,7 +1358,7 @@ abstract class WeModuleWxapp extends WeBase {
 		$moduleid = empty($this->module['mid']) ? '000000' : sprintf("%06d", $this->module['mid']);
 		$uniontid = date('YmdHis').$moduleid.random(8,1);
 		$wxapp_uniacid = intval($_W['account']['uniacid']);
-
+		
 		$paylog = pdo_get('core_paylog', array('uniacid' => $_W['uniacid'], 'module' => $this->module['name'], 'tid' => $order['tid']));
 		if (empty($paylog)) {
 			$paylog = array(
@@ -1524,9 +1386,9 @@ abstract class WeModuleWxapp extends WeBase {
 			), array('plid' => $paylog['plid']));
 			$paylog['uniontid'] = $uniontid;
 		}
-
+		
 		$_W['openid'] = $paylog['openid'];
-
+	
 		$params = array(
 			'tid' => $paylog['tid'],
 			'fee' => $paylog['card_fee'],
@@ -1548,35 +1410,4 @@ abstract class WeModuleWxapp extends WeBase {
 
 abstract class WeModuleHook extends WeBase {
 
-}
-
-abstract class WeModuleWebapp extends WeBase {
-	public function __call($name, $arguments) {
-		$dir = IA_ROOT . '/addons/' . $this->modulename . '/inc/webapp';
-		$function_name = strtolower(substr($name, 6));
-		$file = "$dir/{$function_name}.inc.php";
-		if(file_exists($file)) {
-			require $file;
-			exit;
-		}
-		return null;
-	}
-}
-
-
-abstract class WeModuleSystemWelcome extends WeBase {
-}
-
-
-abstract class WeModuleMobile extends WeBase {
-	public function __call($name, $arguments) {
-		$dir = IA_ROOT . '/addons/' . $this->modulename . '/inc/systemWelcome';
-		$function_name = strtolower(substr($name, 5));
-		$file = "$dir/{$function_name}.inc.php";
-		if(file_exists($file)) {
-			require $file;
-			exit;
-		}
-		return null;
-	}
 }

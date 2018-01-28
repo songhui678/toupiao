@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 error_reporting(0);
@@ -48,7 +48,7 @@ if($do == 'list') {
 	} else {
 		$installedmodulelist = uni_modules(false);
 		foreach ($installedmodulelist as $k => $value) {
-			$installedmodulelist[$k]['official'] = empty($value['issystem']) && (strexists($value['author'], 'WeEngine Team') || strexists($value['author'], '微擎团队'));
+			$installedmodulelist[$k]['official'] = empty($value['issystem']) && (strexists($value['author'], 'WeEngine Team') || strexists($value['author'], '维吧社区'));
 		}
 		foreach($installedmodulelist as $name => $module) {
 			if($module['issystem']) {

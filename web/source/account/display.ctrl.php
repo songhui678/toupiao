@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -19,13 +19,6 @@ if($do == 'switch') {
 	$role = permission_account_user_role($_W['uid'], $uniacid);
 	if(empty($role)) {
 		itoast('操作失败, 非法访问.', '', 'error');
-	}
-	if (empty($_W['isfounder'])) {
-		$account_endtime = uni_fetch($uniacid);
-		$account_endtime = $account_endtime['endtime'];
-		if ($account_endtime > 0 && TIMESTAMP > $account_endtime) {
-			itoast('公众号已到期。', '', 'error');
-		}
 	}
 	uni_account_save_switch($uniacid);
 	$module_name = trim($_GPC['module_name']);
@@ -50,35 +43,29 @@ if ($do == 'rank' && $_W['isajax'] && $_W['ispost']) {
 }
 
 if ($do == 'display') {
-
+	
 	$pindex = max(1, intval($_GPC['page']));
 	$psize = 15;
-
+	
 	$account_table = table('account');
 	$account_table->searchWithType(array(ACCOUNT_TYPE_OFFCIAL_NORMAL, ACCOUNT_TYPE_OFFCIAL_AUTH));
-	$account_count = $account_table->searchAccountList();
-	$total = count($account_count);
-	$account_table->searchWithType(array(ACCOUNT_TYPE_OFFCIAL_NORMAL, ACCOUNT_TYPE_OFFCIAL_AUTH));
-
+	
 	$keyword = trim($_GPC['keyword']);
 	if (!empty($keyword)) {
 		$account_table->searchWithKeyword($keyword);
 	}
-
-	$letter = $_GPC['letter'];
-	if(isset($letter) && strlen($letter) == 1) {
-		$account_table->searchWithLetter($letter);
+	
+	if(isset($_GPC['letter']) && strlen($_GPC['letter']) == 1) {
+		$account_table->searchWithLetter($_GPC['letter']);
 	}
-
-	$account_table->accountRankOrder();
 	$account_table->searchWithPage($pindex, $psize);
 	$account_list = $account_table->searchAccountList();
-	$account_list = array_values($account_list);
+	
 	foreach($account_list as &$account) {
 		$account = uni_fetch($account['uniacid']);
 		$account['role'] = permission_account_user_role($_W['uid'], $account['uniacid']);
 	}
-
+	
 	if ($_W['ispost']) {
 		iajax(0, $account_list);
 	}

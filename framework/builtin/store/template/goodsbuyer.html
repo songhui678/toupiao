@@ -8,19 +8,13 @@
 			<a href="{php echo $this->createWebUrl('goodsbuyer', array('operate' => 'goods_info', 'direct' => 1, 'goods' => $goods['id']))}">
 				{if $_GPC['type'] == STORE_TYPE_API}
 				<div class="icon icon-api"><span class="wi wi-api"></span></div>
-				{elseif in_array($_GPC['type'], array(STORE_TYPE_PACKAGE, STORE_TYPE_ACCOUNT, STORE_TYPE_WXAPP, STORE_TYPE_ACCOUNT_RENEW, STORE_TYPE_WXAPP_RENEW))}
+				{elseif in_array($_GPC['type'], array(STORE_TYPE_PACKAGE, STORE_TYPE_ACCOUNT, STORE_TYPE_WXAPP))}
 				<div class="icon icon-wi"><span class="wi wi-appjurisdiction"></span></div>
 				{else}
 				<img src="{$goods['module']['logo']}" alt="icon" class="icon" onerror="this.src='./resource/images/nopic-107.png'"/>
 				{/if}
 				<div class="name text-over">{php echo $goods['title']}</div>
-				<div class="price">￥{$goods['price']}元 /
-					{if $goods['unit'] == 'month'}{if $goods['type'] == STORE_TYPE_ACCOUNT_RENEW}{$goods['account_num']}{elseif $goods['type'] == STORE_TYPE_WXAPP_RENEW}{$goods['wxapp_num']}{/if}月
-					{elseif $goods['unit'] == 'ten_thousand'} {$goods['api_num']}万次
-					{elseif $goods['unit'] == 'day'}{if $goods['type'] == STORE_TYPE_ACCOUNT_RENEW}{$goods['account_num']}{elseif $goods['type'] == STORE_TYPE_WXAPP_RENEW}{$goods['wxapp_num']}{/if}天
-					{elseif $goods['unit'] == 'year'}{if $goods['type'] == STORE_TYPE_ACCOUNT_RENEW}{$goods['account_num']}{elseif $goods['type'] == STORE_TYPE_WXAPP_RENEW}{$goods['wxapp_num']}{/if}年
-					{/if}
-				</div>
+				<div class="price">￥{$goods['price']}元 / {if $goods['unit'] == 'month'}月{elseif $goods['unit'] == 'ten_thousand'} {$goods['api_num']}万次{elseif $goods['unit'] == 'day'}天{elseif $goods['unit'] == 'year'}年{/if}</div>
 				<div class="text-right view">
 					查看详情>
 				</div>
@@ -80,7 +74,7 @@
 		<div class="top">
 			{if $goods['type'] == STORE_TYPE_API}
 			<div class="icon"><span class="icon-box"><i class="wi wi-api"></i></span></div>
-			{elseif in_array($goods['type'], array(STORE_TYPE_PACKAGE, STORE_TYPE_ACCOUNT, STORE_TYPE_WXAPP, STORE_TYPE_ACCOUNT_RENEW, STORE_TYPE_WXAPP_RENEW))}
+			{elseif in_array($goods['type'], array(STORE_TYPE_PACKAGE, STORE_TYPE_ACCOUNT, STORE_TYPE_WXAPP))}
 			<div class="icon"><span class="icon-box"><i class="wi wi-appjurisdiction"></i></span></div>
 			{else}
 			<div class="icon"><img src="{$goods['module']['logo']}" alt="icon" class="icon" onerror="this.src='./resource/images/nopic-107.png'"/></div>
@@ -88,7 +82,7 @@
 
 			<div class="introduce">
 				<div class="name">
-					{if in_array($goods['type'], array(STORE_TYPE_MODULE, STORE_TYPE_WXAPP_MODULE, STORE_TYPE_API, STORE_TYPE_ACCOUNT_RENEW, STORE_TYPE_WXAPP_RENEW))}
+					{if in_array($goods['type'], array(STORE_TYPE_MODULE, STORE_TYPE_WXAPP_MODULE, STORE_TYPE_API))}
 					{$goods['title']}
 					{elseif in_array($goods['type'], array(STORE_TYPE_ACCOUNT, STORE_TYPE_WXAPP))}
 					创建{$goods['num']}个{$goods['title']}
@@ -103,26 +97,15 @@
 					增加创建{$goods['title']}数量
 					{elseif $goods['type'] == STORE_TYPE_API}
 					总计<span class="color-red">{$goods['api_num']}{if $goods['unit'] == 'ten_thousand'}万次</span>{/if}浏览次数，不限时间
-					{elseif $goods['type'] == STORE_TYPE_ACCOUNT_RENEW}
-					延长公众号到期时间
-					{elseif $goods['type'] == STORE_TYPE_WXAPP_RENEW}
-					延长小程序到期时间
 					{else}
 					增加公众号应用，小程序，模板数量
 					{/if}
 				</div>
 			</div>
 			<div class="buy pull-right">
-				<div class="price">单价￥<span class="fee">
-					{$goods['price']}</span>
-					{if $goods['type'] != STORE_TYPE_API}/{if $goods['unit'] == 'month'}{if $goods['type'] == STORE_TYPE_ACCOUNT_RENEW}{$goods['account_num']}{elseif $goods['type'] == STORE_TYPE_WXAPP_RENEW}{$goods['wxapp_num']}{/if}月
-					{elseif $goods['unit'] == 'day'}{if $goods['type'] == STORE_TYPE_ACCOUNT_RENEW}{$goods['account_num']}{elseif $goods['type'] == STORE_TYPE_WXAPP_RENEW}{$goods['wxapp_num']}{/if}日
-					{elseif $goods['unit'] == 'year'}{if $goods['type'] == STORE_TYPE_ACCOUNT_RENEW}{$goods['account_num']}{elseif $goods['type'] == STORE_TYPE_WXAPP_RENEW}{$goods['wxapp_num']}{/if}年
-					{/if}
-					{/if}
-				</div>
+				<div class="price">单价￥<span class="fee">{$goods['price']}</span>{if $goods['type'] != STORE_TYPE_API}/{if $goods['unit'] == 'month'}月{elseif $goods['unit'] == 'day'}日{elseif $goods['unit'] == 'year'}年{/if}{/if}</div>
 				<div class="buy-btn">
-					{if in_array($goods['type'], array(STORE_TYPE_MODULE, STORE_TYPE_WXAPP_MODULE, STORE_TYPE_PACKAGE, STORE_TYPE_ACCOUNT_RENEW, STORE_TYPE_WXAPP_RENEW))}
+					{if in_array($goods['type'], array(STORE_TYPE_MODULE, STORE_TYPE_WXAPP_MODULE, STORE_TYPE_PACKAGE))}
 					<button class="btn btn-danger btn-lg" data-toggle="modal" data-target="#myModalBuy">立即购买</button>
 					{elseif $goods['type'] == STORE_TYPE_API}
 					<button class="btn btn-danger btn-lg" data-toggle="modal" data-target="#BuyApi">立即购买</button>
@@ -137,43 +120,19 @@
 				<div class="modal-content">
 					<div class="modal-header">
 						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-						<h4 class="modal-title">
-							{if $goods['type'] == STORE_TYPE_PACKAGE}
-							购买应用套餐
-							{elseif $goods['type'] == STORE_TYPE_ACCOUNT_RENEW}
-							续费公众号
-							{elseif $goods['type'] == STORE_TYPE_WXAPP_RENEW}
-							续费小程序
-							{else}
-							购买<span>{$goods['module']['title']}</span>应用
-							{/if}
-						</h4>
+						<h4 class="modal-title">购买{if $goods['type'] == STORE_TYPE_PACKAGE}应用套餐{else}<span>{$goods['module']['title']}</span>应用{/if}</h4>
 					</div>
 					<div class="modal-body">
 						<form action="" method="get" class="we7-form">
 							<div class="form-group">
 								<label class="control-label col-sm-2">应用单价</label>
-								<div class="col-sm-8 form-control-static">￥{$goods['price']}{if $goods['type'] != STORE_TYPE_API}/
-									{if $goods['unit'] == 'month'}{if $goods['type'] == STORE_TYPE_ACCOUNT_RENEW}{$goods['account_num']}{elseif $goods['type'] == STORE_TYPE_WXAPP_RENEW}{$goods['wxapp_num']}{/if}月
-									{elseif $goods['unit'] == 'day'}{if $goods['type'] == STORE_TYPE_ACCOUNT_RENEW}{$goods['account_num']}{elseif $goods['type'] == STORE_TYPE_WXAPP_RENEW}{$goods['wxapp_num']}{/if}日
-									{elseif $goods['unit'] == 'year'}{if $goods['type'] == STORE_TYPE_ACCOUNT_RENEW}{$goods['account_num']}{elseif $goods['type'] == STORE_TYPE_WXAPP_RENEW}{$goods['wxapp_num']}{/if}年
-									{/if}
-									{/if}</div>
+								<div class="col-sm-8 form-control-static">￥{$goods['price']}{if $goods['type'] != STORE_TYPE_API}/{if $goods['unit'] == 'month'}月{elseif $goods['unit'] == 'day'}日{elseif $goods['unit'] == 'year'}年{/if}{/if}</div>
 							</div>
 							<div class="form-group">
 								<label class="control-label col-sm-2">购买时长</label>
 								<div class="col-sm-8">
 									<div class="clearfix we7-margin-bottom-sm" style="line-height: 34px;">
-										<input type="number" class="form-control pull-left" style="width: 80px;" value="1" ng-model="duration"/>&nbsp;
-										{if $goods['type'] != STORE_TYPE_API}
-										{if $goods['unit'] == 'month'}{if $goods['type'] == STORE_TYPE_ACCOUNT_RENEW}*{$goods['account_num']}{elseif $goods['type'] == STORE_TYPE_WXAPP_RENEW}*{$goods['wxapp_num']}{/if}月
-										{elseif $goods['unit'] == 'day'}{if $goods['type'] == STORE_TYPE_ACCOUNT_RENEW}*{$goods['account_num']}{elseif $goods['type'] == STORE_TYPE_WXAPP_RENEW}*{$goods['wxapp_num']}{/if}日
-										{elseif $goods['unit'] == 'year'}{if $goods['type'] == STORE_TYPE_ACCOUNT_RENEW}*{$goods['account_num']}{elseif $goods['type'] == STORE_TYPE_WXAPP_RENEW}*{$goods['wxapp_num']}{/if}年
-										{/if}
-										{/if}
-										{if $goods['type'] == STORE_TYPE_MODULE || $goods['type'] == STORE_TYPE_WXAPP_MODULE}
-										,有效期至{{ expiretime }}
-										{/if}
+										<input type="number" class="form-control pull-left" style="width: 80px;" value="1" ng-model="duration"/>&nbsp;{if $goods['type'] != STORE_TYPE_API}{if $goods['unit'] == 'month'}月{elseif $goods['unit'] == 'day'}日{elseif $goods['unit'] == 'year'}年{/if}{/if}{if $goods['type'] == STORE_TYPE_MODULE || $goods['type'] == STORE_TYPE_WXAPP_MODULE},有效期至{{ expiretime }}{/if}
 									</div>
 									<div class="select-btn">
 										<button type="button" class="btn" ng-class="duration == 1? 'btn-primary' : 'btn-default'" ng-click="changeDuration(1)">1</button>
@@ -183,9 +142,8 @@
 									</div>
 								</div>
 							</div>
-							{if in_array($goods['type'], array(STORE_TYPE_MODULE, STORE_TYPE_WXAPP_MODULE, STORE_TYPE_WXAPP_RENEW, STORE_TYPE_ACCOUNT_RENEW)) || $goods['type'] == STORE_TYPE_PACKAGE && !empty($user_account)}
 							<div class="form-group">
-								<label class="control-label col-sm-2">{if $goods['type'] == STORE_TYPE_WXAPP_MODULE}小程序{else}公众号{/if}</label>
+								<label class="control-label col-sm-2">公众号</label>
 								<div class="col-sm-10">
 									<div class="clearfix" style="line-height: 34px;">
 										<select class="we7-select" style="width:150px;" ng-model="uniacid">
@@ -195,20 +153,6 @@
 									</div>
 								</div>
 							</div>
-							{/if}
-							{if $goods['type'] == STORE_TYPE_PACKAGE && !empty($wxapp_account_list)}
-							<div class="form-group">
-								<label class="control-label col-sm-2">小程序</label>
-								<div class="col-sm-10">
-									<div class="clearfix" style="line-height: 34px;">
-										<select class="we7-select" style="width:150px;" ng-model="wxapp">
-											<option value="{{ account.uniacid }}" ng-repeat="account in wxapp_account_list">{{ account.name }}</option>
-										</select>
-										<span class="text-error">注意!</span>请确认服务所需绑定的小程序,购买后不可更换.
-									</div>
-								</div>
-							</div>
-							{/if}
 							<div class="form-group">
 								<label class="control-label col-sm-2">费用明细</label>
 								<div class="col-sm-8 form-control-static">实付总计<span class="we7-margin-left">￥{{ price }}</span></div>
@@ -241,6 +185,20 @@
 							<div class="form-group">
 								<label class="control-label col-sm-2">应用单价</label>
 								<div class="col-sm-8 form-control-static">￥{$goods['price']}{if $goods['type'] != STORE_TYPE_API}/{if $goods['unit'] == 'month'}月{elseif $goods['unit'] == 'day'}日{elseif $goods['unit'] == 'year'}年{/if}{/if}</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-sm-2">购买时长</label>
+								<div class="col-sm-8">
+									<div class="clearfix we7-margin-bottom-sm" style="line-height: 34px;">
+										<input type="number" class="form-control pull-left" style="width: 80px;" min="0" value="1" ng-model="duration"/>&nbsp{if $goods['type'] != STORE_TYPE_API}{if $goods['unit'] == 'month'}月{elseif $goods['unit'] == 'day'}日{elseif $goods['unit'] == 'year'}年{/if}{/if}
+									</div>
+									<div class="select-btn">
+										<button type="button" class="btn" ng-class="duration == 1? 'btn-primary' : 'btn-default'" ng-click="changeDuration(1)">1</button>
+										<button type="button" class="btn" ng-class="duration == 3? 'btn-primary' : 'btn-default'" ng-click="changeDuration(3)">3</button>
+										<button type="button" class="btn" ng-class="duration == 6? 'btn-primary' : 'btn-default'" ng-click="changeDuration(6)">6</button>
+										<button type="button" class="btn" ng-class="duration == 12? 'btn-primary' : 'btn-default'" ng-click="changeDuration(12)">12</button>
+									</div>
+								</div>
 							</div>
 							<div class="form-group">
 								<label class="control-label col-sm-2">费用明细</label>
@@ -349,17 +307,6 @@
 				{/if}
 			</div>
 		</div>
-		{elseif in_array($goods['type'], array(STORE_TYPE_ACCOUNT_RENEW, STORE_TYPE_WXAPP_RENEW))}
-		<div class="summary">
-			<div class="title">商品介绍</div>
-			<div class="content help-block">
-				{if $goods['type'] == STORE_TYPE_ACCOUNT_RENEW}
-				续费公众号
-				{else}
-				续费小程序
-				{/if}
-			</div>
-		</div>
 		{else}
 		<div class="summary">
 			<div class="color-gray">购买商品后您将拥有相应的公众号应用，小程序应用，模板的使用权限，不受已有用户组的限制。</div>
@@ -383,9 +330,9 @@
 			</div>
 			<div class="title">模板</div>
 			<div class="item-list clearfix">
-				{loop $module_groups[$goods['module_group']]['templates'] $template}
+				{loop $module_groups[$goods['module_group']]['wxapp'] $wxapp_module}
 				<div class="item">
-					<div class="text-over">{$template['title']}</div>
+					<div class="text-over">$module_groups[$goods['module_group']]['templates']['title']</div>
 				</div>
 				{/loop}
 			</div>
@@ -397,13 +344,11 @@
 	{php $first_account = current($user_account);}
 	angular.module('storeApp').value('config', {
 		'singlePrice' : {$goods['price']},
-		'wxapp' : '{$default_wxapp}',
 		'unit' : '{$goods['unit']}',
 		account_list : {php echo json_encode($user_account)},
-		wxapp_account_list : {php echo json_encode($wxapp_account_list)},
 		pay_way : {php echo json_encode($pay_way)},
 		expiretime : "{php echo date('Y-m-d', strtotime('+1 ' . $goods['unit'], time()))}",
-		first_uniacid : "{$default_account}",
+		first_uniacid : "{php echo $default_account['uniacid'];}",
 		goods : {php echo json_encode($goods)}
 	});
 	angular.bootstrap($('.js-goods-buyer'), ['storeApp']);

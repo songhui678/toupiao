@@ -1,7 +1,7 @@
 <?php
 /**
- * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * [WECHAT 2018]
+ * [WECHAT  a free software]
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -11,25 +11,21 @@ $we7_file_permission = array(
 	'account' => array(
 		'default' => '',
 		'direct' => array(
+			'display',
 			'auth',
-			'welcome',
+			'welcome', 'openwechat'
 		),
 		'vice_founder' => array('account*'),
 		'owner' => array('account*'),
 		'manager' => array(
-			'display',
 			'manage',
 			'post-step',
-			'post-user',
 		),
 		'operator' => array(
-			'display',
 			'manage',
 			'post-step',
 		),
-		'clerk' => array(
-			'display',
-		),
+		'clerk' => array()
 	),
 	'advertisement' => array(
 		'default' => '',
@@ -45,17 +41,6 @@ $we7_file_permission = array(
 		'direct' => array(
 			'notice-show',
 			'news-show',
-		),
-		'vice_founder' => array(),
-		'owner' => array(),
-		'manager' => array(),
-		'operator' => array(),
-		'clerk' => array()
-	),
-	'message' => array(
-		'default' => '',
-		'direct' => array(
-			'notice',
 		),
 		'vice_founder' => array(),
 		'owner' => array(),
@@ -134,25 +119,22 @@ $we7_file_permission = array(
 	),
 	'module' => array(
 		'default' => '',
-		'direct' => array(),
+		'direct' => array(
+			'display',
+		),
 		'vice_founder' => array('module*'),
 		'owner' => array(
 			'manage-account',
 			'manage-system',
 			'permission',
-			'display',
 		),
 		'manager' => array(
 			'manage-account',
-			'display',
 		),
 		'operator' => array(
 			'manage-account',
-			'display',
 		),
-		'clerk' => array(
-			'display',
-		)
+		'clerk' => array()
 	),
 	'platform' => array(
 		'default' => '',
@@ -162,17 +144,16 @@ $we7_file_permission = array(
 		'manager' => array(
 			'cover',
 			'reply',
-			'material'
+			'material-post',
 		),
 		'operator' => array(
 			'cover',
 			'reply',
-			'material'
+			'material-post',
 		),
 		'clerk' => array(
 			'reply',
 			'cover',
-			'material'
 		)
 	),
 	'profile' => array(
@@ -207,7 +188,9 @@ $we7_file_permission = array(
 			'nav',
 			'slide',
 		),
-		'clerk' => array()
+		'clerk' => array(
+			'entry',
+		)
 	),
 	'statistics' => array(
 		'default' => '',
@@ -245,24 +228,18 @@ $we7_file_permission = array(
 		'vice_founder' => array(
 			'template',
 			'updatecache',
-			'workorder',
 		),
 		'owner' => array(
 			'updatecache',
-			'workorder',
 		),
 		'manager' => array(
 			'updatecache',
-			'workorder',
 		),
 		'operator' => array(
 			'account',
 			'updatecache',
-			'workorder',
 		),
-		'clerk' => array(
-			'workorder',
-		)
+		'clerk' => array()
 	),
 	'user' => array(
 		'default' => 'display',
@@ -270,7 +247,6 @@ $we7_file_permission = array(
 			'login',
 			'register',
 			'logout',
-			'find-password'
 		),
 		'vice_founder' => array('user*'),
 		'owner' => array(
@@ -282,9 +258,7 @@ $we7_file_permission = array(
 		'operator' => array(
 			'profile',
 		),
-		'clerk' => array(
-			'profile',
-		)
+		'clerk' => array()
 	),
 	'wxapp' => array(
 		'default' => '',
@@ -294,16 +268,14 @@ $we7_file_permission = array(
 		'manager' => array(
 			'display',
 			'version',
-			'post',
+			'post'
 		),
 		'operator' => array(
 			'display',
 			'version',
-			'post',
+			'post'
 		),
-		'clerk' => array(
-			'display',
-		)
+		'clerk' => array()
 	),
 	'utility' => array(
 		'default' => '',
@@ -318,59 +290,13 @@ $we7_file_permission = array(
 			'link',
 		),
 		'vice_founder' => array(
-			'user',
-			'emulator',
+			'user'
 		),
-		'owner' => array(
-			'emulator',
-		),
-		'manager' => array(
-			'emulator',
-		),
-		'operator' => array(
-			'emulator',
-		)
+		'owner' => array(),
+		'manager' => array(),
+		'operator' => array(),
 	),
 	'append' => array('append*'),
-	'see_more_info' => array(
-		'founder' => array(
-			'see_module_manage_system_except_installed',
-			'see_module_manage_system_ugrade',
-			'see_module_manage_system_stop',
-			'see_module_manage_system_install',
-			'see_module_manage_system_shopinfo',
-			'see_module_manage_system_info_edit',
-			'see_module_manage_system_detailinfo',
-			'see_module_manage_system_group_add',
-			'see_account_manage_module_tpl_all_permission',
-			'see_account_manage_sms_blance',
-			'see_account_manage_users_edit',
-			'see_account_manage_users_adduser',
-			'see_account_manage_users_add_viceuser',
-			'see_system_upgrade',
-			'see_system_manage_clerk',
-			'see_system_manage_user_setting',
-			'see_system_manage_vice_founder',
-			'see_system_add_vice_founder',
-			'see_notice_post',
-			'see_module_manage_system_newversion',
-			'see_user_edit_base_founder_name',
-			'see_user_create_own_vice_founder'
-		),
-		'vice_founder' => array(
-			'see_account_manage_users_adduser',
-			'see_module_manage_system_group_add',
-		),
-		'owner' => array(
-
-		),
-		'manager' => array(
-
-		),
-		'operator' => array(
-
-		),
-	),
 );
 
 return $we7_file_permission;

@@ -1,7 +1,7 @@
 <?php
 /**
- * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * [WECHAT 2018]
+ * [WECHAT  a free software]
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -11,7 +11,6 @@ $do = !empty($_GPC['do']) ? $_GPC['do'] : 'display';
 $module_name = trim($_GPC['m']);
 $modulelist = uni_modules(false);
 $module = $_W['current_module'] = $modulelist[$module_name];
-define('IN_MODULE', $module_name);
 if(empty($module)) {
 	itoast('抱歉，你操作的模块不能被访问！');
 }
@@ -45,32 +44,13 @@ if ($do == 'display') {
 if ($do == 'post') {
 	$uid = intval($_GPC['uid']);
 	$user = user_single($uid);
-	$module_and_plugins = array();
-	$all_permission = array();
-	if (!empty($module['plugin_list'])) {
-		$module_and_plugins = array_reverse($module['plugin_list']);
-	}
-	array_push($module_and_plugins, $module_name);
-	$module_and_plugins = array_reverse($module_and_plugins);
-
-	foreach ($module_and_plugins as $key => $module_val) {
-		$all_permission[$module_val]['info'] = module_fetch($module_val);
-		$all_permission[$module_val]['permission'] = module_permission_fetch($module_val);
-	}
 	if (!empty($uid)) {
-		foreach ($module_and_plugins as $key => $plugin) {
-			$have_permission[$plugin] = permission_account_user_menu($uid, $_W['uniacid'], $plugin);
-			foreach ($all_permission[$plugin]['permission'] as $key => $value) {
-				$all_permission[$plugin]['permission'][$key]['checked'] = 0;
-				if (in_array($value['permission'], $have_permission[$plugin]) || in_array('all', $have_permission[$plugin])) {
-					$all_permission[$plugin]['permission'][$key]['checked'] = 1;
-				}
-			}
-		}
+		$have_permission = permission_account_user_menu($uid, $_W['uniacid'], $module_name);
 		if (is_error($have_permission)) {
 			itoast($have_permission['message']);
 		}
 	}
+
 	if (checksubmit()) {
 		$insert_user = array(
 				'username' => trim($_GPC['username']),
@@ -82,6 +62,7 @@ if ($do == 'post') {
 		if (empty($insert_user['username'])) {
 			itoast('必须输入用户名，格式为 1-15 位字符，可以包括汉字、字母（不区分大小写）、数字、下划线和句点。');
 		}
+
 		$operator = array();
 		if (empty($uid)) {
 			if (user_check(array('username' => $insert_user['username']))) {
@@ -117,27 +98,14 @@ if ($do == 'post') {
 		}
 		$permission = $_GPC['module_permission'];
 		if (!empty($permission) && is_array($permission)) {
-			foreach ($module_and_plugins as $name) {
-				if (empty($permission[$name])) {
-					$module_permission = 'all';
-				} else {
-					$module_permission = implode('|', array_unique($permission[$name]));
-				}
-				if (empty($have_permission[$name])) {
-					pdo_insert('users_permission', array('uniacid' => $_W['uniacid'], 'uid' => $uid, 'type' => $name, 'permission' => $module_permission));
-				} else {
-					pdo_update('users_permission', array('permission' => $module_permission), array('uniacid' => $_W['uniacid'], 'uid' => $uid, 'type' => $name));
-				}
-			}
+			$permission = implode('|', array_unique($permission));
 		} else {
 			$permission = 'all';
-			foreach ($module_and_plugins as $name) {
-				if (empty($have_permission)) {
-					pdo_insert('users_permission', array('uniacid' => $_W['uniacid'], 'uid' => $uid, 'type' => $name, 'permission' => $permission));
-				} else {
-					pdo_update('users_permission', array('permission' => $permission), array('uniacid' => $_W['uniacid'], 'uid' => $uid, 'type' => $name));
-				}
-			}
+		}
+		if (empty($have_permission)) {
+			pdo_insert('users_permission', array('uniacid' => $_W['uniacid'], 'uid' => $uid, 'type' => $module_name, 'permission' => $permission));
+		} else {
+			pdo_update('users_permission', array('permission' => $permission), array('uniacid' => $_W['uniacid'], 'uid' => $uid, 'type' => $module_name));
 		}
 
 		$role = table('users')->userOwnedAccountRole($uid, $_W['uniacid']);
@@ -148,6 +116,16 @@ if ($do == 'post') {
 		}
 		itoast('编辑店员资料成功', url('module/permission', array('m' => $module_name)), 'success');
 	}
+	$current_module_permission = module_permission_fetch($module_name);
+	if (!empty($uid) && !empty($current_module_permission)) {
+		foreach ($current_module_permission as &$data) {
+			$data['checked'] = 0;
+			if (in_array($data['permission'], $have_permission) || in_array('all', $have_permission)) {
+				$data['checked'] = 1;
+			}
+		}
+	}
+	unset($data);
 }
 
 if ($do == 'delete') {

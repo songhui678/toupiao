@@ -1,26 +1,25 @@
 <?php
 /**
- * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * [WECHAT 2018]
+ * [WECHAT  a free software]
  */
 defined('IN_IA') or exit('Access Denied');
 
 load()->model('module');
 load()->model('wxapp');
 
-$dos = array('display', 'switch', 'getall_last_switch', 'have_permission_uniacids', 'accounts_dropdown_menu', 'rank');
+$dos = array('display', 'switch', 'getall_last_switch', 'have_permission_uniacids', 'accounts_dropdown_menu');
 $do = in_array($do, $dos) ? $do : 'display';
 
 if ($do == 'display') {
 	$user_module = array();
 	if (!$_W['isfounder']) {
-		$account_table = table('account');
-		$user_table = table('users');
+		$account_table = table('users');
 		$user_owned_account = $account_table->userOwnedAccount($_W['uid']);
 		if (!empty($user_owned_account) && is_array($user_owned_account)) {
-			foreach ($user_owned_account as $uniacid => $account) {
+			foreach ($user_owned_account as $uniacid) {
 				$account_module = uni_modules_by_uniacid($uniacid);
-				$account_user_module = $user_table->userPermission($_W['uid'], $uniacid);
+				$account_user_module = $account_table->userPermission($_W['uid'], $uniacid);
 				if (!empty($account_user_module) && is_array($account_user_module)) {
 					$account_module = array_intersect_key($account_module, $account_user_module);
 				}
@@ -30,29 +29,12 @@ if ($do == 'display') {
 	} else {
 		$user_module = user_modules($_W['uid']);
 	}
-	$module_table = table('module');
-	$module_rank = $module_table->moduleRank();
-	$rank = array();
 	foreach ($user_module as $key => $module_value) {
 		if (!empty($module_value['issystem'])) {
 			unset($user_module[$key]);
-		} else {
-			$rank[] = !empty($module_rank[$key]['rank']) ? $module_rank[$key]['rank'] : 0;
 		}
 	}
-	array_multisort($rank, SORT_DESC, $user_module);
 	template('module/display');
-}
-
-if ($do == 'rank') {
-	$module_name = trim($_GPC['module_name']);
-
-	$exist = module_fetch($module_name);
-	if (empty($exist)) {
-		iajax(1, '模块不存在', '');
-	}
-	module_rank_top($module_name);
-	itoast('更新成功！', referer(), 'success');
 }
 
 if ($do == 'switch') {
@@ -177,12 +159,12 @@ if ($do == 'accounts_dropdown_menu') {
 			break;
 		}
 	}
-	foreach ($accounts_list as $key => $account) {
+
+	foreach ($accounts_list as $account) {
 		$url = url('module/display/switch', array('uniacid' => $account['uniacid'], 'module_name' => $module_name));
 		if (!empty($account['version_id'])) {
 			$url .= '&version_id=' . $account['version_id'];
 		}
-		$accounts_list[$key]['url'] = $url;
 	}
 	echo template('module/dropdown-menu');
 	exit;

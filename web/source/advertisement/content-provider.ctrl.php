@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 $_W['page']['title'] = '系统-流量主';
 $dos = array('flow_control', 'finance_info', 'register_flow', 'display', 'account_list', 'ad_type_get', 'content_provider');

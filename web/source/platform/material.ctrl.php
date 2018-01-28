@@ -1,13 +1,11 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 load()->model('material');
 load()->model('mc');
-load()->model('account');
-load()->model('attachment');
 load()->func('file');
 
 $dos = array('display', 'sync', 'delete', 'send');
@@ -80,10 +78,6 @@ if ($do == 'display') {
 }
 
 if ($do == 'delete') {
-	if(isset($_GPC['uniacid'])) { 		$requniacid = intval($_GPC['uniacid']);
-		attachment_reset_uniacid($requniacid);
-	}
-
 	$material_id = intval($_GPC['material_id']);
 	$server = $_GPC['server'] == 'local' ? 'local' : 'wechat';
 	$type = trim($_GPC['type']);

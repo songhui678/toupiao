@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -22,6 +22,12 @@ if($do == 'display') {
 	set_time_limit(0);
 
 	$type = !empty($_GPC['type']) ? intval($_GPC['type']) : MENU_CURRENTSELF;
+	if ($type == MENU_CURRENTSELF) {
+		$update_self_menu = menu_update_currentself();
+		if (is_error($update_self_menu)) {
+			itoast($update_self_menu['message'], '', 'info');
+		}
+	}
 	if ($type == MENU_CONDITIONAL) {
 		$update_conditional_menu = menu_update_conditional();
 		if(is_error($update_conditional_menu)) {
@@ -79,24 +85,14 @@ if ($do == 'copy') {
 	$menu['title'] = $menu['title'] . '- 复本';
 	pdo_insert('uni_account_menus', $menu);
 	$id = pdo_insertid();
-	itoast('', url('platform/menu/post', array('id' => $id, 'copy' => 1, 'type' => MENU_CONDITIONAL)));
+	header('Location:' . url('platform/menu/post', array('id' => $id, 'copy' => 1)));
+	die;
 }
 
 if ($do == 'post') {
 	$type = intval($_GPC['type']);
 	$id = intval($_GPC['id']);
 	$copy = intval($_GPC['copy']);
-	if (empty($type)) {
-		if (!$_W['isajax']) {
-			$update_self_menu = menu_update_currentself();
-			if (is_error($update_self_menu)) {
-				itoast($update_self_menu['message'], '', 'info');
-			}
-		}
-		$type = MENU_CURRENTSELF;
-		$default_menu = menu_default();
-		$id = $default_menu['id'];
-	}
 	$params = array();
 	if ($id > 0) {
 		$menu = menu_get($id);
@@ -205,12 +201,8 @@ if ($do == 'post') {
 		$is_conditional = $post['type'] == MENU_CONDITIONAL ? true : false;
 		$menu = menu_construct_createmenu_data($post, $is_conditional);
 
-		if ($_GPC['submit_type'] == 'publish' || $is_conditional) {
-			$account_api = WeAccount::create();
-			$result = $account_api->menuCreate($menu);
-		} else {
-			$result = true;
-		}
+		$account_api = WeAccount::create();
+		$result = $account_api->menuCreate($menu);
 		if (is_error($result)) {
 			iajax($result['errno'], $result['message']);
 		} else {
@@ -234,10 +226,14 @@ if ($do == 'post') {
 				'createtime' => TIMESTAMP,
 			);
 
-			if ($post['type'] == MENU_CURRENTSELF) {
-				if (!empty($id)) {
-					pdo_update('uni_account_menus', $insert, array('uniacid' => $_W['uniacid'], 'type' => MENU_CURRENTSELF, 'id' => $id));
+			if ($post['type'] == 1) {
+				if (!empty($_GPC['id'])) {
+					pdo_update('uni_account_menus', $insert, array('uniacid' => $_W['uniacid'], 'type' => MENU_CURRENTSELF, 'id' => intval($_GPC['id'])));
 				} else {
+					$default_menu_ids = pdo_getall('uni_account_menus', array('uniacid' => $_W['uniacid'], 'type' => MENU_CURRENTSELF, 'status' => STATUS_ON), array('id'));
+					foreach ($default_menu_ids as $id) {
+						pdo_update('uni_account_menus', array('status' => '0'), array('id' => $id));
+					}
 					pdo_insert('uni_account_menus', $insert);
 				}
 				iajax(0, '创建菜单成功', url('platform/menu/display'));

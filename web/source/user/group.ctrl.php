@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -18,12 +18,10 @@ if ($do == 'display') {
 		$condition .= "WHERE name LIKE :name";
 		$params[':name'] = "%{$_GPC['name']}%";
 	}
-	
-		if (user_is_vice_founder()) {
-			$condition .= "WHERE owner_uid = :owner_uid";
-			$params[':owner_uid'] = $_W['uid'];
-		}
-	
+	if (user_is_vice_founder()) {
+		$condition .= "WHERE owner_uid = :owner_uid";
+		$params[':owner_uid'] = $_W['uid'];
+	}
 	$lists = pdo_fetchall("SELECT * FROM " . tablename('users_group').$condition, $params);
 	$lists = user_group_format($lists);
 	template('user/group-display');
@@ -56,7 +54,6 @@ if ($do == 'post') {
 			'package' => $_GPC['package'],
 			'maxaccount' => intval($_GPC['maxaccount']),
 			'maxwxapp' => intval($_GPC['maxwxapp']),
-			'maxwebapp' => intval($_GPC['maxwebapp']),
 			'timelimit' => intval($_GPC['timelimit'])
 		);
 

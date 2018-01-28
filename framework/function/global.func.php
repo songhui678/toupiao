@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -336,10 +336,7 @@ if (!function_exists('murl')) {
 		}
 		$str = '';
 		if(uni_is_multi_acid()) {
-			$str .= "&j={$_W['acid']}";
-		}
-		if (!empty($_W['account']) && $_W['account']['type'] == ACCOUNT_TYPE_WEBAPP_NORMAL) {
-			$str .= '&a=webapp';
+			$str = "&j={$_W['acid']}";
 		}
 		$url .= "index.php?i={$_W['uniacid']}{$str}&";
 		if (!empty($controller)) {
@@ -516,19 +513,6 @@ function is_error($data) {
 }
 
 
-function detect_sensitive_word($string) {
-	$setting = setting_load('sensitive_words');
-	if (empty($setting['sensitive_words'])) {
-		return false;
-	}
-	$sensitive_words = $setting['sensitive_words'];
-	$blacklist="/".implode("|",$sensitive_words)."/";
-	if(preg_match($blacklist, $string, $matches)){
-		return $matches[0];
-	}
-	return false;
-}
-
 function referer($default = '') {
 	global $_GPC, $_W;
 	$_W['referer'] = !empty($_GPC['referer']) ? $_GPC['referer'] : $_SERVER['HTTP_REFERER'];;
@@ -659,7 +643,7 @@ function istrlen($string, $charset = '') {
 	} else {
 		$charset = 'utf8';
 	}
-	if (function_exists('mb_strlen') && extension_loaded('mbstring')) {
+	if (function_exists('mb_strlen')) {
 		return mb_strlen($string, $charset);
 	} else {
 		$n = $noc = 0;
@@ -1160,42 +1144,4 @@ function check_url_not_outside_link($redirect) {
 }
 
 
-function remove_xss($val) {
-	$val = preg_replace('/([\x00-\x08,\x0b-\x0c,\x0e-\x19])/', '', $val);
-	$search = 'abcdefghijklmnopqrstuvwxyz';
-	$search .= 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-	$search .= '1234567890!@#$%^&*()';
-	$search .= '~`";:?+/={}[]-_|\'\\';
-	for ($i = 0; $i < strlen($search); $i++) {
-		$val = preg_replace('/(&#[xX]0{0,8}'.dechex(ord($search[$i])).';?)/i', $search[$i], $val);
-		$val = preg_replace('/(�{0,8}'.ord($search[$i]).';?)/', $search[$i], $val);
-	}
-	$ra1 = array('javascript', 'vbscript', 'expression', 'applet', 'meta', 'xml', 'blink', 'link', 'script', 'embed', 'object', 'frameset', 'ilayer', 'bgsound', 'title', 'base');
-	$ra2 = array('onabort', 'onactivate', 'onafterprint', 'onafterupdate', 'onbeforeactivate', 'onbeforecopy', 'onbeforecut', 'onbeforedeactivate', 'onbeforeeditfocus', 'onbeforepaste', 'onbeforeprint', 'onbeforeunload', 'onbeforeupdate', 'onblur', 'onbounce', 'oncellchange', 'onchange', 'onclick', 'oncontextmenu', 'oncontrolselect', 'oncopy', 'oncut', 'ondataavailable', 'ondatasetchanged', 'ondatasetcomplete', 'ondblclick', 'ondeactivate', 'ondrag', 'ondragend', 'ondragenter', 'ondragleave', 'ondragover', 'ondragstart', 'ondrop', 'onerror', 'onerrorupdate', 'onfilterchange', 'onfinish', 'onfocus', 'onfocusin', 'onfocusout', 'onhelp', 'onkeydown', 'onkeypress', 'onkeyup', 'onlayoutcomplete', 'onload', 'onlosecapture', 'onmousedown', 'onmouseenter', 'onmouseleave', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup', 'onmousewheel', 'onmove', 'onmoveend', 'onmovestart', 'onpaste', 'onpropertychange', 'onreadystatechange', 'onreset', 'onresize', 'onresizeend', 'onresizestart', 'onrowenter', 'onrowexit', 'onrowsdelete', 'onrowsinserted', 'onscroll', 'onselect', 'onselectionchange', 'onselectstart', 'onstart', 'onstop', 'onsubmit', 'onunload', 'import');
-	$ra = array_merge($ra1, $ra2);
-	$found = true;
-	while ($found == true) {
-		$val_before = $val;
-		for ($i = 0; $i < sizeof($ra); $i++) {
-			$pattern = '/';
-			for ($j = 0; $j < strlen($ra[$i]); $j++) {
-				if ($j > 0) {
-					$pattern .= '(';
-					$pattern .= '(&#[xX]0{0,8}([9ab]);)';
-					$pattern .= '|';
-					$pattern .= '|(�{0,8}([9|10|13]);)';
-					$pattern .= ')*';
-				}
-				$pattern .= $ra[$i][$j];
-			}
-			$pattern .= '/i';
-			$replacement = substr($ra[$i], 0, 2).'<x>'.substr($ra[$i], 2);
-			$val = preg_replace($pattern, $replacement, $val);
-			if ($val_before == $val) {
-				$found = false;
-			}
-		}
-	}
-	return $val;
-}
-load()->func('safe');
+

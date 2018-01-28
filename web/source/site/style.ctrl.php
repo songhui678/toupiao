@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -151,12 +151,7 @@ if ($do == 'designer') {
 	$styles = pdo_fetchall("SELECT variable, content, description FROM " . tablename('site_styles_vars') . " WHERE styleid = :styleid AND uniacid = :uniacid", array(':styleid' => $styleid, ':uniacid' => $_W['uniacid']), 'variable');
 	if (checksubmit('submit')) {
 		if (!empty($_GPC['style'])) {
-			$_GPC['style'] = safe_gpc_array($_GPC['style']);
 			foreach ($_GPC['style'] as $variable => $value) {
-				$value = htmlspecialchars_decode($value, ENT_QUOTES);
-				if ($variable == 'imgdir') {
-					$value = safe_gpc_path($value);
-				}
 				if (!empty($styles[$variable])) {
 					if ($styles[$variable]['content'] != $value) {
 						pdo_update('site_styles_vars', array('content' => $value), array(
@@ -177,7 +172,6 @@ if ($do == 'designer') {
 			}
 		}
 		if (!empty($_GPC['custom']['name'])) {
-			$_GPC['custom']['name'] = safe_gpc_array($_GPC['custom']['name']);
 			foreach ($_GPC['custom']['name'] as $i => $variable) {
 				$value = $_GPC['custom']['value'][$i];
 				$desc = $_GPC['custom']['desc'][$i];
