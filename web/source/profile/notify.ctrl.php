@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -9,7 +9,7 @@ load()->func('communication');
 
 $dos = array('mail');
 $do = in_array($do, $dos) ? $do : 'mail';
-uni_user_permission_check('profile_setting');
+permission_check_account_user('profile_setting');
 $_W['page']['title'] = '邮件通知参数配置';
 
 if ($do == 'mail') {

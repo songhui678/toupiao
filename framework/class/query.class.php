@@ -1,7 +1,7 @@
 <?php
 /**
- * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * [WECHAT 2018]
+ * [WECHAT  a free software]
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -15,7 +15,6 @@ class Query {
 	private $error = array();
 	private $lastsql = '';
 	private $lastparams = '';
-		private $values;
 	
 	public function __construct() {
 		$this->initClauses();
@@ -54,8 +53,7 @@ class Query {
 		}
 		$this->statements[$clause] = null;
 		$this->parameters = array();
-		$this->values = array();
-		if (isset($this->clauses[$clause]) && is_array($this->clauses[$clause])) {
+		if (isset($this->clauses[$clause]) && $this->clauses[$clause]) {
 			$this->statements[$clause] = array();
 		}
 		return $this;
@@ -87,7 +85,7 @@ class Query {
 		$origin_clause = $clause;
 		$clause = strtoupper($clause);
 
-		if ($clause == 'HAVING') {
+		if ($clause == 'WHERE' || $clause == 'HAVING' || $clause == 'WHEREOR') {
 			array_unshift($statement, $clause);
 			return call_user_func_array(array($this, 'condition'), $statement);
 		}
@@ -100,18 +98,6 @@ class Query {
 											return $this->addStatement($clause, $statement);
 	}
 	
-	public function where($condition, $parameters = array(), $operator = 'AND') {
-		if (!is_array($condition) && !($condition instanceof Closure)) {
-			$condition = array($condition => $parameters);
-		}
-		$this->addStatement('WHERE', array(array($operator, $condition)));
-		return $this;
-	}
-	
-	public function whereor($condition, $parameters = array()) {
-		return $this->where($condition, $parameters, 'OR');
-	}
-	
 	public function from($tablename, $alias = '') {
 		if (empty($tablename)) {
 			return $this;
@@ -120,6 +106,7 @@ class Query {
 		$this->currentTableAlias = $alias;
 		
 		$this->statements['FROM'] = $this->mainTable;
+		$this->statements['SELECT'] = '*';
 		
 		return $this;
 	}
@@ -160,6 +147,7 @@ class Query {
 		if (empty($field)) {
 			return $this;
 		}
+		
 				if (count($this->statements['SELECT']) == 1) {
 			$this->resetClause('SELECT');
 		}
@@ -198,26 +186,7 @@ class Query {
 		return $this->addStatement('ORDERBY', $field . ' ' . $direction);
 	}
 	
-	public function fill($field, $value = '') {
-		if (is_array($field)) {
-			foreach ($field as $column => $val) {
-				$this->fill($column, $val);
-			}
-			return $this;
-		}
-		$this->values[$field] = $value;
-		return $this;
-	}
-	
-	public function hasWhere() {
-
-		return count($this->statements['WHERE']) > 0;
-	}
-	
 	public function get() {
-		if (empty($this->statements['SELECT'])) {
-			$this->addStatement('SELECT', '*');
-		}
 		$this->lastsql = $this->buildQuery();
 		$this->lastparams = $this->parameters;
 		$result = pdo_fetch($this->lastsql, $this->parameters);
@@ -227,24 +196,15 @@ class Query {
 	}
 	
 	public function getcolumn($field = '') {
-		if (!empty($field)) {
-			$this->select($field);
-		}
-		if (empty($this->statements['SELECT'])) {
-			$this->addStatement('SELECT', '*');
-		}
 		$this->lastsql = $this->buildQuery();
 		$this->lastparams = $this->parameters;
-		$result = pdo_fetchcolumn($this->lastsql, $this->parameters);
+		$result = pdo_fetchcolumn($this->lastsql, $this->parameters, $field);
 		
 				$this->resetClause();
 		return $result;
 	}
 	
 	public function getall($keyfield = '') {
-		if (empty($this->statements['SELECT'])) {
-			$this->addStatement('SELECT', '*');
-		}
 		$this->lastsql = $this->buildQuery();
 		$this->lastparams = $this->parameters;
 		$result = pdo_fetchall($this->lastsql, $this->parameters, $keyfield);
@@ -270,50 +230,12 @@ class Query {
 	}
 	
 	public function count() {
-		$where = array();
-		if (!empty($this->statements['WHERE'])) {
-			foreach ($this->statements['WHERE'] as $row) {
-				$where = array_merge($where, $row[1]);
-			}
-		}
-		return pdo_count($this->statements['FROM'], $where);
+		return pdo_count($this->statements['FROM'], $this->statements['WHERE']);
 	}
 	
 	public function exists() {
-		$where = array();
-		if (!empty($this->statements['WHERE'])) {
-			foreach ($this->statements['WHERE'] as $row) {
-				$where = array_merge($where, $row[1]);
-			}
-		}
-		return pdo_exists($this->statements['FROM'], $where);
+		return pdo_exists($this->statements['FROM'], $this->statements['WHERE']);
 	}
-	
-	public function delete() {
-	
-		$where = $this->buildWhereArray();
-		$result = pdo_delete($this->statements['FROM'], $where);
-		
-				$this->resetClause();
-		return $result;
-	}
-	
-	public function insert() {
-		$result = pdo_insert($this->statements['FROM'], $this->values);
-				$this->resetClause();
-		return $result;
-	}
-	
-	public function update() {
-		$where = $this->buildWhereArray();
-		if (empty($where)) {
-			return error(-1, '未指定更新条件');
-		}
-		$result = pdo_update($this->statements['FROM'], $this->values, $where);
-				$this->resetClause();
-		return $result;
-	}
-	
 	
 	private function buildQuery() {
 		$query = '';
@@ -332,35 +254,9 @@ class Query {
 	}
 	
 	private function buildQueryWhere() {
-		$closure = array();
-		$sql = '';
-		foreach ($this->statements['WHERE'] as $i => $wheregroup) {
-			$where = array();
-			if (!empty($wheregroup[1]) && $wheregroup[1] instanceof Closure) {
-				$closure[] = $wheregroup;
-			} else {
-				$where = \SqlPaser::parseParameter($wheregroup[1], 'AND', $this->currentTableAlias);
-				$this->parameters = array_merge($this->parameters, $where['params']);
-				$sql .= ' ' . $wheregroup[0] . ' ' . $where['fields'];
-			}
-			unset($this->statements['WHERE'][$i]);
-		}
-		foreach ($closure as $callback) {
-			$callback[1]($this);
-			
-			$subsql = '';
-			$where = array();
-			foreach ($this->statements['WHERE'] as $i => $wheregroup) {
-				$where = \SqlPaser::parseParameter($wheregroup[1], 'AND', $this->currentTableAlias);
-				$this->parameters = array_merge($this->parameters, $where['params']);
-				$subsql .= ' ' . $wheregroup[0] . ' ' . $where['fields'];
-				unset($this->statements['WHERE'][$i]);
-			}
-			$subsql = ltrim(ltrim($subsql, ' AND '), ' OR ');
-			$sql .= " {$callback[0]} ( $subsql )";
-		}
-		
-		return empty($where['fields']) ? '' : " WHERE " . ltrim(ltrim($sql, ' AND '), ' OR ');
+		$where = \SqlPaser::parseParameter($this->statements['WHERE'], 'AND', $this->currentTableAlias);
+		$this->parameters = array_merge($this->parameters, $where['params']);
+		return empty($where['fields']) ? '' : " WHERE {$where['fields']} ";
 	}
 	
 	private function buildQueryWhereor() {
@@ -391,7 +287,7 @@ class Query {
 	}
 	
 	private function buildQueryInnerjoin() {
-		return $this->buildQueryJoin('INNERJOIN');
+		return $this->buildQueryLeftjoin('INNERJOIN');
 	}
 	
 	private function buildQueryJoin($clause) {
@@ -445,16 +341,6 @@ class Query {
 	
 	private function buildQueryGroupby() {
 		return \SqlPaser::parseGroupby($this->statements['GROUPBY'], $this->currentTableAlias);
-	}
-	
-	private function buildWhereArray() {
-		$where = array();
-		if (!empty($this->statements['WHERE'])) {
-			foreach ($this->statements['WHERE'] as $row) {
-				$where = array_merge($where, $row[1]);
-			}
-		}
-		return $where;
 	}
 	
 	public function getLastQuery() {

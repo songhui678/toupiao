@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 $_W['page']['title'] = '系统-流量主';
 $dos = array('flow_control', 'finance_info', 'register_flow', 'display', 'account_list', 'ad_type_get', 'content_provider');
@@ -147,7 +147,7 @@ if ($do == 'account_list') {
 		foreach($list as $unia => &$account) {
 			$account_details = uni_accounts($account['uniacid']);
 						$account['details'][$account['default_acid']] = $account_details[$account['default_acid']];
-			$account['role'] = uni_permission($_W['uid'], $account['uniacid']);
+			$account['role'] = permission_account_user_role($_W['uid'], $account['uniacid']);
 			$account['setmeal'] = uni_setmeal($account['uniacid']);
 			if (!empty($flow_uniaccount_list[$unia])) {
 				$flow_uniaccount_list[$unia]['ad_tags_str'] = @implode($flow_uniaccount_list[$unia]['ad_tags'], ',');

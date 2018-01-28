@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -101,5 +101,7 @@ if (!interface_exists('SessionHandlerInterface')) {
 
 
 if (!function_exists("fastcgi_finish_request")) {
-	function fastcgi_finish_request() {}
+	function fastcgi_finish_request() {
+		return error(-1, 'Not npm or fast cgi');
+	}
 }

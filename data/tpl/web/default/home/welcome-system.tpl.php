@@ -1,6 +1,9 @@
 <?php defined('IN_IA') or exit('Access Denied');?><?php (!empty($this) && $this instanceof WeModuleSite || 0) ? (include $this->template('common/header', TEMPLATE_INCLUDEPATH)) : (include template('common/header', TEMPLATE_INCLUDEPATH));?>
 <!--系统管理首页-->
 <div class="welcome-container js-system-welcome" ng-controller="WelcomeCtrl" ng-cloak>
+	<div class="ad-img we7-margin-bottom">
+		<a ng-href="{{ad.url}}" target="_blank" ng-repeat="ad in ads"><img ng-src="{{ad.src}}" alt="" class="img-responsive" style="margin: 0 auto;"></a>
+	</div>
 	<div class="row">
 		<div class="col-sm-6">
 			<div class="panel we7-panel account-stat">

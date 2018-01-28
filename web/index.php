@@ -1,169 +1,20 @@
 <?php
 /**
-<<<<<<< HEAD
  * [WeEngine System] Copyright (c) 2014 WE7.CC
-=======
- * [WeEngine System] Copyright (c) 20180112104051 WE7.CC
->>>>>>> parent of 775f72a... 654
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 define('IN_SYS', true);
 require '../framework/bootstrap.inc.php';
 require IA_ROOT . '/web/common/bootstrap.sys.inc.php';
-<<<<<<< HEAD
+
 load()->web('common');
 load()->web('template');
-=======
+load()->func('file');
 
-if (!empty($_GPC['state'])) {
-	$login_callback_params = OAuth2Client::supportParams($_GPC['state']);
-	if (!empty($login_callback_params)) {
-		$controller = 'user';
-		$action = 'login';
-		$_GPC['login_type'] = $login_callback_params['from'];
-		$_GPC['handle_type'] = $login_callback_params['mode'];
-	}
-}
->>>>>>> parent of 775f72a... 654
-
-if (empty($_W['isfounder']) && ! empty($_W['user']) && $_W['user']['status'] == 1) {
+if (empty($_W['isfounder']) && !empty($_W['user']) && ($_W['user']['status'] == USER_STATUS_CHECK || $_W['user']['status'] == USER_STATUS_BAN)) {
 	message('您的账号正在审核或是已经被系统禁止，请联系网站管理员解决！');
 }
-<<<<<<< HEAD
-$_W['acl'] = $acl = array(
-	'account' => array(
-		'default' => '',
-		'direct' => array(
-			'auth',
-			'welcome' 
-		),
-		'operator' => array(
-			'display',
-			'manage' 
-		) 
-	),
-	'article' => array(
-		'direct' => array(
-			'notice-show',
-			'news-show' 
-		),
-		'founder' => array(
-			'news',
-			'notice' 
-		),
-		'vice-founder' => array(
-			'notice-show',
-			'news-show'
-		),
-	),
-	'cloud' => array(
-		'default' => 'touch',
-		'direct' => array(
-			'touch',
-			'dock',
-			'download' 
-		),
-		'founder' => array(
-			'diagnose',
-			'redirect',
-			'upgrade',
-			'process',
-			'device' 
-		),
-		'vice-founder' => array(),
-	),
-	'home' => array(
-		'default' => 'welcome',
-		'founder' => array(),
-		'direct' => array() 
-	),
-	'platform' => array(
-		'default' => 'reply',
-		'founder' => array(),
-		'direct' => array(
-			'link' 
-		) 
-	),
-	'site' => array(
-		'default' => '',
-		'founder' => array(),
-		'direct' => array(
-			'entry' 
-		) 
-	),
-	'user' => array(
-		'default' => 'display',
-		'founder' => array(
-			'edit',
-			'group' 
-		),
-		'direct' => array(
-			'login',
-			'register',
-			'logout' 
-		) 
-	),
-	'utility' => array(
-		'direct' => array(
-			'verifycode',
-			'code',
-			'file',
-			'bindcall',
-			'subscribe',
-			'wxcode',
-			'modules' 
-		) 
-	),
-	'module' => array(
-		'direct' => array(),
-		'founder' => array(),
-		'manager' => array(
-			'group'
-		),
-		'operator' => array()
-	),
-	'system' => array(
-		'direct' => array(),
-		'founder' => array(
-			'attachment',
-			'bom',
-			'database',
-			'filecheck',
-			'logs',
-			'menu',
-			'optimize',
-			'scan',
-			'site' 
-		),
-		'operator' => array(
-			'account',
-			'updatecache' 
-		),
-		'manager' => array(
-			'account',
-			'platform',
-			'updatecache',
-			'module' 
-		),
-		'vice-founder' => array(
-			'platform',
-			'template',
-			'updatecache'
-		),
-	),
-	'cron' => array(
-		'direct' => array(
-			'entry'
-		)
-	)
-);
-=======
 $acl = require IA_ROOT . '/web/common/permission.inc.php';
-
-$_W['page'] = array();
-$_W['page']['copyright'] = $_W['setting']['copyright'];
-
->>>>>>> parent of 775f72a... 654
 if (($_W['setting']['copyright']['status'] == 1) && empty($_W['isfounder']) && $controller != 'cloud' && $controller != 'utility' && $controller != 'account') {
 	$_W['siteclose'] = true;
 	if ($controller == 'account' && $action == 'welcome') {
@@ -183,14 +34,14 @@ if (($_W['setting']['copyright']['status'] == 1) && empty($_W['isfounder']) && $
 
 $controllers = array();
 $handle = opendir(IA_ROOT . '/web/source/');
-if (! empty($handle)) {
+if (!empty($handle)) {
 	while ($dir = readdir($handle)) {
 		if ($dir != '.' && $dir != '..') {
 			$controllers[] = $dir;
 		}
 	}
 }
-if (! in_array($controller, $controllers)) {
+if (!in_array($controller, $controllers)) {
 	$controller = 'home';
 }
 
@@ -200,43 +51,41 @@ if (is_file($init)) {
 }
 
 $actions = array();
-$handle = opendir(IA_ROOT . '/web/source/' . $controller);
-if (! empty($handle)) {
-	while ($dir = readdir($handle)) {
-		if ($dir != '.' && $dir != '..' && strexists($dir, '.ctrl.php')) {
-			$dir = str_replace('.ctrl.php', '', $dir);
-			$actions[] = $dir;
-		}
+$actions_path = file_tree(IA_ROOT . '/web/source/' . $controller);
+foreach ($actions_path as $action_path) {
+	$action_name = str_replace('.ctrl.php', '', basename($action_path));
+
+	$section = basename(dirname($action_path));
+	if ($section !== $controller) {
+		$action_name = $section . '-' .$action_name;
 	}
+	$actions[] = $action_name;
 }
+
 if (empty($actions)) {
 	header('location: ?refresh');
 }
-if (! in_array($action, $actions)) {
-	$action = $acl[$controller]['default'];
+
+if (!in_array($action, $actions)) {
+	$action = $action . '-' . $action;
 }
-if (! in_array($action, $actions)) {
-	$action = $actions[0];
+if (!in_array($action, $actions)) {
+	$action = $acl[$controller]['default'] ? $acl[$controller]['default'] : $actions[0];
 }
+
+$_W['page'] = array();
+$_W['page']['copyright'] = $_W['setting']['copyright'];
 
 if (is_array($acl[$controller]['direct']) && in_array($action, $acl[$controller]['direct'])) {
 		require _forward($controller, $action);
 	exit();
 }
-<<<<<<< HEAD
-if (is_array($acl[$controller]['founder']) && in_array($action, $acl[$controller]['founder'])) {
-		if (! $_W['isfounder']) {
-		message('不能访问, 需要创始人权限才能访问.');
-	}
-}
-if (user_is_vice_founder($_W['uid']) && is_array($acl[$controller]['vice-founder']) && !in_array($action, $acl[$controller]['vice-founder'])) {
-	message('不能访问, 需要相应的权限才能访问.');
-}
-checklogin();
-=======
 checklogin();
 if ($_W['role'] != ACCOUNT_MANAGE_NAME_FOUNDER) {
 	if (empty($_W['uniacid'])) {
+		if ($_W['role'] == ACCOUNT_MANAGE_NAME_CLERK) {
+			itoast('', url('module/display'), 'info');
+		}
 		if (defined('FRAME') && FRAME == 'account') {
 			itoast('', url('account/display'), 'info');
 		}
@@ -244,12 +93,14 @@ if ($_W['role'] != ACCOUNT_MANAGE_NAME_FOUNDER) {
 			itoast('', url('wxapp/display'), 'info');
 		}
 	}
-	$acl = permission_build();
+	if (function_exists('permission_build')) {
+		$acl = permission_build();
+	}
 	if (empty($acl[$controller][$_W['role']]) || (!in_array($controller.'*', $acl[$controller][$_W['role']]) && !in_array($action, $acl[$controller][$_W['role']]))) {
 		message('不能访问, 需要相应的权限才能访问！');
 	}
 }
->>>>>>> parent of 775f72a... 654
+
 require _forward($controller, $action);
 
 define('ENDTIME', microtime());
@@ -261,17 +112,21 @@ if ((ENDTIME - STARTTIME) > $_W['config']['setting']['maxtimeurl']) {
 		'type' => '1',
 		'runtime' => ENDTIME - STARTTIME,
 		'runurl' => $_W['sitescheme'] . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'],
-		'createtime' => TIMESTAMP 
+		'createtime' => TIMESTAMP
 	);
 	pdo_insert('core_performance', $data);
 }
 function _forward($c, $a) {
 	$file = IA_ROOT . '/web/source/' . $c . '/' . $a . '.ctrl.php';
+	if (!file_exists($file)) {
+		list($section, $a) = explode('-', $a);
+		$file = IA_ROOT . '/web/source/' . $c . '/' . $section . '/' . $a . '.ctrl.php';
+	}
 	return $file;
 }
 function _calc_current_frames(&$frames) {
 	global $controller, $action;
-	if (!empty($frames['section']) && is_array($frames['section'])) {
+	if (! empty($frames['section']) && is_array($frames['section'])) {
 		foreach ($frames['section'] as &$frame) {
 			if (empty($frame['menu'])) {
 				continue;
@@ -290,7 +145,7 @@ function _calc_current_frames(&$frames) {
 					$get['c'] = $controller;
 					$get['a'] = $action;
 				}
-				if (!empty($do)) {
+				if (! empty($do)) {
 					$get['do'] = $do;
 				}
 				$diff = array_diff_assoc($urls, $get);

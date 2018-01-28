@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 load()->model('app');
@@ -27,7 +27,7 @@ if(!empty($_W['openid'])) {
 			empty($profile['residecity']) ? ($data['residecity'] = ($map_fans['city']) ? $map_fans['city'] . '市' : '') : '';
 			empty($profile['resideprovince']) ? ($data['resideprovince'] = ($map_fans['province']) ? $map_fans['province'] . '省' : '') : '';
 			empty($profile['nationality']) ? ($data['nationality'] = $map_fans['country']) : '';
-			empty($profile['avatar']) ? ($data['avatar'] = $map_fans['headimgurl']) : '';
+			empty($profile['avatar']) ? ($data['avatar'] = rtrim($map_fans['headimgurl'], '0') . 132) : '';
 			if(!empty($data)) {
 				mc_update($_W['member']['uid'], $data);
 			}

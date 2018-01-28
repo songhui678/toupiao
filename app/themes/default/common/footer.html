@@ -3,11 +3,7 @@
 				{if !empty($_W['page']['footer'])}
 					{$_W['page']['footer']}
 				{else}
-<<<<<<< HEAD
-					{if IMS_FAMILY != 'x'}<a href="http://www.we7.cc">关于微擎</a>&nbsp;&nbsp;<a href="http://bbs.we7.cc">微擎帮助</a>{/if}
-=======
-					{if IMS_FAMILY == 'v'}<a href="http://www.we7.cc">关于微擎</a>&nbsp;&nbsp;<a href="http://bbs.we7.cc">微擎帮助</a>{/if}
->>>>>>> parent of 775f72a... 654
+					{if IMS_FAMILY == 'v'}<a href="http://www.we8.club">关于维吧</a>&nbsp;&nbsp;<a href="http://www.we8.club">维吧帮助</a>{/if}
 				{/if}
 				&nbsp;&nbsp;{$_W['setting']['copyright']['statcode']}
 			</div>
@@ -59,11 +55,12 @@
 		}
 		if(sharedata.imgUrl == ''){
 			var _share_img = $('body img:eq(0)').attr("src");
-			if(_share_img == ""){
-				sharedata['imgUrl'] = window.sysinfo.attachurl + 'images/global/wechat_share.png';
-			} else {
+			if(_share_img){
 				sharedata['imgUrl'] = util.tomedia(_share_img);
 			}
+		}
+		if(sharedata.imgUrl == ""){
+			sharedata.imgUrl = window.sysinfo.attachurl + 'images/global/wechat_share.jpg';
 		}
 		if(sharedata.desc == ''){
 			var _share_content = util.removeHTMLTag($('body').html());
@@ -93,21 +90,18 @@
 			}
 		{/if}
 		if ($('.js-quickmenu').size() > 0) {
-			// var h = $('.js-quickmenu .nav-home').height()+20+'px';
-			// $('body').css("padding-bottom",h);
-			// $('body .mui-content').css("bottom",h);
+			var h = $('.js-quickmenu .nav-home').height()+20+'px';
+			$('body').css("padding-bottom",h);
+			$('body .mui-content').css("bottom",h);
 		} else if($('.nav-menu-app').size() > 0) {
 			var h = $('.nav-menu-app').height()+'px';
 			$('body').css("padding-bottom",h);
 			$('.mui-content').css('bottom',h);
-		} else {
+		}else{
 			$('body').css("padding-bottom", "0");
 			$('.mui-content').css('bottom', "0");
 		}
 	});
 	</script>
-	
-		<script type="text/javascript" src="{$_W['siteroot']}app/index.php?i={$_W['uniacid']}&c=utility&a=visit&do=showjs&m={$_W['current_module']['name']}"></script>
-	
 </body>
 </html>

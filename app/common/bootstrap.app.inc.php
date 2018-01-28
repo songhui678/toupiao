@@ -1,38 +1,26 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 load()->model('mc');
-load()->model('app');
-load()->model('account');
-load()->model('attachment');
-load()->model('module');
 $_W['uniacid'] = intval($_GPC['i']);
 if(empty($_W['uniacid'])) {
 	$_W['uniacid'] = intval($_GPC['weid']);
 }
 $_W['uniaccount'] = $_W['account'] = uni_fetch($_W['uniacid']);
 if(empty($_W['uniaccount'])) {
-	header('HTTP/1.1 404 Not Found');
-	header("status: 404 Not Found");
-	exit;
+	exit('指定主公众号不存在。');
 }
 if (!empty($_W['uniaccount']['endtime']) && TIMESTAMP > $_W['uniaccount']['endtime']) {
 	exit('抱歉，您的公众号服务已过期，请及时联系管理员');
 }
-if (app_pass_visit_limit()) {
-	exit('访问受限，请及时联系管理员！');
-}
+
 $_W['acid'] = $_W['uniaccount']['acid'];
 $isdel_account = pdo_get('account', array('isdeleted' => 1, 'acid' => $_W['acid']));
 if (!empty($isdel_account)) {
 	exit('指定公众号已被删除');
-}
-if (!empty($_W['account']['setting']['bind_domain']) && !empty($_W['account']['setting']['bind_domain']['domain']) && strpos($_W['siteroot'], $_W['account']['setting']['bind_domain']['domain']) === false) {
-	header('Location: //' . $_W['account']['setting']['bind_domain']['domain']. $_SERVER['REQUEST_URI']);
-	exit;
 }
 $_W['session_id'] = '';
 if (isset($_GPC['state']) && !empty($_GPC['state']) && strexists($_GPC['state'], 'we7sid-')) {
@@ -134,7 +122,7 @@ if (!empty($unisetting['oauth']['account'])) {
 if($controller != 'utility') {
 	$_W['token'] = token();
 }
-if (!empty($_W['account']['oauth']) && $_W['account']['oauth']['level'] == '4' && empty($_W['isajax'])) {
+if (!empty($_W['account']['oauth']) && $_W['account']['oauth']['level'] == '4') {
 	if (($_W['container'] == 'wechat' && !$_GPC['logout'] && empty($_W['openid']) && ($controller != 'auth' || ($controller == 'auth' && !in_array($action, array('forward', 'oauth'))))) ||
 		($_W['container'] == 'wechat' && !$_GPC['logout'] && empty($_SESSION['oauth_openid']) && ($controller != 'auth'))) {
 		$state = 'we7sid-'.$_W['session_id'];
@@ -145,21 +133,10 @@ if (!empty($_W['account']['oauth']) && $_W['account']['oauth']['level'] == '4' &
 		if(uni_is_multi_acid()) {
 			$str = "&j={$_W['acid']}";
 		}
-		$oauth_type = 'snsapi_base';
-		if ($controller == 'entry' && !empty($_GPC['m'])) {
-			$module_info = module_fetch($_GPC['m']);
-			if ($module_info['oauth_type'] == OAUTH_TYPE_USERINFO) {
-				$oauth_type = 'snsapi_userinfo';
-			}
-		}
-		$url = (!empty($unisetting['oauth']['host']) ? ($unisetting['oauth']['host'] . $sitepath . '/') : $_W['siteroot'] . 'app/') . "index.php?i={$_W['uniacid']}{$str}&c=auth&a=oauth&scope=" . $oauth_type;
+		$url = (!empty($unisetting['oauth']['host']) ? ($unisetting['oauth']['host'] . $sitepath . '/') : $_W['siteroot'] . 'app/') . "index.php?i={$_W['uniacid']}{$str}&c=auth&a=oauth&scope=snsapi_base";
 		$callback = urlencode($url);
 		$oauth_account = WeAccount::create($_W['account']['oauth']);
-		if ($oauth_type == 'snsapi_base') {
-			$forward = $oauth_account->getOauthCodeUrl($callback, $state);
-		} else {
-			$forward = $oauth_account->getOauthUserInfoUrl($callback, $state);
-		}
+		$forward = $oauth_account->getOauthCodeUrl($callback, $state);
 		header('Location: ' . $forward);
 		exit();
 	}
@@ -186,5 +163,4 @@ if ($_W['container'] == 'wechat') {
 	}
 	unset($jsauth_acid, $account_api);
 }
-$_W['attachurl'] = attachment_set_attach_url();
 load()->func('compat.biz');

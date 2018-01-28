@@ -1,7 +1,7 @@
 <?php
 /**
- * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * [WECHAT 2018]
+ * [WECHAT  a free software]
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -12,33 +12,11 @@ class StoreModuleSite extends WeModuleSite {
 	public function __construct() {
 		global $_W;
 		load()->model('store');
-		$this->store_setting = (array)$_W['setting']['store'];
 		$this->left_menus = $this->leftMenu();
-	}
 
-	public function storeIsOpen() {
-		global $_W;
-		if ((!$_W['isfounder'] || user_is_vice_founder()) && $this->store_setting['status'] == 1) {
+		if ((!$_W['isfounder'] || user_is_vice_founder()) && $_W['setting']['store']['status'] == 1) {
 			itoast('商城已被创始人关闭！', referer(), 'error');
 		}
-		if (in_array($_W['username'], $this->store_setting['blacklist'])) {
-			itoast('您无权限进入商城，请联系管理员！', referer(), 'error');
-		}
-		return true;
-	}
-
-	public function getTypeName($type) {
-		$sign = array(
-			STORE_TYPE_MODULE => '应用模块',
-			STORE_TYPE_ACCOUNT => '公众号个数',
-			STORE_TYPE_WXAPP => '小程序个数',
-			STORE_TYPE_WXAPP_MODULE => '小程序模块',
-			STORE_TYPE_PACKAGE => '应用权限组',
-			STORE_TYPE_API => '应用访问流量(API)',
-			STORE_TYPE_ACCOUNT_RENEW => '公众号续费',
-			STORE_TYPE_WXAPP_RENEW => '小程序续费'
-		);
-		return $sign[$type];
 	}
 
 	public function payResult($params) {
@@ -46,17 +24,8 @@ class StoreModuleSite extends WeModuleSite {
 		if($params['result'] == 'success' && $params['from'] == 'notify') {
 			$order = pdo_get('site_store_order', array('id' => $params['tid'], 'type' => 1));
 			if(!empty($order)) {
-				$goods = pdo_get('site_store_goods', array('id' => $order['goodsid']));
 				pdo_update('site_store_order', array('type' => 3), array('id' => $params['tid']));
-				if (in_array($goods['type'], array(STORE_TYPE_ACCOUNT_RENEW, STORE_TYPE_WXAPP_RENEW))) {
-					$account_type = $goods['type'] == STORE_TYPE_ACCOUNT_RENEW ? 'uniacid' : 'wxapp';
-					$account_num = $goods['type'] == STORE_TYPE_ACCOUNT_RENEW ? $goods['account_num'] : $goods['wxapp_num'];
-					$account_info = uni_fetch($order[$account_type]);
-					$account_endtime = strtotime('+' . $order['duration'] * $account_num . $goods['unit'], max(TIMESTAMP, $account_info['endtime']));
-					pdo_update('account', array('endtime' => $account_endtime), array('uniacid' => $order[$account_type]));
-					cache_delete("uniaccount:{$order[$account_type]}");
-				}
-				cache_delete(cache_system_key($order['uniacid'] . ':site_store_buy_' . $goods['type']));
+				cache_delete(cache_system_key($order['uniacid'] . ':site_store_buy_modules'));
 				cache_build_account_modules($order['uniacid']);
 			}
 		}
@@ -66,7 +35,6 @@ class StoreModuleSite extends WeModuleSite {
 	}
 
 	public function doWebPaySetting() {
-		$this->storeIsOpen();
 		global $_W, $_GPC;
 		if (!$_W['isfounder'] || user_is_vice_founder()) {
 			itoast('', referer(), 'info');
@@ -109,10 +77,8 @@ class StoreModuleSite extends WeModuleSite {
 	}
 
 	public function doWebOrders() {
-		$this->storeIsOpen();
 		global $_GPC, $_W;
 		load()->model('module');
-		load()->model('message');
 
 		$operates = array('display', 'change_price', 'delete');
 		$operate = $_GPC['operate'];
@@ -128,11 +94,6 @@ class StoreModuleSite extends WeModuleSite {
 		}
 
 		if ($operate == 'display') {
-			if (user_is_founder($_W['uid']) && !user_is_vice_founder($_W['uid'])) {
-				$message_id = $_GPC['message_id'];
-				message_notice_read($message_id);
-			}
-
 			$pindex = max(1, intval($_GPC['page']));
 			$psize = 15;
 
@@ -140,8 +101,9 @@ class StoreModuleSite extends WeModuleSite {
 			if (isset($_GPC['type']) && intval($_GPC['type']) > 0) {
 				$order_type = intval($_GPC['type']);
 				$store_table->searchOrderType($order_type);
+			} else {
+				$store_table->searchOrderType(STORE_ORDER_PLACE, STORE_ORDER_FINISH);
 			}
-			$store_table->searchWithOrderid($_GPC['orderid']);
 			if (empty($_W['isfounder']) || user_is_vice_founder()) {
 				$store_table->searchOrderWithUid($_W['uid']);
 			}
@@ -149,14 +111,11 @@ class StoreModuleSite extends WeModuleSite {
 			$total = $store_table->getLastQueryTotal();
 			$pager = pagination($total, $pindex, $psize);
 			if (!empty($order_list)) {
-				foreach ($order_list as $key => &$order) {
-					if (empty($_W['isfounder']) && $order['type'] == 2) {
-						unset($order_list[$key]);
-					}
+				foreach ($order_list as &$order) {
 					$order['createtime'] = date('Y-m-d H:i:s', $order['createtime']);
 					$order['goods_info'] = store_goods_info($order['goodsid']);
 					$order['abstract_amount'] = $order['duration'] * $order['goods_info']['price'];
-					if (!empty($order['goods_info']) && ($order['goods_info']['type'] == STORE_TYPE_MODULE || $order['goods_info']['type'] == STORE_TYPE_WXAPP_MODULE)) {
+					if (!empty($order['goods_info']) && $order['goods_info']['type'] == STORE_TYPE_MODULE) {
 						$order['goods_info']['module_info'] = module_fetch($order['goods_info']['module']);
 					}
 				}
@@ -205,7 +164,6 @@ class StoreModuleSite extends WeModuleSite {
 	}
 
 	public function doWebSetting() {
-		$this->storeIsOpen();
 		global $_GPC, $_W;
 		if (!$_W['isfounder'] || user_is_vice_founder()) {
 			itoast('', referer(), 'info');
@@ -215,7 +173,8 @@ class StoreModuleSite extends WeModuleSite {
 		$operate = in_array($operate, $operates) ? $operate : 'store_status';
 
 		$_W['page']['title'] = '商城设置 - 商城';
-		$settings = $this->store_setting;
+
+		$settings = (array)$_W['setting']['store'];
 		if ($operate == 'store_status') {
 			if (checksubmit('submit')) {
 				$status = intval($_GPC['status']) > 0 ? 1 : 0;
@@ -239,7 +198,6 @@ class StoreModuleSite extends WeModuleSite {
 	}
 
 	public function doWebGoodsSeller() {
-		$this->storeIsOpen();
 		global $_GPC, $_W;
 		load()->model('module');
 		if (!$_W['isfounder'] || user_is_vice_founder()) {
@@ -324,7 +282,6 @@ class StoreModuleSite extends WeModuleSite {
 	}
 
 	public function doWebGoodsPost() {
-		$this->storeIsOpen();
 		global $_GPC, $_W;
 		if (!$_W['isfounder'] || user_is_vice_founder()) {
 			itoast('', referer(), 'info');
@@ -351,14 +308,7 @@ class StoreModuleSite extends WeModuleSite {
 					'price' => is_numeric($_GPC['price']) ? floatval($_GPC['price']) : 0,
 					'slide' => !empty($_GPC['slide']) ? iserializer($_GPC['slide']) : '',
 					'api_num' => is_numeric($_GPC['api_num']) ? intval($_GPC['api_num']) : 0,
-					'description' => htmlspecialchars_decode(remove_xss($_GPC['description'])),
 				);
-				if ($_GPC['type'] == STORE_TYPE_API) {
-					$data['title'] = '应用访问量';
-				}
-				if ($_GPC['type'] == STORE_TYPE_PACKAGE) {
-					$data['title'] = '应用权限组';
-				}
 				if ($_GPC['submit'] == '保存并上架') {
 					$data['status'] = 1;
 				}
@@ -416,34 +366,26 @@ class StoreModuleSite extends WeModuleSite {
 	}
 
 	public function doWebGoodsBuyer() {
-		$this->storeIsOpen();
 		global $_GPC, $_W;
-		load()->model('module');
-		load()->model('payment');
-		load()->model('message');
-		load()->func('communication');
+		load ()->model ('module');
+		load ()->model ('payment');
+		load ()->func ('communication');
 		load()->library('qrcode');
 		$operate = $_GPC['operate'];
 		$operates = array ('display', 'goods_info', 'get_expiretime', 'submit_order', 'pay_order');
-		$operate = in_array($operate, $operates) ? $operate : 'display';
+		$operate = in_array ($operate, $operates) ? $operate : 'display';
 		$_W['page']['title'] = '商品列表 - 商城';
 
 		if ($operate == 'display') {
-			$pageindex = max(intval($_GPC['page']), 1);
+			$pageindex = max (intval ($_GPC['page']), 1);
 			$pagesize = 24;
-			$type = 0;
-			if (!empty($_GPC['type']) && in_array($_GPC['type'], array(STORE_TYPE_MODULE, STORE_TYPE_ACCOUNT, STORE_TYPE_WXAPP, STORE_TYPE_WXAPP_MODULE, STORE_TYPE_PACKAGE, STORE_TYPE_API, STORE_TYPE_ACCOUNT_RENEW, STORE_TYPE_WXAPP_RENEW))) {
-				$type = $_GPC['type'];
-			}
+			$type = !empty($_GPC['type']) ? $_GPC['type'] : 1;
 			$store_table = table ('store');
 			$store_table->searchWithStatus (1);
 			$store_table = $store_table->searchGoodsList ($type, $pageindex, $pagesize);
 			$store_goods = $store_table['goods_list'];
-			if ((empty($type) || in_array($type, array(STORE_TYPE_MODULE, STORE_TYPE_WXAPP_MODULE))) && is_array($store_goods)) {
+			if (in_array($type, array(STORE_TYPE_MODULE, STORE_TYPE_WXAPP_MODULE)) && is_array ($store_goods)) {
 				foreach ($store_goods as $key => &$goods) {
-					if (empty($goods) || !in_array($goods['type'], array(STORE_TYPE_MODULE, STORE_TYPE_WXAPP_MODULE))) {
-						continue;
-					}
 					$goods['module'] = module_fetch ($goods['module']);
 				}
 				unset($goods);
@@ -471,30 +413,19 @@ class StoreModuleSite extends WeModuleSite {
 			}
 			$account_table = table ('account');
 			$user_account = $account_table->userOwnedAccount();
-			$wxapp_account_list = array();
 			if (!empty($user_account) && is_array($user_account)) {
 				foreach ($user_account as $key => $account) {
 					$default_account = uni_fetch($account['uniacid']);
-					if (in_array($goods['type'],  array(STORE_TYPE_MODULE, STORE_TYPE_ACCOUNT_RENEW)) && !in_array($default_account['type'], array(ACCOUNT_TYPE_OFFCIAL_NORMAL, ACCOUNT_TYPE_OFFCIAL_AUTH)) || in_array($goods['type'], array(STORE_TYPE_WXAPP_MODULE, STORE_TYPE_WXAPP_RENEW)) && $default_account['type'] != 4) {
+					if ($goods['type'] == STORE_TYPE_MODULE && $default_account['type'] != 1 || $goods['type'] == STORE_TYPE_WXAPP_MODULE && $default_account['type'] != 4) {
 						unset($user_account[$key]);
-					}
-					if (in_array($goods['type'], array(STORE_TYPE_ACCOUNT_RENEW, STORE_TYPE_WXAPP_RENEW)) && $default_account['endtime'] <= 0) {
-						unset($user_account[$key]);
-					}
-					if ($goods['type'] == STORE_TYPE_PACKAGE && !empty($module_groups[$goods['module_group']]['wxapp']) && $default_account['type'] == 4) {
-						$wxapp_account_list[] = array('uniacid' => $default_account['uniacid'], 'name' => $default_account['name']);
 					}
 				}
 			}
 			reset($user_account);
-			reset($wxapp_account_list);
 			$default_account = current($user_account);
-			$default_account = !empty($_GPC['uniacid']) ? $_GPC['uniacid'] : $default_account['uniacid'];
-			$default_wxapp = current($wxapp_account_list);
-			$default_wxapp = !empty($_GPC['wxapp']) ? $_GPC['wxapp'] : $default_wxapp['uniacid'];
+
 			if (in_array($goods['type'], array(STORE_TYPE_MODULE, STORE_TYPE_WXAPP_MODULE)) && empty($user_account)) {
-				$type_name = $goods['type'] == STORE_TYPE_MODULE ? '公众号' : '小程序';
-				itoast("您没有可操作的{$type_name}，请先创建{$type_name}后购买模块.", referer(), 'info');
+				itoast('您没有可操作的公众号，请先创建公众号后购买模块.', referer(), 'info');
 			}
 			$pay_way = array();
 			if (!empty($_W['setting']['store_pay']) && is_array($_W['setting']['store_pay']) && ($_W['setting']['store_pay']['alipay']['switch'] == 1 || $_W['setting']['store_pay']['wechat']['switch'] == 1)) {
@@ -519,28 +450,19 @@ class StoreModuleSite extends WeModuleSite {
 			$date = date ('Y-m-d', strtotime ('+' . $duration . $_GPC['unit'], time ()));
 			iajax (0, $date);
 		}
-
 		if ($operate == 'submit_order') {
 			$uniacid = intval ($_GPC['uniacid']);
 			$goodsid = intval($_GPC['goodsid']);
+			if (empty($goodsid) || empty($uniacid)) {
+				iajax(-1, '参数错误！');
+			}
 			if (empty($_GPC['type'])) {
 				iajax(-1, '请选择支付方式。');
 			}
-			if (empty($goodsid)) {
-				iajax(-1, '参数错误！');
-			}
-			$user_account = table('account')->userOwnedAccount();
 			$goods_info = store_goods_info($goodsid);
-			if (in_array($goods_info['type'], array(STORE_TYPE_PACKAGE, STORE_TYPE_MODULE, STORE_TYPE_WXAPP_MODULE, STORE_TYPE_API, STORE_TYPE_ACCOUNT_RENEW, STORE_TYPE_WXAPP_RENEW))) {
-				if (empty($uniacid)) {
-					iajax(-1, '请选择公众号！');
-				}
-				if (empty($user_account[$uniacid])) {
-					iajax(-1, '非法公众号！');
-				}
-			}
-			if (empty($goods_info)) {
-				iajax(-1, '商品不存在！');
+			$user_account = table('account')->userOwnedAccount();
+			if (empty($user_account[$uniacid]) || empty($goods_info)) {
+				iajax(-1, '公众号错误或商品不存在！');
 			}
 			$uid = empty($_W['uid']) ? '000000' : sprintf ("%06d", $_W['uid']);
 			$orderid = date ('YmdHis') . $uid . random (8, 1);
@@ -554,24 +476,14 @@ class StoreModuleSite extends WeModuleSite {
 				'buyerid' => $_W['uid'],
 				'type' => STORE_ORDER_PLACE,
 				'createtime' => time(),
-				'uniacid' => $uniacid,
-				'wxapp' => intval($_GPC['wxapp'])
+				'uniacid' => $uniacid
 			);
-			if (in_array($goods_info['type'], array(STORE_TYPE_ACCOUNT, STORE_TYPE_WXAPP, STORE_TYPE_MODULE, STORE_TYPE_WXAPP_MODULE, STORE_TYPE_PACKAGE))) {
-				$history_order_endtime = pdo_getcolumn('site_store_order', array('goodsid' => $goodsid, 'buyerid' => $_W['uid']), 'max(endtime)');
+			if (in_array($goods_info['type'], array(STORE_TYPE_ACCOUNT, STORE_TYPE_WXAPP, STORE_TYPE_MODULE, STORE_TYPE_WXAPP_MODULE))) {
+				$history_order_endtime = pdo_getcolumn('site_store_order', array('goodsid' => $goodsid, 'buyerid' => $_W['uid']), 'endtime');
 				$order['endtime'] = strtotime('+' . $duration . $goods_info['unit'],  max($history_order_endtime, time()));
-			}
-			if (in_array($goods_info['type'], array(STORE_TYPE_WXAPP, STORE_TYPE_WXAPP_RENEW))) {
-				$order['wxapp'] = $order['uniacid'];
-				$order['uniacid'] = 0;
 			}
 			pdo_insert ('site_store_order', $order);
 			$store_orderid = pdo_insertid();
-
-			$type_name = $this->getTypeName($goods_info['type']);
-			$content = $_W['user']['username'] . date("Y-m-d H:i:s") . '在商城购买了' . $type_name . ', 支付金额' . $order['amount'];
-			message_notice_record($content, $_W['uid'], $orderid, MESSAGE_ORDER_TYPE);
-
 			$pay_log = array(
 				'type' => $_GPC['type'],
 				'uniontid' => $orderid,
@@ -587,7 +499,6 @@ class StoreModuleSite extends WeModuleSite {
 		if ($operate == 'pay_order') {
 			$orderid = intval ($_GPC['orderid']);
 			$order = pdo_get ('site_store_order', array ('id' => $orderid));
-			$goods = pdo_get ('site_store_goods', array ('id' => $order['goodsid']));
 			if (empty($order)) {
 				itoast ('订单不存在', referer (), 'info');
 			}
@@ -598,14 +509,6 @@ class StoreModuleSite extends WeModuleSite {
 				if ($order['amount'] == 0) {
 					pdo_update('site_store_order', array('type' => 3), array('id' => $order['id']));
 					pdo_update('core_paylog', array('status' => 1), array('uniontid' => $order['orderid']));
-					if (in_array($goods['type'], array(STORE_TYPE_ACCOUNT_RENEW, STORE_TYPE_WXAPP_RENEW))) {
-						$account_type = $goods['type'] == STORE_TYPE_ACCOUNT_RENEW ? 'uniacid' : 'wxapp';
-						$account_num = $goods['type'] == STORE_TYPE_ACCOUNT_RENEW ? $goods['account_num'] : $goods['wxapp_num'];
-						$account_info = uni_fetch($order[$account_type]);
-						$account_endtime = strtotime('+' . $order['duration'] * $account_num . $goods['unit'], max(TIMESTAMP, $account_info['endtime']));
-						pdo_update('account', array('endtime' => $account_endtime), array('uniacid' => $order[$account_type]));
-						cache_delete("uniaccount:{$order[$account_type]}");
-					}
 					cache_delete(cache_system_key($order['uniacid'] . ':site_store_buy_modules'));
 					cache_build_account_modules($order['uniacid']);
 					itoast('支付成功!', $this->createWebUrl('orders', array('direct' => 1)), 'success');
@@ -613,6 +516,7 @@ class StoreModuleSite extends WeModuleSite {
 			}
 			$setting = setting_load ('store_pay');
 
+			$goods = pdo_get ('site_store_goods', array ('id' => $order['goodsid']));
 			$core_paylog = pdo_get('core_paylog', array('module' => 'store', 'status' => 0, 'module' => 'store', 'uniontid' => $order['orderid'], 'tid' => $order['id']));
 			if ($core_paylog['type'] == 'wechat') {
 				$wechat_setting = $setting['store_pay']['wechat'];
@@ -649,60 +553,7 @@ class StoreModuleSite extends WeModuleSite {
 		include $this->template ('goodsbuyer');
 	}
 
-	public function doWebBlacklist() {
-		global $_W, $_GPC;
-		$this->storeIsOpen();
-
-		$operation = trim($_GPC['operation']);
-		$operations = array('display', 'post', 'delete');
-		$operation = in_array($operation, $operations) ? $operation : 'display';
-
-		$blacklist = $this->store_setting['blacklist'];
-		if (empty($blacklist)) {
-			$blacklist = array();
-		}
-		if ($operation == 'display') {
-			include $this->template('blacklist');
-		}
-
-		if ($operation == 'post') {
-			$username = safe_gpc_string($_GPC['username']);
-			$user_exist = pdo_get('users', array('username' => $username));
-			if (empty($user_exist)) {
-				itoast('用户不存在！');
-			}
-			if (in_array($username, $blacklist)) {
-				itoast('用户已在黑名单中！');
-			}
-			array_push($blacklist, $username);
-			$this->store_setting['blacklist'] = $blacklist;
-			setting_save($this->store_setting, 'store');
-			cache_build_frame_menu();
-			itoast('更新黑名单成功！');
-		}
-
-		if ($operation == 'delete') {
-			$username = safe_gpc_string($_GPC['username']);
-			if (empty($username)) {
-				itoast('参数错误！');
-			}
-			if (!in_array($username, $blacklist)) {
-				itoast('用户不在黑名单中！');
-			}
-			foreach ($blacklist as $key => $val) {
-				if ($val == $username) {
-					unset($blacklist[$key]);
-				}
-			}
-			$this->store_setting['blacklist'] = $blacklist;
-			setting_save($this->store_setting, 'store');
-			cache_build_frame_menu();
-			itoast('删除成功！');
-		}
-	}
-
 	public function leftMenu() {
-		$this->storeIsOpen();
 		$menu = array(
 			'store_goods' => array(
 				'title' => '商品分类',
@@ -743,18 +594,6 @@ class StoreModuleSite extends WeModuleSite {
 						'icon' => 'wi wi-appjurisdiction',
 						'type' => STORE_TYPE_PACKAGE,
 					),
-					'store_goods_account_renew' => array(
-						'title' => '公众号续费',
-						'url' => $this->createWebUrl('goodsbuyer', array('direct' => 1,  'type' => STORE_TYPE_ACCOUNT_RENEW)),
-						'icon' => 'wi wi-appjurisdiction',
-						'type' => STORE_TYPE_ACCOUNT_RENEW,
-					),
-					'store_goods_wxapp_renew' => array(
-						'title' => '小程序续费',
-						'url' => $this->createWebUrl('goodsbuyer', array('direct' => 1,  'type' => STORE_TYPE_WXAPP_RENEW)),
-						'icon' => 'wi wi-appjurisdiction',
-						'type' => STORE_TYPE_WXAPP_RENEW,
-					),
 				),
 			),
 			'store_manage' => array(
@@ -779,12 +618,6 @@ class StoreModuleSite extends WeModuleSite {
 						'icon' => 'wi wi-account',
 						'type' => 'paySetting',
 					),
-					'store_manage_blacklist' => array(
-						'title' => '黑名单',
-						'url' => $this->createWebUrl('blacklist', array('direct' => 1)),
-						'icon' => 'wi wi-blacklist',
-						'type' => 'blacklist',
-					),
 				)
 			),
 			'store_orders' => array(
@@ -798,23 +631,11 @@ class StoreModuleSite extends WeModuleSite {
 					),
 				),
 			),
-			'store_payments' => array(
-				'title' => '收入明细',
-				'menu' => array(
-					'payments' => array (
-						'title' => '收入明细',
-						'url' => $this->createWebUrl('payments', array('direct' => 1)),
-						'icon' => 'wi wi-sale-record',
-						'type' => 'payments',
-					)
-				)
-			),
 		);
 		return $menu;
 	}
 
 	public function doWebPay() {
-		$this->storeIsOpen();
 		global $_GPC, $_W;
 		$operate = $_GPC['operate'];
 		$operates = array ('check_pay_result');
@@ -829,17 +650,6 @@ class StoreModuleSite extends WeModuleSite {
 				iajax(2);
 			}
 		}
-	}
-
-	public function doWebPayments() {
-		global $_W, $_GPC;
-		$pindex = max(1, $_GPC['page']);
-		$pagesize = 20;
-		$store_table = table('store');
-		$payments_list = $store_table->searchPaymentsOrder();
-		$pager = pagination(count($payments_list), $pindex, $pagesize);
-		$payments_list = array_slice($payments_list, ($pindex - 1) * $pagesize, $pagesize);
-		include $this->template ('goodspayments');
 	}
 
 }

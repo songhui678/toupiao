@@ -14,13 +14,7 @@
 			<th class="text-left">用户名</th>
 			<th>权限身份</th>
 			<th class="text-right">
-<<<<<<< HEAD
-				{if $_W['isfounder'] && $_W['user']['founder_groupid'] != ACCOUNT_MANAGE_GROUP_VICE_FOUNDER}<span class="btn btn-link color-default" data-toggle="modal" data-target="#user-vice-modal">添加副创始人</span>{/if}
-=======
-				
-				{if permission_check_account_user('see_account_manage_users_add_viceuser')}<span class="btn btn-link color-default" data-toggle="modal" data-target="#user-vice-modal">添加副创始人</span>{/if}
-				
->>>>>>> parent of 775f72a... 654
+				{if $_W['isfounder'] && uni_user_see_more_info(ACCOUNT_MANAGE_NAME_VICE_FOUNDER, false)}<span class="btn btn-link color-default" data-toggle="modal" data-target="#user-vice-modal">添加副创始人</span>{/if}
 				{if $_W['isfounder'] && empty($owner['uid'])}<span class="btn btn-link color-default" data-toggle="modal" data-target="#owner-modal">添加主管理员</span>{/if}
 				<span class="btn btn-link color-default" data-toggle="modal" data-target="#user-modal">添加使用者</span>
 			</th>
@@ -31,29 +25,14 @@
 			<td ng-if="permission.role == 'owner' && permission.isfounder == 0">主管理员</td>
 			<td ng-if="permission.role == 'manager' && permission.isfounder == 0">管理员</td>
 			<td ng-if="permission.role == 'operator' && permission.isfounder == 0">操作员</td>
-			
 			<td ng-if="permission.role == 'vice_founder' && permission.isfounder == 0">副创始人</td>
-			
 			<td  class="we7-padding-right text-right">
 				<div class="link-group">
 					<a href="javascript:;" ng-if="permission.isfounder == 1">创始人拥有系统最高权限 </a>
 					{if $_W['isfounder']}<a href="javascript:;" ng-if="permission.role == 'owner' && permission.isfounder == 0" ng-click="changeOwner(permission.username)">修改</a>{/if}
-<<<<<<< HEAD
-					{if $_W['isfounder'] && $_W['user']['founder_groupid'] != ACCOUNT_MANAGE_GROUP_VICE_FOUNDER}<a href="javascript:;" ng-if="permission.role == 'vice_founder' && permission.isfounder == 0" ng-click="changeVice(permission.username)">修改</a>{/if}
+					{if $_W['isfounder'] && uni_user_see_more_info(ACCOUNT_MANAGE_NAME_VICE_FOUNDER, false)}<a href="javascript:;" ng-if="permission.role == 'vice_founder' && permission.isfounder == 0" ng-click="changeVice(permission.username)">修改</a>{/if}
 					<a href="javascript:;" ng-if="permission.isfounder == 0 && (((state == 'founder' || state == 'owner') && (permission.role == 'manager' || permission.role == 'operator')) || (state == 'manager' && permission.role == 'operator'))" ng-click="setPermission(permission.uid)">权限设置  </a>
 					<a href="javascript:;" ng-if="permission.isfounder == 0 && (((state == 'founder' || state == 'owner') && (permission.role == 'manager' || permission.role == 'operator')) || (state == 'manager' && permission.role == 'operator'))" ng-click="delPermission(permission.uid)">删除 </a>
-=======
-					
-					{if permission_check_account_user('see_account_manage_users_edit')}<a href="javascript:;" ng-if="permission.role == 'vice_founder' && permission.isfounder == 0" ng-click="changeVice(permission.username)">修改</a>{/if}
-					
-					<a href="javascript:;" ng-if="permission.isfounder == 0 && (((state == 'founder' || state == 'vice_founder' || state == 'owner') && (permission.role == 'manager' || permission.role == 'operator')) || (state == 'manager' && permission.role == 'operator'))" ng-click="setPermission(permission.uid)">权限设置  </a>
-
-					
-						<a href="javascript:;" ng-if="permission.isfounder == 0 && (((state == 'founder' || state == 'vice_founder' || state == 'owner') && (permission.role == 'manager' || permission.role == 'operator')) || (state == 'manager' && permission.role == 'operator') || (state == 'founder' && (permission.role == 'vice_founder' || permission.role == 'owner')) || (state == 'vice_founder' && permission.role == 'owner'))" ng-click="delPermission(permission.uid)">删除 </a>
-					
-
-					
->>>>>>> parent of 775f72a... 654
 				</div>
 			</td>
 		</tr>
@@ -99,7 +78,6 @@
 							<label for="addtype-1" class="radio-inline">操作员</label>
 							<input class="addtype2" type="radio" id="addtype-2" name="addtype" value="{ACCOUNT_MANAGE_TYPE_MANAGER}">
 							<label class="radio-inline" for="addtype-2">管理员</label>
-							{if permission_check_account_user('see_account_manage_users_adduser')}<a style="float: right" class="color-default" target = '_blank' href="{url 'user/create'}">+添加用户</a>{/if}
 						</div>
 					</div>
 					<div class="form-group">

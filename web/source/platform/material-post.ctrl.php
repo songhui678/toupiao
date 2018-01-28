@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 load()->func('file');
@@ -10,7 +10,7 @@ load()->model('account');
 $dos = array('news', 'tomedia', 'addnews', 'upload_material', 'upload_news');
 $do = in_array($do, $dos) ? $do : 'news';
 
-uni_user_permission_check('platform_material');
+permission_check_account_user('platform_material');
 
 $_W['page']['title'] = '新增素材-微信素材';
 

@@ -1,19 +1,15 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 load()->model('material');
 load()->model('mc');
-load()->model('account');
-load()->model('attachment');
 load()->func('file');
 
 $dos = array('display', 'sync', 'delete', 'send');
 $do = in_array($do, $dos) ? $do : 'display';
-
-uni_user_permission_check('platform_material');
 
 $_W['page']['title'] = '永久素材-微信素材';
 
@@ -82,10 +78,6 @@ if ($do == 'display') {
 }
 
 if ($do == 'delete') {
-	if(isset($_GPC['uniacid'])) { 		$requniacid = intval($_GPC['uniacid']);
-		attachment_reset_uniacid($requniacid);
-	}
-
 	$material_id = intval($_GPC['material_id']);
 	$server = $_GPC['server'] == 'local' ? 'local' : 'wechat';
 	$type = trim($_GPC['type']);
@@ -128,6 +120,9 @@ if ($do == 'sync') {
 		if (empty($original_newsid)) {
 			$original_newsid = array();
 		}
+		$original_newsid = array_filter($original_newsid, function($item){
+			return is_int($item);
+		});
 	}
 	$delete_id = array_diff($original_newsid, $wechat_existid);
 	if (!empty($delete_id) && is_array($delete_id)) {

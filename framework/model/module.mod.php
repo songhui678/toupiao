@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -54,38 +54,32 @@ function module_types() {
 
 
 function module_entries($name, $types = array(), $rid = 0, $args = null) {
+	load()->func('communication');
+
 	global $_W;
-	
-		$ts = array('rule', 'cover', 'menu', 'home', 'profile', 'shortcut', 'function', 'mine', 'system_welcome');
-	
-	
+	$ts = array('rule', 'cover', 'menu', 'home', 'profile', 'shortcut', 'function', 'mine');
 	if(empty($types)) {
 		$types = $ts;
 	} else {
 		$types = array_intersect($types, $ts);
 	}
-	$bindings = pdo_getall('modules_bindings', array('module' => $name, 'entry' => $types), array(), '', 'eid ASC');
+	$bindings = pdo_getall('modules_bindings', array('module' => $name, 'entry' => $types), array(), '', 'displayorder DESC, eid ASC');
 	$entries = array();
 	foreach($bindings as $bind) {
 		if(!empty($bind['call'])) {
-			$extra = array();
-			$extra['Host'] = $_SERVER['HTTP_HOST'];
-			load()->func('communication');
-			$urlset = parse_url($_W['siteurl']);
-			$urlset = pathinfo($urlset['path']);
-			$response = ihttp_request($_W['sitescheme'] . '127.0.0.1/'. $urlset['dirname'] . '/' . url('utility/bindcall', array('modulename' => $bind['module'], 'callname' => $bind['call'], 'args' => $args, 'uniacid' => $_W['uniacid'])), array(), $extra);
+			$response = ihttp_request(url('utility/bindcall', array('modulename' => $bind['module'], 'callname' => $bind['call'], 'args' => $args, 'uniacid' => $_W['uniacid'])), array(), $extra);
 			if (is_error($response)) {
 				continue;
 			}
 			$response = json_decode($response['content'], true);
-			$ret = $response['message'];
+			$ret = $response['message']['message'];
 			if(is_array($ret)) {
-				foreach($ret as $et) {
+				foreach($ret as $i => $et) {
 					if (empty($et['url'])) {
 						continue;
 					}
 					$et['url'] = $et['url'] . '&__title=' . urlencode($et['title']);
-					$entries[$bind['entry']][] = array('title' => $et['title'], 'do' => $et['do'], 'url' => $et['url'], 'from' => 'call', 'icon' => $et['icon'], 'displayorder' => $et['displayorder']);
+					$entries[$bind['entry']][] = array('eid' => 'user_' . $i, 'title' => $et['title'], 'do' => $et['do'], 'url' => $et['url'], 'from' => 'call', 'icon' => $et['icon'], 'displayorder' => $et['displayorder']);
 				}
 			}
 		} else {
@@ -114,10 +108,6 @@ function module_entries($name, $types = array(), $rid = 0, $args = null) {
 			if($bind['entry'] == 'shortcut') {
 				$url = murl("entry", array('eid' => $bind['eid']));
 			}
-			if($bind['entry'] == 'system_welcome') {
-				$url = wurl("site/entry", array('eid' => $bind['eid']));
-			}
-
 			if(empty($bind['icon'])) {
 				$bind['icon'] = 'fa fa-puzzle-piece';
 			}
@@ -259,13 +249,11 @@ function module_save_group_package($package) {
 }
 
 function module_fetch($name) {
-	load()->object('cloudapi');
 	global $_W;
 	$cachekey = cache_system_key(CACHE_KEY_MODULE_INFO, $name);
 	$module = cache_load($cachekey);
 	if (empty($module)) {
-		$sql = 'SELECT * FROM '. tablename('modules') . " as a LEFT JOIN" . tablename('modules_recycle') . " as b ON a.name = b.modulename WHERE a.name = :name AND b.modulename is NULL";
-		$module_info = pdo_fetch($sql, array(':name' => $name));
+		$module_info = pdo_get('modules', array('name' => $name));
 		if (empty($module_info)) {
 			return array();
 		}
@@ -293,8 +281,8 @@ function module_fetch($name) {
 				$module_info['plugin_list'] = array_keys ($module_info['plugin_list']);
 			}
 		}
-		if ($module_info['app_support'] != MODULE_SUPPORT_ACCOUNT && $module_info['wxapp_support'] != MODULE_SUPPORT_WXAPP && $module_info['webapp_support'] != MODULE_SUPPORT_WEBAPP && $module_info['welcome_support'] != MODULE_SUPPORT_SYSTEMWELCOME) {
-			$module_info['app_support'] = MODULE_SUPPORT_ACCOUNT;
+		if ($module_info['app_support'] != 2 && $module_info['wxapp_support'] != 2) {
+			$module_info['app_support'] = 2;
 		}
 		$module_info['is_relation'] = $module_info['app_support'] ==2 && $module_info['wxapp_support'] == 2 ? true : false;
 		$module_ban = setting_load('module_ban');
@@ -325,48 +313,14 @@ function module_fetch($name) {
 }
 
 
-<<<<<<< HEAD
-function module_build_privileges() {
-	load()->model('account');
-	$uniacid_arr = pdo_fetchall("SELECT uniacid FROM " . tablename('uni_account'));
-	foreach($uniacid_arr as $row){
-		$modules = uni_modules_by_uniacid($row['uniacid'], false);
-				$mymodules = pdo_getall('uni_account_modules', array('uniacid' => $row['uniacid']), array('module'), 'module');
-		$mymodules = array_keys($mymodules);
-		foreach($modules as $module){
-			if(!in_array($module['name'], $mymodules) && empty($module['issystem'])) {
-				$data = array();
-				$data['uniacid'] = $row['uniacid'];
-				$data['module'] = $module['name'];
-				$data['enabled'] = 1;
-				$data['settings'] = '';
-				pdo_insert('uni_account_modules', $data);
-			}
-		}
-	}
-	return true;
-}
-
-
-
-function module_get_all_unistalled($status)  {
-	global $_GPC;
-=======
-function module_get_all_unistalled($status, $cache = true, $module_type = '')  {
->>>>>>> parent of 775f72a... 654
+function module_get_all_unistalled($status, $cache = true)  {
 	load()->func('communication');
 	load()->model('cloud');
 	load()->classs('cloudapi');
 	$status = $status == 'recycle' ? 'recycle' : 'uninstalled';
-<<<<<<< HEAD
 	$uninstallModules =  cache_load(cache_system_key('module:all_uninstall'));
-	if ($_GPC['c'] == 'system' && $_GPC['a'] == 'module' && $_GPC['do'] == 'not_installed' && $status == 'uninstalled') {
-		$cloud_api = new CloudApi();
-=======
-	$cloud_api = new CloudApi();
-	$uninstallModules = cache_load(cache_system_key('module:all_uninstall'));
 	if (!$cache && $status == 'uninstalled') {
->>>>>>> parent of 775f72a... 654
+		$cloud_api = new CloudApi();
 		$get_cloud_m_count = $cloud_api->get('site', 'stat', array('module_quantity' => 1), 'json');
 		$cloud_m_count = $get_cloud_m_count['module_quantity'];
 	} else {
@@ -374,47 +328,29 @@ function module_get_all_unistalled($status, $cache = true, $module_type = '')  {
 			$cloud_m_count = $uninstallModules['cloud_m_count'];
 		}
 	}
-<<<<<<< HEAD
-	if (empty($uninstallModules['modules']) || intval($uninstallModules['cloud_m_count']) !== intval($cloud_m_count) || is_error($get_cloud_m_count)) {
-		$uninstallModules = cache_build_uninstalled_module();
-	}
-	if (ACCOUNT_TYPE == ACCOUNT_TYPE_APP_NORMAL) {
-		$uninstallModules['modules'] = (array)$uninstallModules['modules'][$status]['wxapp'];
-		$uninstallModules['module_count'] = $uninstallModules['wxapp_count'];
-		return $uninstallModules;
-	} elseif (ACCOUNT_TYPE == ACCOUNT_TYPE_OFFCIAL_NORMAL) {
-		$uninstallModules['modules'] = (array)$uninstallModules['modules'][$status]['app'];
-		$uninstallModules['module_count'] = $uninstallModules['app_count'];
-		return $uninstallModules;
-	} else {
-		return $uninstallModules;
-=======
 	if (ACCOUNT_TYPE == ACCOUNT_TYPE_APP_NORMAL) {
 		$account_type = 'wxapp';
 	} elseif (ACCOUNT_TYPE == ACCOUNT_TYPE_OFFCIAL_NORMAL) {
 		$account_type = 'app';
-	} elseif (ACCOUNT_TYPE == ACCOUNT_TYPE_WEBAPP_NORMAL) {
-		$account_type = 'webapp';
-	} else {
-		$account_type = 'system_welcome';
-	}
-	if (!empty($module_type)) {
-		$account_type = $module_type;
 	}
 	if (!is_array($uninstallModules) || empty($uninstallModules['modules'][$status][$account_type]) || intval($uninstallModules['cloud_m_count']) !== intval($cloud_m_count) || is_error($get_cloud_m_count)) {
 		$uninstallModules = cache_build_uninstalled_module();
 	}
+
 	if (!empty($account_type)) {
 		$uninstallModules['modules'] = (array)$uninstallModules['modules'][$status][$account_type];
 		$uninstallModules['module_count'] = $uninstallModules[$account_type . '_count'];
->>>>>>> parent of 775f72a... 654
 	}
+	return $uninstallModules;
 }
 
 
 function module_permission_fetch($name) {
 	$module = module_fetch($name);
 	$data = array();
+	if ($module['permissions']) {
+		$data[] = array('title' => '权限设置', 'permission' => $name.'_permissions');
+	}
 	if($module['settings']) {
 		$data[] = array('title' => '参数设置', 'permission' => $name.'_settings');
 	}
@@ -454,12 +390,12 @@ function module_permission_fetch($name) {
 
 function module_uninstall($module_name, $is_clean_rule = false) {
 	global $_W;
-	load()->object('cloudapi');
+	load()->model('cloud');
 	if (empty($_W['isfounder'])) {
 		return error(1, '您没有卸载模块的权限！');
 	}
 	$module_name = trim($module_name);
-	$module = pdo_get('modules', array('name' => $module_name));
+	$module = module_fetch($module_name);
 	if (empty($module)) {
 		return error(1, '模块已经被卸载或是不存在！');
 	}
@@ -469,31 +405,12 @@ function module_uninstall($module_name, $is_clean_rule = false) {
 	if (!empty($module['plugin_list'])) {
 		pdo_delete('modules_plugin', array('main_module' => $module_name));
 	}
-
-	pdo_delete('uni_account_modules', array('module' => $module_name));
-	cache_delete(cache_system_key('module:all_uninstall'));
-	ext_module_clean($module_name, $is_clean_rule);
-	cache_build_module_subscribe_type();
-	cache_build_uninstalled_module();
-	cache_build_module_info($module_name);
-
-	return true;
-}
-
-
-function module_execute_uninstall_script($module_name) {
-	global $_W;
-	load()->object('cloudapi');
-	load()->model('cloud');
-	if (empty($_W['isfounder'])) {
-		return error(1, '您没有卸载模块的权限！');
-	}
 	$modulepath = IA_ROOT . '/addons/' . $module_name . '/';
 	$manifest = ext_module_manifest($module_name);
 	if (empty($manifest)) {
-		$result = cloud_prepare();
-		if (is_error($result)) {
-			return error(1, $result['message']);
+		$r = cloud_prepare();
+		if (is_error($r)) {
+			itoast($r['message'], url('cloud/profile'), 'error');
 		}
 		$packet = cloud_m_build($module_name, 'uninstall');
 		if ($packet['sql']) {
@@ -504,24 +421,22 @@ function module_execute_uninstall_script($module_name) {
 			require($uninstall_file);
 			unlink($uninstall_file);
 		}
-	} else {
-		if (!empty($manifest['uninstall'])) {
-			if (strexists($manifest['uninstall'], '.php')) {
-				if (file_exists($modulepath . $manifest['uninstall'])) {
-					require($modulepath . $manifest['uninstall']);
-				}
-			} else {
-				pdo_run($manifest['uninstall']);
+	} elseif (!empty($manifest['uninstall'])) {
+		if (strexists($manifest['uninstall'], '.php')) {
+			if (file_exists($modulepath . $manifest['uninstall'])) {
+				require($modulepath . $manifest['uninstall']);
 			}
+		} else {
+			pdo_run($manifest['uninstall']);
 		}
 	}
-	pdo_delete('modules_recycle', array('modulename' => $module_name));
-	$cloudapi = new CloudApi();
-	$recycle_module = $cloudapi->post('cache', 'get', array('key' => cache_system_key('recycle_module:')));
-	$recycle_module = !empty($recycle_module['data']) ? $recycle_module['data'] : array();
-	unset($recycle_module[$module_name]);
-	$cloudapi->post('cache', 'set', array('key' => cache_system_key('recycle_module:'), 'value' => $recycle_module));
-	cache_delete(cache_system_key('module:all_uninstall'));
+	pdo_insert('modules_recycle', array('modulename' => $module_name));
+	pdo_delete('uni_account_modules', array('module' => $module_name));
+	ext_module_clean($module_name, $is_clean_rule);
+	cache_build_module_subscribe_type();
+	cache_build_uninstalled_module();
+	cache_build_module_info($module_name);
+
 	return true;
 }
 
@@ -651,49 +566,6 @@ function module_upgrade_new($type = 'account') {
 }
 
 
-function module_exist_in_account($module_name, $uniacid) {
-	global $_W;
-	$result = false;
-	$module_name = trim($module_name);
-	$uniacid = intval($uniacid);
-	if (empty($module_name) || empty($uniacid)) {
-		return $result;
-	}
-	$founders = explode(',', $_W['config']['setting']['founder']);
-	$owner_uid = pdo_getcolumn('uni_account_users',  array('uniacid' => $uniacid, 'role' => 'owner'), 'uid');
-	if (!empty($owner_uid) && !in_array($owner_uid, $founders)) {
-		$packageids = pdo_getall('uni_account_group', array('uniacid' => $uniacid), array('groupid'), 'groupid');
-		$packageids = array_keys($packageids);
-		if (IMS_FAMILY == 'x') {
-			$site_store_buy_goods = uni_site_store_buy_goods($uniacid);
-			$site_store_buy_package = table('store')->searchUserBuyPackage($uniacid);
-			$packageids = array_merge($packageids, array_keys($site_store_buy_package));
-		} else {
-			$site_store_buy_goods = array();
-		}
-		if (!in_array('-1', $packageids)) {
-			$uni_modules = array();
-			$uni_groups = pdo_fetchall("SELECT `modules` FROM " . tablename('uni_group') . " WHERE " .  "id IN ('".implode("','", $packageids)."') OR " . " uniacid = '{$uniacid}'");
-			if (!empty($uni_groups)) {
-				foreach ($uni_groups as $group) {
-					$group_module = (array)iunserializer($group['modules']);
-					$uni_modules = array_merge($group_module, $uni_modules);
-				}
-			}
-			$user_modules = user_modules($owner_uid);
-			$modules = array_merge(array_keys($user_modules), $uni_modules, $site_store_buy_goods);
-			$result = in_array($module_name, $modules) ? true : false;
-		} else {
-			$result = true;
-		}
-	} else {
-		$result = true;
-	}
-	return $result;
-}
-
-
-
 function module_get_user_account_list($uid, $module_name) {
 	$accounts_list = array();
 	$uid = intval($uid);
@@ -705,12 +577,10 @@ function module_get_user_account_list($uid, $module_name) {
 	if (empty($module_info)) {
 		return $accounts_list;
 	}
-
-	$account_users_info = table('account')->userOwnedAccount($uid);
-	if (empty($account_users_info)) {
+	$accounts = user_account_detail_info($uid);
+	if (empty($accounts)) {
 		return $accounts_list;
 	}
-<<<<<<< HEAD
 	if (!empty($accounts['wxapp'])) {
 		foreach ($accounts['wxapp'] as $wxapp_value) {
 			if (empty($wxapp_value['uniacid'])) {
@@ -718,7 +588,7 @@ function module_get_user_account_list($uid, $module_name) {
 			}
 			$wxapp_modules = uni_modules_by_uniacid($wxapp_value['uniacid']);
 			$wxapp_modules = array_keys($wxapp_modules);
-			$module_permission_exist = uni_user_menu_permission($uid, $wxapp_value['uniacid'], $module_name);
+			$module_permission_exist = permission_account_user_menu($uid, $wxapp_value['uniacid'], $module_name);
 			if (in_array($module_name, $wxapp_modules) && (in_array('all',$module_permission_exist) || !empty($module_permission_exist))) {
 				$accounts_list[$wxapp_value['uniacid']] = $wxapp_value;
 			}
@@ -731,27 +601,20 @@ function module_get_user_account_list($uid, $module_name) {
 			}
 			$wechat_modules = uni_modules_by_uniacid($wechat_value['uniacid']);
 			$wechat_modules = array_keys($wechat_modules);
-			$module_permission_exist = uni_user_menu_permission($uid, $wxapp_value['uniacid'], $module_name);
+			$module_permission_exist = permission_account_user_menu($uid, $wxapp_value['uniacid'], $module_name);
 			if (in_array($module_name, $wechat_modules) && (in_array('all',$module_permission_exist) || !empty($module_permission_exist))) {
 				$accounts_list[$wechat_value['uniacid']] = $wechat_value;
 			}
-=======
-	$accounts = array();
-	foreach ($account_users_info as $account) {
-		if (empty($account['uniacid'])) {
+		}
+	}
+
+	foreach ($accounts_list as $key => $account_value) {
+		if ($module_info['wxapp_support'] == MODULE_SUPPORT_WXAPP && $module_info['app_support'] == MODULE_SUPPORT_ACCOUNT) {
 			continue;
-		}
-		$uniacid = 0;
-		if (($account['type'] == ACCOUNT_TYPE_OFFCIAL_NORMAL || $account['type'] == ACCOUNT_TYPE_OFFCIAL_AUTH) && $module_info['app_support'] == MODULE_SUPPORT_ACCOUNT) {
-			$uniacid = $account['uniacid'];
-		} elseif ($account['type'] == ACCOUNT_TYPE_APP_NORMAL && $module_info['wxapp_support'] == MODULE_SUPPORT_WXAPP) {
-			$uniacid = $account['uniacid'];
->>>>>>> parent of 775f72a... 654
-		}
-		if (!empty($uniacid)) {
-			if (module_exist_in_account($module_name, $uniacid)) {
-				$accounts_list[$uniacid] = $account;
-			}
+		} elseif ($module_info['wxapp_support'] == MODULE_SUPPORT_WXAPP && $account_value['type'] != ACCOUNT_TYPE_APP_NORMAL) {
+			unset($accounts_list[$key]);
+		} elseif ($module_info['app_support'] == MODULE_SUPPORT_ACCOUNT && !in_array($account_value['type'], array(ACCOUNT_TYPE_OFFCIAL_NORMAL, ACCOUNT_TYPE_OFFCIAL_AUTH))) {
+			unset($accounts_list[$key]);
 		}
 	}
 
@@ -875,8 +738,6 @@ function module_save_switch($module_name, $uniacid = 0, $version_id = 0) {
 }
 
 
-
-
 function module_last_switch($module_name) {
 	global $_GPC;
 	$module_name = trim($module_name);
@@ -887,8 +748,6 @@ function module_last_switch($module_name) {
 	$cache_lastaccount = (array)cache_load($cache_key);
 	return $cache_lastaccount[$module_name];
 }
-<<<<<<< HEAD
-=======
 
 
 function module_clerk_info($module_name) {
@@ -912,11 +771,3 @@ function module_clerk_info($module_name) {
 	}
 	return $user_permissions;
 }
-
-
-function module_rank_top($module_name) {
-	global $_W;
-	$result = table('module')->moduleSetRankTop($module_name);
-	return empty($result) ? true : false;
-}
->>>>>>> parent of 775f72a... 654

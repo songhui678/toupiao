@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 class PaycenterModuleSite extends WeModuleSite {
@@ -92,7 +92,7 @@ class PaycenterModuleSite extends WeModuleSite {
 	public function doMobileHome() {
 		global $_W, $_GPC;
 		paycenter_check_login();
-		$user_permission = uni_user_permission('system');
+		$user_permission = permission_account_user('system');
 		$today_revenue = $this->revenue(0);
 		$yesterday_revenue = $this->revenue(-1);
 		$seven_revenue = $this->revenue(-7);

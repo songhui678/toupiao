@@ -7,8 +7,6 @@
 		<li {if $type == STORE_TYPE_WXAPP}class="active"{/if}><a href="{php echo $this->createWebUrl('goodsSeller', array('type' => STORE_TYPE_WXAPP,'direct' => '1'))}">小程序个数</a></li>
 		<li {if $type == STORE_TYPE_API}class="active"{/if}><a href="{php echo $this->createWebUrl('goodsSeller', array('type' => STORE_TYPE_API,'direct' => '1'))}">API浏览次数</a></li>
 		<li {if $type == STORE_TYPE_PACKAGE}class="active"{/if}><a href="{php echo $this->createWebUrl('goodsSeller', array('type' => STORE_TYPE_PACKAGE,'direct' => '1'))}">应用权限组</a></li>
-		<li {if $type == STORE_TYPE_ACCOUNT_RENEW}class="active"{/if}><a href="{php echo $this->createWebUrl('goodsSeller', array('type' => STORE_TYPE_ACCOUNT_RENEW,'direct' => '1'))}">公众号续费</a></li>
-		<li {if $type == STORE_TYPE_WXAPP_RENEW}class="active"{/if}><a href="{php echo $this->createWebUrl('goodsSeller', array('type' => STORE_TYPE_WXAPP_RENEW,'direct' => '1'))}">小程序续费</a></li>
 	</ul>
 	{if in_array($type, array(STORE_TYPE_MODULE, STORE_TYPE_WXAPP_MODULE))}
 	<form action="" class="form-inline clearfix we7-margin-bottom" method="post">
@@ -29,8 +27,6 @@
 	<a class="pull-right btn btn-primary" href="javascript:;" data-toggle="modal" data-target="#add_api">添加</a>
 	{elseif $_GPC['type'] == STORE_TYPE_PACKAGE}
 	<a class="pull-right btn btn-primary" href="{php echo $this->createWebUrl('goodspost', array('direct' => 1, 'type' => STORE_TYPE_PACKAGE))}">添加</a>
-	{else}
-	<a class="pull-right btn btn-primary" href="{php echo $this->createWebUrl('goodspost', array('direct' => 1, 'type' => $type))}">添加</a>
 	{/if}
 	<div class="btn-group we7-btn-group we7-margin-bottom">
 		<a href="{php echo $this->createWebUrl('goodsSeller', array('direct' => 1, 'type' => $type))}" class="btn" ng-class="{'active': status}">已上架</a>
@@ -52,7 +48,7 @@
 			<td>
 				{if $_GPC['type'] == STORE_TYPE_API}
 				<div class="icon icon-api"><span class="wi wi-api"></span></div>
-				{elseif in_array($_GPC['type'], array(STORE_TYPE_PACKAGE, STORE_TYPE_ACCOUNT, STORE_TYPE_WXAPP, STORE_TYPE_ACCOUNT_RENEW, STORE_TYPE_WXAPP_RENEW))}
+				{elseif in_array($_GPC['type'], array(STORE_TYPE_PACKAGE, STORE_TYPE_ACCOUNT, STORE_TYPE_WXAPP))}
 				<div class="icon icon-api"><span class="wi wi-appjurisdiction"></span></div>
 				{else}
 				<img src="{$goods['module_info']['logo']}" alt="" width="60" height="60"/>
@@ -71,15 +67,7 @@
 					{/if}</div>
 				<div class="color-gray text-over" style="width:460px">{$good['description']}</div>
 			</td>
-			<td>
-				{$goods['price']}元 /
-				{if $goods['unit'] == 'month'}{if $type == STORE_TYPE_ACCOUNT_RENEW}{$goods['account_num']}{elseif $type == STORE_TYPE_WXAPP_RENEW}{$goods['wxapp_num']}{/if}月
-				{elseif $goods['unit'] == 'ten_thousand'}
-				{$goods['api_num']}万次
-				{elseif $goods['unit'] == 'day'}{if $type == STORE_TYPE_ACCOUNT_RENEW}{$goods['account_num']}{elseif $type == STORE_TYPE_WXAPP_RENEW}{$goods['wxapp_num']}{/if}天
-				{elseif $goods['unit'] == 'year'}{if $type == STORE_TYPE_ACCOUNT_RENEW}{$goods['account_num']}{elseif $type == STORE_TYPE_WXAPP_RENEW}{$goods['wxapp_num']}{/if}年
-				{/if}
-			</td>
+			<td>{$goods['price']}元 / {if $goods['unit'] == 'month'}月{elseif $goods['unit'] == 'ten_thousand'}{$goods['api_num']}万次{elseif $goods['unit'] == 'day'}天{elseif $goods['unit'] == 'year'}年{/if}</td>
 			<td ng-if="!status">
 				<div class="link-group">
 					<a href="{php echo $this->createWebUrl('goodspost', array('id' => $goods['id'], 'type' => $type, 'direct' => 1))}">编辑</a>

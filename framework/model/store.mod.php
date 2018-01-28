@@ -1,7 +1,7 @@
 <?php
 /**
- * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * [WECHAT 2018]
+ * [WECHAT  a free software]
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -114,7 +114,6 @@ function store_order_change_price($id, $price) {
 	if (user_is_vice_founder() || empty($_W['isfounder'])) {
 		return $result;
 	}
-	pdo_update('core_paylog', array('card_fee' => $price), array('module' => 'store', 'tid' => $id));
 	$result = pdo_update('site_store_order', array('amount' => $price, 'changeprice' => 1), array('id' => $id));
 	return $result;
 }

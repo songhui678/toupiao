@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 
 defined('IN_IA') or exit('Access Denied');
@@ -340,17 +340,17 @@ if ($do =='install') {
 		$module['settings'] = 2;
 	}
 	$module['title_initial'] = get_first_pinyin($module['title']);
-	if (pdo_insert('modules', $module)) {
-		if (strexists($manifest['install'], '.php')) {
-			if (file_exists($module_path . $manifest['install'])) {
-				include_once $module_path . $manifest['install'];
-				if (ONLINE_MODULE) {
-					unlink ($module_path . $manifest['install']);
-				}
+	if (strexists($manifest['install'], '.php')) {
+		if (file_exists($module_path . $manifest['install'])) {
+			include_once $module_path . $manifest['install'];
+			if (ONLINE_MODULE) {
+				unlink ($module_path . $manifest['install']);
 			}
-		} else {
-			pdo_run($manifest['install']);
 		}
+	} else {
+		pdo_run($manifest['install']);
+	}
+	if (pdo_insert('modules', $module)) {
 		if (ONLINE_MODULE) {
 			if (strexists($manifest['upgrade'], '.php') && file_exists($module_path . $manifest['upgrade'])) {
 				unlink($module_path . $manifest['upgrade']);
@@ -385,8 +385,8 @@ if ($do =='install') {
 		cache_build_module_subscribe_type();
 		cache_build_account_modules();
 		cache_build_uninstalled_module();
-		cache_build_module_info($module_name);
 		module_build_privileges();
+		cache_build_module_info($module_name);
 
 		if (empty($module_subscribe_success)) {
 			itoast('模块安装成功！模块订阅消息有错误，系统已禁用该模块的订阅消息，详细信息请查看', url('system/module/module_detail', array('name' => $module['name'])), 'tips');

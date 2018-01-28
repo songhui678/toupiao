@@ -1,7 +1,7 @@
-<?php
+<?php 
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -68,7 +68,7 @@ function reply_contnet_search($rid = 0) {
 	if (empty($rid)) {
 		return $result;
 	}
-	$modules = array('basic', 'images', 'news', 'music', 'voice', 'video');
+	$modules = array('basic', 'images', 'news', 'music', 'voice', 'video', 'wxcard');
 	$params = array(':rid' => $rid);
 	foreach ($modules as $key => $module) {
 		$sql = 'SELECT COUNT(*) FROM ' . tablename($module.'_reply') . ' WHERE `rid` = :rid';

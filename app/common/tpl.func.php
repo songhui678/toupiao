@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -156,17 +156,11 @@ function tpl_app_form_field_calendar($name, $values = array()) {
 			<script type="text/javascript">
 				$(document).on("tap", ".mui-calendar-picker", function(){
 					var $this = $(this);
-					util.datepicker({
-						type: "date", 
-						beginYear: 1910, 
-						endYear: 2060, 
-						selected : {
-							year : "' . $values['year'] . '", month : "' . $values['month'] . '", day : "' . $values['day'] . '"}
-						}, function(rs){
-							$this.val(rs.value)
-							.next().val(rs.y.text)
-							.next().val(rs.m.text)
-							.next().val(rs.d.text)
+					util.datepicker({type: "date", beginYear: 1960, endYear: 2016}, function(rs){
+						$this.val(rs.value)
+						.next().val(rs.y.text)
+						.next().val(rs.m.text)
+						.next().val(rs.d.text)
 					});
 				});
 			</script>';

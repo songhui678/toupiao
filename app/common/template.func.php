@@ -1,7 +1,7 @@
 <?php
 /**
- * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * [WECHAT 2018]
+ * [WECHAT  a free software]
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -44,7 +44,6 @@ function template_page($id, $flag = TEMPLATE_DISPLAY) {
 		$content .= '<style>body{background-color:'.$page['params'][0]['params']['bgColor'].' !important;}</style>';
 	}
 	$GLOBALS['bottom_menu'] = $page['params'][0]['property'][0]['params']['bottom_menu'];
-	$content .= '<script type="text/javascript"> var scale = 1, marginLeft, marginTop; var width = window.screen.width; var height = window.screen.height; width / height > 320 / 568 ? (scale = height / 568,  marginLeft = (width / scale - 320) / 2, width = "320px") : (scale = width / 320, marginTop = (height / scale - 568) / 2, width = "100%"); window != window.top && $(".container").css({width: "100%", height: "100%", overflow: "hidden", "transform-origin": "top left", transform: "scale(" + scale + ")"}); $(".container div").eq(0).css({"width" : width, "marginTop" : marginTop, "marginLeft": marginLeft}); $("meta[name='."'".'viewport'."'".']").attr("content", "width=320, initial-scale=" + scale + ", maximum-scale=" + scale + ", user-scalable=no"); </script>';
 	file_put_contents($compile, $content);
 	switch ($flag) {
 		case TEMPLATE_DISPLAY:
@@ -159,13 +158,12 @@ function template_parse($str) {
 	$str = preg_replace('/{([A-Z_\x7f-\xff][A-Z0-9_\x7f-\xff]*)}/s', '<?php echo $1;?>', $str);
 	$str = str_replace('{##', '{', $str);
 	$str = str_replace('##}', '}', $str);
-<<<<<<< HEAD
-=======
 
-	$business_stat_script = "</script><script type=\"text/javascript\" src=\"{$GLOBALS['_W']['siteroot']}app/index.php?i={$GLOBALS['_W']['uniacid']}&c=utility&a=visit&do=showjs&m={$GLOBALS['_W']['current_module']['name']}\">";
->>>>>>> parent of 775f72a... 654
+	$business_stat_script = $GLOBALS['_W']['current_module']['name'] ? "</script><script type=\"text/javascript\" src=\"{$GLOBALS['_W']['siteroot']}app/index.php?i={$GLOBALS['_W']['uniacid']}&c=utility&a=visit&do=showjs&m={$GLOBALS['_W']['current_module']['name']}\">" : '';
 	if (!empty($GLOBALS['_W']['setting']['remote']['type'])) {
-		$str = str_replace('</body>', "<script>var imgs = document.getElementsByTagName('img');for(var i=0, len=imgs.length; i < len; i++){imgs[i].onerror = function() {if (!this.getAttribute('check-src') && (this.src.indexOf('http://') > -1 || this.src.indexOf('https://') > -1)) {this.src = this.src.indexOf('{$GLOBALS['_W']['attachurl_local']}') == -1 ? this.src.replace('{$GLOBALS['_W']['attachurl_remote']}', '{$GLOBALS['_W']['attachurl_local']}') : this.src.replace('{$GLOBALS['_W']['attachurl_local']}', '{$GLOBALS['_W']['attachurl_remote']}');this.setAttribute('check-src', true);}}}</script></body>", $str);
+		$str = str_replace('</body>', "<script>var imgs = document.getElementsByTagName('img');for(var i=0, len=imgs.length; i < len; i++){imgs[i].onerror = function() {if (!this.getAttribute('check-src') && (this.src.indexOf('http://') > -1 || this.src.indexOf('https://') > -1)) {this.src = this.src.indexOf('{$GLOBALS['_W']['attachurl_local']}') == -1 ? this.src.replace('{$GLOBALS['_W']['attachurl_remote']}', '{$GLOBALS['_W']['attachurl_local']}') : this.src.replace('{$GLOBALS['_W']['attachurl_local']}', '{$GLOBALS['_W']['attachurl_remote']}');this.setAttribute('check-src', true);}}};{$business_stat_script}</script></body>", $str);
+	} else {
+		$str = str_replace('</body>', "<script>;{$business_stat_script}</script></body>", $str);
 	}
 	$str = "<?php defined('IN_IA') or exit('Access Denied');?>" . $str;
 	return $str;
@@ -266,14 +264,14 @@ function site_navs($params = array()) {
 		$condition['uniacid'] = $_W['uniacid'];
 		$condition['multiid'] = $multiid;
 		$fields = array('id', 'name', 'description', 'url', 'icon', 'css', 'position', 'module');
-		$navs = pdo_getall('site_nav', $condition, $fields, '', 'section ASC, displayorder DESC, id DESC');
+		$navs = pdo_getall('site_nav', $condition, $fields, '', array('section ASC', 'displayorder DESC', 'id DESC'));
 	} else {
 		$condition = array(
-					'parentid' => $cid,
-					'enabled' => 1,
-					'uniacid' => $_W['uniacid']
-				);
-		$navs = pdo_getall('site_category', $condition, array(), '', 'displayorder DESC, id DESC');
+			'parentid' => $cid,
+			'enabled' => 1,
+			'uniacid' => $_W['uniacid']
+		);
+		$navs = pdo_getall('site_category', $condition, array(), '', array('displayorder DESC', 'id DESC'));
 	}
 	if(!empty($navs)) {
 		foreach ($navs as &$row) {
@@ -322,18 +320,9 @@ function site_article($params = array()) {
 			$condition .= " AND ccate = :ccate ";
 			$pars[':ccate'] = $cid;
 		} else {
-<<<<<<< HEAD
-			$condition .= " AND pcate = :pcate";
-=======
-			$condition .= " AND pcate = :pcate AND (ccate = :ccate OR iscommend = '1')";
->>>>>>> parent of 775f72a... 654
+			$condition .= " AND pcate = :pcate AND ccate = :ccate ";
 			$pars[':pcate'] = $cid;
-		}
-	} else {
-		$category_list = pdo_getall('site_category', array('uniacid' => $_W['uniacid'], 'multiid' => $multiid), array(), 'id');
-		$category_list = implode(',', array_keys($category_list));
-		if (!empty($category_list)) {
-			$condition .= " AND (pcate IN (". $category_list .") OR ccate IN (". $category_list .") OR pcate = 0 AND ccate = 0)";
+			$pars[':ccate'] = ARTICLE_CCATE;
 		}
 	}
 	if ($iscommend == 'true') {
@@ -345,7 +334,7 @@ function site_article($params = array()) {
 	$sql = "SELECT * FROM ".tablename('site_article'). $condition. ' ORDER BY displayorder DESC, id DESC LIMIT ' . ($pindex - 1) * $psize .',' .$psize;
 	$result['list'] = pdo_fetchall($sql, $pars);
 	$total = pdo_fetchcolumn('SELECT COUNT(*) FROM ' . tablename('site_article') . $condition, $pars);
-	$result['pager'] = pagination($total, $pindex, $psize, '', array('before' => 0, 'after' => 0));
+	$result['pager'] = pagination($total, $pindex, $psize);
 	if (!empty($result['list'])) {
 		foreach ($result['list'] as &$row) {
 			if(empty($row['linkurl'])) {

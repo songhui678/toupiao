@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -114,11 +114,11 @@ class WeSessionMemcache extends WeSession {
 		$row['data'] = $data;
 		$row['expiretime'] = TIMESTAMP + WeSession::$expire;
 		
-		return cache_write($this->key($sessionid), $row);;
+		return cache_write($this->key($sessionid), $row);
 	}
 	
 	public function destroy($sessionid) {
-		return cache_clean($this->session_name);
+		return cache_write($this->key($sessionid), '');
 	}
 }
 

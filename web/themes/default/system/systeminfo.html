@@ -24,18 +24,23 @@
 			<th colspan="2" class="text-left">系统信息</th>
 		</tr>
 		<tr>
-			<td class="text-left">微擎程序版本</td>
+			<td class="text-left">维吧程序版本</td>
 			<td class="text-left">WeEngine {php echo IMS_VERSION;} Release {php echo IMS_RELEASE_DATE;} &nbsp; &nbsp;
-<<<<<<< HEAD
-				<a href="http://www.we7.cc" target="_blank" style="color: #428bca;">查看最新版本</a>
-=======
-				<a href="javascript:;" onclick="window.open('http://bbs.we7.cc/forum.php?mod=forumdisplay&fid=2&filter=typeid&typeid=8','_blank');" style="color: #428bca;">查看最新版本</a>
->>>>>>> parent of 775f72a... 654
+				<a href="http://维吧" target="_blank" style="color: #428bca;">查看最新版本</a>
 			</td>
 		</tr>
 		<tr>
 			<td class="text-left">产品系列</td>
-			<td class="text-left">{if IMS_FAMILY == 'v'} 您的产品是开源版, 没有购买商业授权, 不能用于商业用途 {else} 您的产品是商业版 {/if}
+			<td class="text-left">
+				{if IMS_FAMILY == 'v'}
+				您的产品是开源版, 没有购买商业授权, 不能用于商业用途
+				{elseif IMS_FAMILY == 's'}
+				您的产品是授权版
+				{elseif IMS_FAMILY == 'x'}
+				您的产品是商业版
+				{else}
+				您的产品是单版
+				{/if}
 			</td>
 		</tr>
 		<tr>
@@ -71,10 +76,28 @@
 			<td class="text-left">{$info['attach']['size']}</td>
 		</tr>
 	</table>
-<<<<<<< HEAD
 
-
-=======
->>>>>>> parent of 775f72a... 654
+	{if $_W['isfounder']}
+	<table class="table we7-table table-hover site-list">
+		<col width="150px" />
+		<col width="" />
+		<th colspan="2" class="text-left">维吧开发团队</th>
+		<tr>
+			<td class="text-left">版权所有</td>
+			<td>
+				<a href="http://www.we8.club/" target="_blank" style="color: #428bca;"><b>WE8</b></a>
+			</td>
+		</tr>
+		<tr>
+			<th>交流群①</th>
+			<td><a target="_blank" href="http://wp.qq.com/wpa/qunwpa?idkey=a7a43b45bcb3b73ebcee769f764d837dbae872fb01c339576cb016b11bea53eb">612339134</a></td>
+		</tr>
+		</tr>
+		<tr>
+			<th>交流群②</th>
+			<td><a target="_blank" href="http://wp.qq.com/wpa/qunwpa?idkey=a7a43b45bcb3b73ebcee769f764d837dbae872fb01c339576cb016b11bea53eb">612339134</a></td>
+		</tr>
+	</table>
+	{/if}
 </div>
 {template 'common/footer'}

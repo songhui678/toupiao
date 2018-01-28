@@ -1,11 +1,11 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 $_W['page']['title'] = '常用接入服务 - 常用接入服务 - 高级功能';
-uni_user_permission_check('platform_reply');
+permission_check_account_user('platform_reply');
 load()->model('module');
 load()->model('reply');
 $m = module_fetch('userapi');

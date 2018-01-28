@@ -1,12 +1,11 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
 $we7_system_menu = array();
-
 $we7_system_menu['account'] = array(
 	'title' => '公众号',
 	'icon' => 'wi wi-white-collar',
@@ -21,11 +20,11 @@ $we7_system_menu['account'] = array(
 					'icon' => 'wi wi-reply',
 					'permission_name' => 'platform_reply',
 					'sub_permission' => array(
-					),
+																																																																													),
 				),
 				'platform_menu' => array(
 					'title' => '自定义菜单',
-					'url' => url('platform/menu/post'),
+					'url' => url('platform/menu'),
 					'icon' => 'wi wi-custommenu',
 					'permission_name' => 'platform_menu',
 				),
@@ -35,7 +34,7 @@ $we7_system_menu['account'] = array(
 					'icon' => 'wi wi-qrcode',
 					'permission_name' => 'platform_qr',
 					'sub_permission' => array(
-					),
+																																																					),
 				),
 				'platform_mass_task' => array(
 					'title' => '定时群发',
@@ -48,17 +47,6 @@ $we7_system_menu['account'] = array(
 					'url' => url('platform/material'),
 					'icon' => 'wi wi-redact',
 					'permission_name' => 'platform_material',
-					'sub_permission' => array(
-						array(
-							'title' => '添加/编辑',
-							'url' => url('platform/material-post'),
-							'permission_name' => 'material_post',
-						),
-						array(
-							'title' => '删除',
-							'permission_name' => 'platform_material_delete',
-						),
-					),
 				),
 				'platform_site' => array(
 					'title' => '微官网-文章',
@@ -66,7 +54,7 @@ $we7_system_menu['account'] = array(
 					'icon' => 'wi wi-home',
 					'permission_name' => 'platform_site',
 					'sub_permission' => array(
-					),
+																																																					),
 				)
 			),
 		),
@@ -98,30 +86,17 @@ $we7_system_menu['account'] = array(
 				'profile' => array(
 					'title' => '参数配置',
 					'url' => url('profile/passport'),
-					'icon' => 'wi wi-parameter-stting',
+					'icon' => 'wi wi-parameter-setting',
 					'permission_name' => 'profile_setting',
 				),
 				'payment' => array(
 					'title' => '支付参数',
 					'url' => url('profile/payment'),
-<<<<<<< HEAD
-					'icon' => 'wi wi-parameter-stting',
-					'permission_name' => 'profile_setting',
-=======
 					'icon' => 'wi wi-pay-setting',
 					'permission_name' => 'profile_pay_setting',
 				),
-				
-				'bind_domain' => array(
-					'title' => '域名绑定',
-					'url' => url('profile/bind-domain'),
-					'icon' => 'wi wi-parameter-setting',
-					'permission_name' => 'profile_bind_domain',
-				),
-				
 			),
 		),
-		
 		'statistics' => array(
 			'title' => '统计',
 			'menu' => array(
@@ -130,19 +105,29 @@ $we7_system_menu['account'] = array(
 					'url' => url('statistics/app'),
 					'icon' => 'wi wi-api',
 					'permission_name' => 'statistics_app',
->>>>>>> parent of 775f72a... 654
 				),
 			),
 		),
-		
 	),
 );
-
 $we7_system_menu['wxapp'] = array(
 	'title' => '小程序',
 	'icon' => 'wi wi-small-routine',
 	'url' => url('wxapp/display/home'),
 	'section' => array(
+		'wxapp_entrance' => array(
+			'title' => '小程序入口',
+			'menu' => array(
+				'module_entrance_link' => array(
+					'title' => "入口页面",
+					'url' => url('wxapp/entrance-link'),
+					'is_display' => 1,
+					'icon' => 'wi wi-data-synchro',
+					'permission_name' => 'wxapp_entrance_link',
+				),
+			),
+			'is_display' => true,
+		),
 		'wxapp_module' => array(
 			'title' => '应用',
 			'menu' => array(),
@@ -153,7 +138,7 @@ $we7_system_menu['wxapp'] = array(
 			'menu' => array(
 				'module_link' => array(
 					'title' => "数据同步",
-					'url' => url('wxapp/version/module_link_uniacid'),
+					'url' => url('wxapp/module-link-uniacid'),
 					'is_display' => 1,
 					'icon' => 'wi wi-data-synchro',
 					'permission_name' => 'wxapp_module_link_uniacid',
@@ -166,55 +151,13 @@ $we7_system_menu['wxapp'] = array(
 					'permission_name' => 'wxapp_payment',
 				),
 				'front_download' => array(
-<<<<<<< HEAD
 					'title' => '小程序下载',
-					'url' => url('wxapp/version/front_download'),
-=======
-					'title' => '上传微信审核',
 					'url' => url('wxapp/front-download'),
->>>>>>> parent of 775f72a... 654
 					'is_display' => 1,
-					'icon' => 'wi wi-examine',
+					'icon' => 'wi wi-wxapp-download',
 					'permission_name' => 'wxapp_front_download',
-				),
-				'wxapp_platform_material' => array(
-					'title' => '素材管理',
-					'is_display' => 0,
-					'permission_name' => 'wxapp_platform_material',
-					'sub_permission' => array(
-						array(
-							'title' => '删除',
-							'permission_name' => 'wxapp_platform_material_delete',
-						),
-					),
-				),
-			)
-		)
-	),
-);
-
-<<<<<<< HEAD
-=======
-$we7_system_menu['webapp'] = array(
-	'title' => 'PC',
-	'icon' => 'wi wi-white-collar',
-	'url' => url('webapp/home/display'),
-	'section' => array(
-		'platform_module' => array(
-			'title' => '应用模块',
-			'menu' => array(),
-			'is_display' => true,
-		),
-		'mc' => array(
-			'title' => '粉丝',
-			'menu' => array(
-				'mc_member' => array(
-					'title' => '会员管理',
-					'url' => url('mc/member'),
-					'icon' => 'wi wi-fans',
-					'permission_name' => 'mc_member',
 				)
-			),
+			)
 		)
 	),
 );
@@ -224,11 +167,11 @@ $we7_system_menu['module'] = array(
 	'icon' => 'wi wi-apply',
 	'url' => url('module/display'),
 	'section' => array(),
+	'is_display' => 0
 );
 
->>>>>>> parent of 775f72a... 654
 $we7_system_menu['system'] = array(
-	'title' => '系统',
+	'title' => '系统管理',
 	'icon' => 'wi wi-setting',
 	'url' => url('home/welcome/system'),
 	'section' => array(
@@ -295,43 +238,36 @@ $we7_system_menu['system'] = array(
 					'url' => url('account/manage', array('account_type' => '4')),
 					'icon' => 'wi wi-wxapp',
 					'permission_name' => 'system_wxapp',
+					'sub_permission' => array(
+						array(
+							'title' => '小程序管理设置',
+							'permission_name' => 'system_wxapp_manage',
+						),
+						array(
+							'title' => '添加小程序',
+							'permission_name' => 'system_wxapp_post',
+						),
+						array(
+							'title' => '小程序停用',
+							'permission_name' => 'system_wxapp_stop',
+						),
+						array(
+							'title' => '小程序回收站',
+							'permission_name' => 'system_wxapp_recycle',
+						),
+						array(
+							'title' => '小程序删除',
+							'permission_name' => 'system_wxapp_delete',
+						),
+						array(
+							'title' => '小程序恢复',
+							'permission_name' => 'system_wxapp_recover',
+						),
+					),
 				),
 				'system_module_wxapp' => array(
 					'title' => '小程序应用',
 					'url' => url('module/manage-system', array('account_type' => '4')),
-					'icon' => 'wi wi-wxapp-apply',
-					'permission_name' => 'system_module_wxapp',
-				),
-			)
-		),
-		
-		'welcome' => array(
-			'title' => '系统首页',
-			'menu' => array(
-				'system_welcome' => array(
-					'title' => '系统首页应用',
-					'url' => url('module/manage-system', array('system_welcome' => 1)),
-					'icon' => 'wi wi-wxapp',
-					'permission_name' => 'system_welcome',
-				)
-			),
-			'founder' => true
-		),
-		
-		'webapp' => array(
-			'title' => 'PC',
-			'menu' => array(
-				'system_wxapp' => array(
-					'title' => 'PC',
-					'url' => url('account/manage', array('account_type' => ACCOUNT_TYPE_WEBAPP_NORMAL)),
-					'icon' => 'wi wi-wxapp',
-					'permission_name' => 'system_webapp',
-					'sub_permission' => array(
-					),
-				),
-				'system_module_wxapp' => array(
-					'title' => 'PC应用',
-					'url' => url('module/manage-system', array('account_type' => ACCOUNT_TYPE_WEBAPP_NORMAL)),
 					'icon' => 'wi wi-wxapp-apply',
 					'permission_name' => 'system_module_wxapp',
 				),
@@ -352,32 +288,6 @@ $we7_system_menu['system'] = array(
 					'icon' => 'wi wi-user-group',
 					'permission_name' => 'system_user',
 					'sub_permission' => array(
-<<<<<<< HEAD
-							array(
-								'title' => '编辑用户',
-								'permission_name' => 'system_user_post',
-							),
-							array(
-								'title' => '审核用户',
-								'permission_name' => 'system_user_check',
-							),
-							array(
-								'title' => '用户回收站',
-								'permission_name' => 'system_user_recycle',
-							),
-							array(
-								'title' => '用户属性设置',
-								'permission_name' => 'system_user_fields',
-							),
-							array(
-								'title' => '用户属性设置-编辑字段',
-								'permission_name' => 'system_user_fields_post',
-							),
-							array(
-								'title' => '用户注册设置',
-								'permission_name' => 'system_user_registerset',
-							),
-=======
 						array(
 							'title' => '编辑用户',
 							'permission_name' => 'system_user_post',
@@ -408,7 +318,6 @@ $we7_system_menu['system'] = array(
 						),
 					),
 				),
-				
 				'system_user_founder_group' => array(
 					'title' => '副创始人组',
 					'url' => url('founder/display'),
@@ -439,10 +348,8 @@ $we7_system_menu['system'] = array(
 							'title' => '删除创始人',
 							'permission_name' => 'system_founder_user_del',
 						),
->>>>>>> parent of 775f72a... 654
 					),
 				),
-				
 			)
 		),
 		'permission' => array(
@@ -453,6 +360,20 @@ $we7_system_menu['system'] = array(
 					'url' => url('module/group'),
 					'icon' => 'wi wi-appjurisdiction',
 					'permission_name' => 'system_module_group',
+					'sub_permission' => array(
+						array(
+							'title' => '添加应用权限组',
+							'permission_name' => 'system_module_group_add',
+						),
+						array(
+							'title' => '编辑应用权限组',
+							'permission_name' => 'system_module_group_post',
+						),
+						array(
+							'title' => '删除应用权限组',
+							'permission_name' => 'system_module_group_del',
+						),
+					),
 				),
 				'system_user_group' => array(
 					'title' => '用户权限组',
@@ -460,6 +381,10 @@ $we7_system_menu['system'] = array(
 					'icon' => 'wi wi-userjurisdiction',
 					'permission_name' => 'system_user_group',
 					'sub_permission' => array(
+						array(
+							'title' => '添加用户组',
+							'permission_name' => 'system_user_group_add',
+						),
 						array(
 							'title' => '编辑用户组',
 							'permission_name' => 'system_user_group_post',
@@ -472,7 +397,7 @@ $we7_system_menu['system'] = array(
 				),
 			)
 		),
-		'acticle' => array(
+		'article' => array(
 			'title' => '文章/公告',
 			'menu' => array(
 				'system_article' => array(
@@ -489,30 +414,6 @@ $we7_system_menu['system'] = array(
 				)
 			)
 		),
-		'message' => array(
-			'title' => '消息提醒',
-			'menu' => array(
-				'system_message_notice' => array(
-					'title' => '消息提醒',
-					'url' => url('message/notice'),
-					'icon' => 'wi wi-article',
-					'permission_name' => 'system_message_notice',
-				)
-			)
-		),
-		
-		'system_statistics' => array(
-			'title' => '统计',
-			'menu' => array(
-				'system_account_analysis' => array(
-					'title' => 	'访问统计',
-					'url' => url('statistics/account'),
-					'icon' => 'wi wi-article',
-					'permission_name' => 'system_account_analysis',
-				),
-			)
-		),
-		
 		'cache' => array(
 			'title' => '缓存',
 			'menu' => array(
@@ -528,25 +429,39 @@ $we7_system_menu['system'] = array(
 );
 
 $we7_system_menu['site'] = array(
-	'title' => '站点',
+	'title' => '站点管理',
 	'icon' => 'wi wi-system-site',
-	'url' => url('system/site'),
+	'url' => url('cloud/upgrade'),
 	'section' => array(
-		/*'cloud' => array(
+		'cloud' => array(
 			'title' => '云服务',
 			'menu' => array(
+				'system_profile' => array(
+					'title' => '系统升级',
+					'url' => url('cloud/upgrade'),
+					'icon' => 'wi wi-cache',
+					'permission_name' => 'system_cloud_upgrade',
+				),
+				'system_cloud_register' => array(
+					'title' => '注册站点',
+					'url' => url('cloud/profile'),
+					'icon' => 'wi wi-registersite',
+					'permission_name' => 'system_cloud_register',
+				),
 				'system_cloud_diagnose' => array(
 					'title' => '云服务诊断',
 					'url' => url('cloud/diagnose'),
 					'icon' => 'wi wi-diagnose',
 					'permission_name' => 'system_cloud_diagnose',
-<<<<<<< HEAD
 				),
-=======
-				)
->>>>>>> parent of 775f72a... 654
+				'system_cloud_sms' => array(
+					'title' => '短信管理',
+					'url' => url('cloud/sms'),
+					'icon' => 'wi wi-message',
+					'permission_name' => 'system_cloud_sms',
+				),
 			)
-		),*/
+		),
 		'setting' => array(
 			'title' => '设置',
 			'menu' => array(
@@ -580,33 +495,12 @@ $we7_system_menu['site'] = array(
 					'icon' => 'wi wi-log',
 					'permission_name' => 'system_setting_logs',
 				),
-<<<<<<< HEAD
-=======
 				'system_setting_ipwhitelist' => array(
 					'title' => 'IP白名单',
 					'url' => url('system/ipwhitelist'),
 					'icon' => 'wi wi-ip',
 					'permission_name' => 'system_setting_ipwhitelist',
 				),
-				'system_setting_sensitiveword' => array(
-					'title' => '过滤敏感词',
-					'url' => url('system/sensitiveword'),
-					'icon' => 'wi wi-sensitive',
-					'permission_name' => 'system_setting_sensitiveword',
-				),
-				'system_setting_thirdlogin' => array(
-					'title' => '第三方登录配置',
-					'url' => url('system/thirdlogin'),
-					'icon' => 'wi wi-sensitive',
-					'permission_name' => 'system_setting_thirdlogin',
-				),
-				'system_setting_oauth' => array(
-					'title' => 'oauth全局设置',
-					'url' => url('system/oauth'),
-					'icon' => 'wi wi-sensitive',
-					'permission_name' => 'system_setting_oauth',
-				),
->>>>>>> parent of 775f72a... 654
 			)
 		),
 		'utility' => array(
@@ -644,53 +538,105 @@ $we7_system_menu['site'] = array(
 				),
 			)
 		),
-<<<<<<< HEAD
-=======
-		'workorder'=> array(
-			'title' => '交流',
-			'menu'=> array(
-					'system_workorder'=> array(
-					'icon' => 'wi wi-attachment',
-					'title' => '主机排行榜',
-                    'url' => '//www.zhujitop.com',
-                    'section' => array(),
-					'blank' => true,
-                    'founder' => true
-				),
-				'qq_qun'=> array(
-					'icon' => 'fa fa-qq',
-					'title' => '源码交流群',
-                    'url' => '//shang.qq.com/wpa/qunwpa?idkey=9639c88da8ba021ef5637260c7fcde63825b015e9748532c927ac9cd6c06d5cd',
-                    'section' => array(),
-					'blank' => true,
-                    'founder' => true
-				)
-			)
-		)
->>>>>>> parent of 775f72a... 654
 	),
 	'founder' => true,
 );
 
-<<<<<<< HEAD
-=======
+/* $we7_system_menu['advertisement'] = array (
+	'title' => '广告联盟',
+	'icon' => 'wi wi-advert',
+	'url' => url('advertisement/content-provider'),
+	'section' => array(
+		'advertisement' => array(
+			'title' => '常用系统工具',
+			'menu' => array(
+				'advertisement-content-provider' => array(
+					'title' => '流量主',
+					'url' => url('advertisement/content-provider/account_list'),
+					'icon' => 'wi wi-flow',
+					'permission_name' => 'advertisement_content-use',
+				),
+				'advertisement-content-create' => array(
+					'title' => '广告主',
+					'url' => url('advertisement/content-provider/content_provider'),
+					'icon' => 'wi wi-adgroup',
+					'permission_name' => 'advertisement_content-create',
+				),
+			)
+		),
+	),
+	'founder' => true,
+); */
+
+/* $we7_system_menu['appmarket'] = array(
+	'title' => '应用市场',
+	'icon' => 'wi wi-market',
+	'url' => 'http://we8.club',
+	'section' => array(),
+	'blank' => true,
+	'founder' => true,
+); */
 
 $we7_system_menu['help'] = array(
-	'title' => '系统帮助',
+	'title' => '帮助系统',
 	'icon' => 'wi wi-market',
 	'url' => url('help/display'),
 	'section' => array(),
-	'blank' => false
+	'blank' => true
 );
-
 
 $we7_system_menu['store'] = array(
 	'title' => '商城',
 	'icon' => 'wi wi-store',
 	'url' => url('home/welcome/ext', array('m' => 'store')),
-	'section' => array(),
+	'section' => array(
+		'store_goods' => array(
+			'title' => '商品分类',
+			'menu' => array(
+				'store_goods_module' =>array(
+					'title' => '应用模块',
+					'url' => url('store/goods-buyer'),
+					'icon' => 'wi wi-goods',
+					'permission_name' => 'store_goods_buyer'
+				),
+			),
+		),
+		'store_manage' => array(
+			'title' => '商城管理',
+			'founder' => true,
+			'menu' => array(
+				'store_manage_goods' => array(
+					'title' => '添加商品',
+					'url' => url('store/goods-seller'),
+					'icon' => 'wi wi-goods-add',
+					'permission_name' => 'store_manage_goods',
+				),
+				'store_manage_setting' => array(
+					'title' => '商城设置',
+					'url' => url('store/setting'),
+					'icon' => 'wi wi-store',
+					'permission_name' => 'store_manage_setting',
+				),
+				'store_manage_payset' => array(
+					'title' => '支付设置',
+					'url' => url('store/payset'),
+					'icon' => 'wi wi-account',
+					'permission_name' => 'store_manage_payset',
+				),
+			)
+		),
+		'store_orders' => array(
+			'title' => '订单管理',
+			'menu' => array(
+				'store_orders_my' => array(
+					'title' => '我的订单',
+					'url' => url('store/orders'),
+					'icon' => 'wi wi-sale-record',
+					'permission_name' => 'store_orders_my',
+				),
+			),
+		),
+	),
 );
->>>>>>> parent of 775f72a... 654
-
 
 return $we7_system_menu;

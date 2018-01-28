@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -257,7 +257,7 @@ if ($do == 'binding_account') {
 	$item = empty($setting['passport']['item']) ? 'random' : $setting['passport']['item'];
 	if ($_W['isajax'] && $_W['ispost']) {
 		$username = trim($_GPC['username']);
-		$password = $_GPC['password'];
+		$password = trim($_GPC['password']);
 		$data = array();
 		if (empty($_GPC['username'])) {
 			message('请输入您的账号', '', 'error');
@@ -298,7 +298,7 @@ if ($do == 'binding_account') {
 				message('抱歉，该账号已经被注册，请更换。', '', 'error');
 			}
 			$hash = md5($password . $profile['salt'] . $_W['config']['setting']['authkey']);
-			$data['salt'] = $profile['salt'];
+			$data['salt'] = $salt;
 			$data['password'] = $hash;
 			mc_update($profile['uid'], $data);
 			message('账号绑定成功', url('mc/home'), 'success');

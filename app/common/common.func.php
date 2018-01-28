@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -18,6 +18,8 @@ function message($msg, $redirect = '', $type = '') {
 	} elseif (!empty($redirect) && !strexists($redirect, 'http://')) {
 		$urls = parse_url($redirect);
 		$redirect = $_W['siteroot'] . 'app/index.php?' . $urls['query'];
+	} else {
+				$redirect = check_url_not_outside_link($redirect);
 	}
 	if($redirect == '') {
 		$type = in_array($type, array('success', 'error', 'info', 'warning', 'ajax', 'sql')) ? $type : 'info';

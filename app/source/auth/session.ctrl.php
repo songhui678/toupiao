@@ -1,9 +1,9 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
-
+ 
 defined('IN_IA') or exit('Access Denied');
 
 load()->model('mc');
@@ -17,7 +17,7 @@ if ($do == 'openid') {
 	if (empty($_W['account']['oauth']) || empty($code)) {
 		exit('通信错误，请在微信中重新发起请求');
 	}
-
+	
 	$oauth = $account_api->getOauthInfo($code);
 	if (!empty($oauth) && !is_error($oauth)) {
 		$_SESSION['openid'] = $oauth['openid'];
@@ -74,14 +74,14 @@ if ($do == 'openid') {
 	if (empty($_SESSION['session_key']) || empty($encrypt_data) || empty($iv)) {
 		$account_api->result(1, '请先登录');
 	}
-
+	
 	$sign = sha1(htmlspecialchars_decode($_GPC['rawData']).$_SESSION['session_key']);
 	if ($sign !== $_GPC['signature']) {
 		$account_api->result(1, '签名错误');
 	}
-
+	
 	$userinfo = $account_api->pkcs7Encode($encrypt_data, $iv);
-
+	
 	$fans = mc_fansinfo($userinfo['openId']);
 	$fans_update = array(
 		'nickname' => $userinfo['nickName'],
@@ -102,7 +102,7 @@ if ($do == 'openid') {
 		$union_fans = pdo_get('mc_mapping_fans', array('unionid' => $userinfo['unionId'], 'openid !=' => $userinfo['openId']));
 		if (!empty($union_fans['uid'])) {
 			if (!empty($fans['uid'])) {
-				
+								
 				pdo_delete('mc_members', array('uid' => $fans['uid']));
 			}
 			$fans_update['uid'] = $union_fans['uid'];
@@ -110,14 +110,8 @@ if ($do == 'openid') {
 		}
 	}
 	pdo_update('mc_mapping_fans', $fans_update, array('fanid' => $fans['fanid']));
-	pdo_update('mc_members', array('nickname' => $userinfo['nickName'], 'avatar' => $userinfo['avatarUrl'], 'gender' => $userinfo['gender']), array('uid' => $fans['uid']));
 	$member = mc_fetch($fans['uid']);
 	unset($member['password']);
 	unset($member['salt']);
 	$account_api->result(0, '', $member);
-} elseif ($do == 'touch') {
-	if (empty($_SESSION['openid'])) {
-		$account_api->result(1);
-	}
-	$account_api->result(0);
 }

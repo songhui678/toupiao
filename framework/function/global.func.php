@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -213,7 +213,7 @@ function ijson_encode($value, $options = 0) {
 		$str = json_encode($value);
 		$json_str = preg_replace_callback("#\\\u([0-9a-f]{4})#i", function($matchs){
 			return iconv('UCS-2BE', 'UTF-8', pack('H4', $matchs[1]));
-			}, $str);
+		}, $str);
 	} else {
 		$json_str = json_encode($value, $options);
 	}
@@ -228,7 +228,7 @@ function iserializer($value) {
 
 function iunserializer($value) {
 	if (empty($value)) {
-		return '';
+		return array();
 	}
 	if (!is_serialized($value)) {
 		return $value;
@@ -239,8 +239,9 @@ function iunserializer($value) {
 			return 's:'.strlen($matchs[2]).':"'.$matchs[2].'";';
 		}, $value);
 		return unserialize($temp);
+	} else {
+		return $result;
 	}
-	return $result;
 }
 
 
@@ -323,36 +324,6 @@ function wurl($segment, $params = array()) {
 	return $url;
 }
 
-<<<<<<< HEAD
-
-function murl($segment, $params = array(), $noredirect = true, $addhost = false) {
-	global $_W;
-	list($controller, $action, $do) = explode('/', $segment);
-	if (!empty($addhost)) {
-		$url = $_W['siteroot'] . 'app/';
-	} else {
-		$url = './';
-	}
-	$str = '';
-	if(uni_is_multi_acid()) {
-		$str = "&j={$_W['acid']}";
-	}
-	$url .= "index.php?i={$_W['uniacid']}{$str}&";
-	if (!empty($controller)) {
-		$url .= "c={$controller}&";
-	}
-	if (!empty($action)) {
-		$url .= "a={$action}&";
-	}
-	if (!empty($do)) {
-		$url .= "do={$do}&";
-	}
-	if (!empty($params)) {
-		$queryString = http_build_query($params, '', '&');
-		$url .= $queryString;
-		if ($noredirect === false) {
-						$url .= '&wxref=mp.weixin.qq.com#wechat_redirect';
-=======
 if (!function_exists('murl')) {
 	
 	function murl($segment, $params = array(), $noredirect = true, $addhost = false) {
@@ -365,10 +336,7 @@ if (!function_exists('murl')) {
 		}
 		$str = '';
 		if(uni_is_multi_acid()) {
-			$str .= "&j={$_W['acid']}";
-		}
-		if (!empty($_W['account']) && $_W['account']['type'] == ACCOUNT_TYPE_WEBAPP_NORMAL) {
-			$str .= '&a=webapp';
+			$str = "&j={$_W['acid']}";
 		}
 		$url .= "index.php?i={$_W['uniacid']}{$str}&";
 		if (!empty($controller)) {
@@ -386,10 +354,9 @@ if (!function_exists('murl')) {
 			if ($noredirect === false) {
 								$url .= '&wxref=mp.weixin.qq.com#wechat_redirect';
 			}
->>>>>>> parent of 775f72a... 654
 		}
+		return $url;
 	}
-	return $url;
 }
 
 
@@ -408,11 +375,11 @@ function pagination($total, $pageIndex, $pageSize = 15, $url = '', $context = ar
 	if ($context['ajaxcallback']) {
 		$context['isajax'] = true;
 	}
-	
+
 	if ($context['callbackfuncname']) {
 		$callbackfunc = $context['callbackfuncname'];
 	}
-	
+
 	$pdata['tcount'] = $total;
 	$pdata['tpage'] = (empty($pageSize) || $pageSize < 0) ? 1 : ceil($total / $pageSize);
 	if ($pdata['tpage'] <= 1) {
@@ -546,19 +513,6 @@ function is_error($data) {
 }
 
 
-function detect_sensitive_word($string) {
-	$setting = setting_load('sensitive_words');
-	if (empty($setting['sensitive_words'])) {
-		return false;
-	}
-	$sensitive_words = $setting['sensitive_words'];
-	$blacklist="/".implode("|",$sensitive_words)."/";
-	if(preg_match($blacklist, $string, $matches)){
-		return $matches[0];
-	}
-	return false;
-}
-
 function referer($default = '') {
 	global $_GPC, $_W;
 	$_W['referer'] = !empty($_GPC['referer']) ? $_GPC['referer'] : $_SERVER['HTTP_REFERER'];;
@@ -689,7 +643,7 @@ function istrlen($string, $charset = '') {
 	} else {
 		$charset = 'utf8';
 	}
-	if (function_exists('mb_strlen') && extension_loaded('mbstring')) {
+	if (function_exists('mb_strlen')) {
 		return mb_strlen($string, $charset);
 	} else {
 		$n = $noc = 0;
@@ -909,16 +863,16 @@ function scriptname() {
 function utf8_bytes($cp) {
 	if ($cp > 0x10000){
 				return	chr(0xF0 | (($cp & 0x1C0000) >> 18)).
-		chr(0x80 | (($cp & 0x3F000) >> 12)).
-		chr(0x80 | (($cp & 0xFC0) >> 6)).
-		chr(0x80 | ($cp & 0x3F));
+			chr(0x80 | (($cp & 0x3F000) >> 12)).
+			chr(0x80 | (($cp & 0xFC0) >> 6)).
+			chr(0x80 | ($cp & 0x3F));
 	}else if ($cp > 0x800){
 				return	chr(0xE0 | (($cp & 0xF000) >> 12)).
-		chr(0x80 | (($cp & 0xFC0) >> 6)).
-		chr(0x80 | ($cp & 0x3F));
+			chr(0x80 | (($cp & 0xFC0) >> 6)).
+			chr(0x80 | ($cp & 0x3F));
 	}else if ($cp > 0x80){
 				return	chr(0xC0 | (($cp & 0x7C0) >> 6)).
-		chr(0x80 | ($cp & 0x3F));
+			chr(0x80 | ($cp & 0x3F));
 	}else{
 				return chr($cp);
 	}
@@ -1001,7 +955,7 @@ function aes_encode($message, $encodingaeskey = '', $appid = '') {
 
 
 function aes_pkcs7_decode($encrypt_data, $key, $iv = false) {
-	require_once IA_ROOT . '/framework/library/pkcs7/pkcs7Encoder.php';
+	load()->library('pkcs7');
 	$encrypt_data = base64_decode($encrypt_data);
 	if (!empty($iv)) {
 		$iv = base64_decode($iv);
@@ -1067,7 +1021,7 @@ function strip_gpc($values, $type = 'g') {
 
 
 function parse_path($path) {
-	$danger_char = array('../', '{php', '<?php', '<%', '<?');
+	$danger_char = array('../', '{php', '<?php', '<%', '<?', '..\\', '\\\\' ,'\\', '..\\\\', '%00', '\0', '\r');
 	foreach ($danger_char as $char) {
 		if (strexists($path, $char)) {
 			return false;
@@ -1104,7 +1058,7 @@ function get_first_pinyin($str) {
 		return $first_char;
 	}
 	if (empty($pinyin)) {
-		include_once IA_ROOT . '/framework/library/pinyin/pinyin.php';
+		load()->library('pinyin');
 		$pinyin = new Pinyin_Pinyin();
 	}
 	$first_char = $pinyin->get_first_char($str);
@@ -1124,7 +1078,7 @@ function strip_emoji($nickname) {
 	$clean_text = preg_replace($regexMisc, '', $clean_text);
 		$regexDingbats = '/[\x{2700}-\x{27BF}]/u';
 	$clean_text = preg_replace($regexDingbats, '', $clean_text);
-	
+
 	$clean_text = str_replace("'",'',$clean_text);
 	$clean_text = str_replace('"','',$clean_text);
 	$clean_text = str_replace('“','',$clean_text);
@@ -1156,7 +1110,7 @@ function emoji_unicode_encode($string) {
 function getglobal($key) {
 	global $_W;
 	$key = explode('/', $key);
-	
+
 	$v = &$_W;
 	foreach ($key as $k) {
 		if (!isset($v[$k])) {
@@ -1166,8 +1120,6 @@ function getglobal($key) {
 	}
 	return $v;
 }
-<<<<<<< HEAD
-=======
 
 
 
@@ -1192,43 +1144,4 @@ function check_url_not_outside_link($redirect) {
 }
 
 
-function remove_xss($val) {
-	$val = preg_replace('/([\x00-\x08,\x0b-\x0c,\x0e-\x19])/', '', $val);
-	$search = 'abcdefghijklmnopqrstuvwxyz';
-	$search .= 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-	$search .= '1234567890!@#$%^&*()';
-	$search .= '~`";:?+/={}[]-_|\'\\';
-	for ($i = 0; $i < strlen($search); $i++) {
-		$val = preg_replace('/(&#[xX]0{0,8}'.dechex(ord($search[$i])).';?)/i', $search[$i], $val);
-		$val = preg_replace('/(�{0,8}'.ord($search[$i]).';?)/', $search[$i], $val);
-	}
-	$ra1 = array('javascript', 'vbscript', 'expression', 'applet', 'meta', 'xml', 'blink', 'link', 'script', 'embed', 'object', 'frameset', 'ilayer', 'bgsound', 'title', 'base');
-	$ra2 = array('onabort', 'onactivate', 'onafterprint', 'onafterupdate', 'onbeforeactivate', 'onbeforecopy', 'onbeforecut', 'onbeforedeactivate', 'onbeforeeditfocus', 'onbeforepaste', 'onbeforeprint', 'onbeforeunload', 'onbeforeupdate', 'onblur', 'onbounce', 'oncellchange', 'onchange', 'onclick', 'oncontextmenu', 'oncontrolselect', 'oncopy', 'oncut', 'ondataavailable', 'ondatasetchanged', 'ondatasetcomplete', 'ondblclick', 'ondeactivate', 'ondrag', 'ondragend', 'ondragenter', 'ondragleave', 'ondragover', 'ondragstart', 'ondrop', 'onerror', 'onerrorupdate', 'onfilterchange', 'onfinish', 'onfocus', 'onfocusin', 'onfocusout', 'onhelp', 'onkeydown', 'onkeypress', 'onkeyup', 'onlayoutcomplete', 'onload', 'onlosecapture', 'onmousedown', 'onmouseenter', 'onmouseleave', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup', 'onmousewheel', 'onmove', 'onmoveend', 'onmovestart', 'onpaste', 'onpropertychange', 'onreadystatechange', 'onreset', 'onresize', 'onresizeend', 'onresizestart', 'onrowenter', 'onrowexit', 'onrowsdelete', 'onrowsinserted', 'onscroll', 'onselect', 'onselectionchange', 'onselectstart', 'onstart', 'onstop', 'onsubmit', 'onunload', 'import');
-	$ra = array_merge($ra1, $ra2);
-	$found = true;
-	while ($found == true) {
-		$val_before = $val;
-		for ($i = 0; $i < sizeof($ra); $i++) {
-			$pattern = '/';
-			for ($j = 0; $j < strlen($ra[$i]); $j++) {
-				if ($j > 0) {
-					$pattern .= '(';
-					$pattern .= '(&#[xX]0{0,8}([9ab]);)';
-					$pattern .= '|';
-					$pattern .= '|(�{0,8}([9|10|13]);)';
-					$pattern .= ')*';
-				}
-				$pattern .= $ra[$i][$j];
-			}
-			$pattern .= '/i';
-			$replacement = substr($ra[$i], 0, 2).'<x>'.substr($ra[$i], 2);
-			$val = preg_replace($pattern, $replacement, $val);
-			if ($val_before == $val) {
-				$found = false;
-			}
-		}
-	}
-	return $val;
-}
-load()->func('safe');
->>>>>>> parent of 775f72a... 654
+

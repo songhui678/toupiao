@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -15,10 +15,8 @@ function cron_check($cronid = 0) {
 	if(!$cron['status']) {
 		return error(-1001, '任务已关闭');
 	}
-	if ($cron['filename'] != 'sms') {
-		if(!$cron['uniacid']) {
-			return error(-1002, '任务uniacid错误1');
-		}
+	if(!$cron['uniacid']) {
+		return error(-1002, '任务uniacid错误');
 	}
 	if(empty($cron['module'])) {
 		return error(-1003, '任务所属模块为空');

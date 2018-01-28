@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -9,9 +9,6 @@ load()->classs('weixin.platform');
 
 setting_load('platform');
 
-if ($_W['role'] != ACCOUNT_MANAGE_NAME_FOUNDER) {
-	itoast('无权限操作！', url('account/manage'), 'error');
-}
 $founders = explode(',', $_W['config']['setting']['founder']);
 $_W['page']['title'] = '开放平台设置';
 

@@ -1,13 +1,12 @@
 <?php
 /**
- * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * [WECHAT 2018]
+ * [WECHAT  a free software]
  */
 defined('IN_IA') or exit('Access Denied');
 
 
 function user_register($user) {
-	load()->model('message');
 	if (empty($user) || !is_array($user)) {
 		return 0;
 	}
@@ -23,16 +22,13 @@ function user_register($user) {
 	if (empty($user['status'])) {
 		$user['status'] = 2;
 	}
+	if (empty($user['type'])) {
+		$user['type'] = USER_TYPE_COMMON;
+	}
 	$result = pdo_insert('users', $user);
 	if (!empty($result)) {
 		$user['uid'] = pdo_insertid();
 	}
-	$content = $user['username'] . date("Y-m-d H:i:s") . '注册成功';
-	$message = array(
-		'status' => $user['status']
-	);
-	message_notice_record($content, $user['uid'], $user['uid'], MESSAGE_REGISTER_TYPE, $message);
-
 	return intval($user['uid']);
 }
 
@@ -96,9 +92,12 @@ function user_is_founder($uid) {
 }
 
 
-function user_is_vice_founder() {
+function user_is_vice_founder($uid = 0) {
 	global $_W;
-	if (!empty($_W['isfounder']) && $_W['user']['founder_groupid'] == ACCOUNT_MANAGE_GROUP_VICE_FOUNDER) {
+	$uid = intval($uid) > 0 ? intval($uid) : $_W['uid'];
+	$user_info = user_single($uid);
+
+	if (user_is_founder($uid) && $user_info['founder_groupid'] == ACCOUNT_MANAGE_GROUP_VICE_FOUNDER) {
 		return true;
 	}
 	return false;
@@ -106,18 +105,27 @@ function user_is_vice_founder() {
 
 
 function user_delete($uid, $is_recycle = false) {
+	if (!empty($is_recycle)) {
+		pdo_update('users', array('status' => 3) , array('uid' => $uid));
+		return true;
+	}
+
 	load()->model('cache');
-	$user_table = table('users');
-	if (empty($is_recycle)) {
-		$user_table->userAccountRole(ACCOUNT_MANAGE_NAME_OWNER);
-		$user_accounts = $user_table->userOwnedAccount($uid);
-		if (!empty($user_accounts)) {
-			foreach ($user_accounts as $uniacid) {
-				cache_build_account_modules($uniacid);
-			}
+	$founder_groupid = pdo_getcolumn('users', array('uid' => $uid), 'founder_groupid');
+	if ($founder_groupid == ACCOUNT_MANAGE_GROUP_VICE_FOUNDER) {
+		pdo_update('users', array('owner_uid' => 0), array('owner_uid' => $uid));
+		pdo_update('users_group', array('owner_uid' => 0), array('owner_uid' => $uid));
+		pdo_update('uni_group', array('owner_uid' => 0), array('owner_uid' => $uid));
+	}
+	pdo_delete('users', array('uid' => $uid));
+	$user_set_account = pdo_getall('uni_account_users', array('uid' => $uid, 'role' => 'owner'));
+	if (!empty($user_set_account)) {
+		foreach ($user_set_account as $account) {
+			cache_build_account_modules($account['uniacid']);
 		}
 	}
-	$user_table->userAccountDelete($uid, $is_recycle);
+	pdo_delete('uni_account_users', array('uid' => $uid));
+	pdo_delete('users_profile', array('uid' => $uid));
 	return true;
 }
 
@@ -271,9 +279,15 @@ function user_group() {
 }
 
 
+function user_founder_group() {
+	$groups = pdo_getall('users_founder_group', array(), array('id', 'name', 'package'), 'id', 'id ASC');
+	return $groups;
+}
+
+
 function user_group_detail_info($groupid = 0) {
 	$group_info = array();
-	
+
 	$groupid = is_array($groupid) ? 0 : intval($groupid);
 	if(empty($groupid)) {
 		return $group_info;
@@ -282,7 +296,27 @@ function user_group_detail_info($groupid = 0) {
 	if (empty($group_info)) {
 		return $group_info;
 	}
-	
+
+	$group_info['package'] = (array)iunserializer($group_info['package']);
+	if (!empty($group_info['package'])) {
+		$group_info['package_detail'] = uni_groups($group_info['package']);
+	}
+	return $group_info;
+}
+
+
+function user_founder_group_detail_info($groupid = 0) {
+	$group_info = array();
+
+	$groupid = is_array($groupid) ? 0 : intval($groupid);
+	if(empty($groupid)) {
+		return $group_info;
+	}
+	$group_info = pdo_get('users_founder_group', array('id' => $groupid));
+	if (empty($group_info)) {
+		return $group_info;
+	}
+
 	$group_info['package'] = (array)iunserializer($group_info['package']);
 	if (!empty($group_info['package'])) {
 		$group_info['package_detail'] = uni_groups($group_info['package']);
@@ -292,48 +326,47 @@ function user_group_detail_info($groupid = 0) {
 
 
 function user_account_detail_info($uid) {
-	$account_lists = $app_user_info = $wxapp_user_info = $webapp_user_info = array();
+	global $_W;
+	$account_lists = array();
 	$uid = intval($uid);
 	if (empty($uid)) {
 		return $account_lists;
 	}
 
-	$account_users_info = table('account')->userOwnedAccount($uid);
-	if (!empty($account_users_info)) {
-		foreach ($account_users_info as $uniacid => $account) {
-			if ($account['type'] == ACCOUNT_TYPE_OFFCIAL_NORMAL || $account['type'] == ACCOUNT_TYPE_OFFCIAL_AUTH) {
-				$app_user_info[$uniacid] = $account;
-			} elseif ($account['type'] == ACCOUNT_TYPE_APP_NORMAL) {
-				$wxapp_user_info[$uniacid] = $account;
-			} elseif ($account['type'] == ACCOUNT_TYPE_WEBAPP_NORMAL) {
-				$webapp_user_info[$uniacid] = $account;
-			}
+	$sql = "SELECT b.uniacid, b.role, a.type FROM " . tablename('account'). " AS a LEFT JOIN ". tablename('uni_account_users') . " AS b ON a.uniacid = b.uniacid WHERE a.acid <> 0 AND a.isdeleted <> 1";
+	$param = array();
+	$founders = explode(',', $_W['config']['setting']['founder']);
+	if (!in_array($uid, $founders)) {
+		$sql .= " AND b.uid = :uid";
+		$param[':uid'] = $uid;
+	}
+	$account_users_info = pdo_fetchall($sql, $param, 'uniacid');
+	foreach ($account_users_info as $uniacid => $account) {
+		if ($account['type'] == ACCOUNT_TYPE_OFFCIAL_NORMAL || $account['type'] == ACCOUNT_TYPE_OFFCIAL_AUTH) {
+			$app_user_info[$uniacid] = $account;
+		} elseif ($account['type'] == ACCOUNT_TYPE_APP_NORMAL) {
+			$wxapp_user_info[$uniacid] = $account;
 		}
 	}
-
-	$wxapps = $wechats = $webapps = array();
+	$wxapps = $wechats = array();
 	if (!empty($wxapp_user_info)) {
-		$wxapps = table('account')->accountWxappInfo(array_keys($wxapp_user_info), $uid);
+		$wxapps = pdo_fetchall("SELECT w.name, w.level, w.acid, a.* FROM " . tablename('uni_account') . " a INNER JOIN " . tablename(uni_account_tablename(ACCOUNT_TYPE_APP_NORMAL)) . " w USING(uniacid) WHERE a.uniacid IN (".implode(',', array_keys($wxapp_user_info)).") ORDER BY a.uniacid ASC", array(), 'acid');
 	}
 	if (!empty($app_user_info)) {
-		$wechats = table('account')->accountWechatsInfo(array_keys($app_user_info), $uid);
+		$wechats = pdo_fetchall("SELECT w.name, w.level, w.acid, a.* FROM " . tablename('uni_account') . " a INNER JOIN " . tablename(uni_account_tablename(ACCOUNT_TYPE_OFFCIAL_NORMAL)) . " w USING(uniacid) WHERE a.uniacid IN (".implode(',', array_keys($app_user_info)).") ORDER BY a.uniacid ASC", array(), 'acid');
 	}
-	if (!empty($webapp_user_info)) {
-		$webapps = table('account')->accountWebappInfo(array_keys($webapp_user_info), $uid);
-	}
-	$accounts = array_merge($wxapps, $wechats, $webapps);
+	$accounts = array_merge($wxapps, $wechats);
 	if (!empty($accounts)) {
 		foreach ($accounts as &$account_val) {
-			$account_val['thumb'] = tomedia('headimg_'.$account_val['default_acid']. '.jpg');
+			$account_val['thumb'] = tomedia('headimg_'.$account_val['acid']. '.jpg');
 			foreach ($account_users_info as $uniacid => $user_info) {
 				if ($account_val['uniacid'] == $uniacid) {
+					$account_val['role'] = $user_info['role'];
 					$account_val['type'] = $user_info['type'];
 					if ($user_info['type'] == ACCOUNT_TYPE_APP_NORMAL) {
 						$account_lists['wxapp'][$uniacid] = $account_val;
 					} elseif ($user_info['type'] == ACCOUNT_TYPE_OFFCIAL_NORMAL || $user_info['type'] == ACCOUNT_TYPE_OFFCIAL_AUTH) {
 						$account_lists['wechat'][$uniacid] = $account_val;
-					} elseif ($user_info['type'] == ACCOUNT_TYPE_WEBAPP_NORMAL) {
-						$account_lists['webapp'][$uniacid] = $account_val;
 					}
 				}
 			}
@@ -346,42 +379,41 @@ function user_account_detail_info($uid) {
 
 function user_modules($uid) {
 	global $_W;
-
 	load()->model('module');
-	$modules =cache_load(cache_system_key('user_modules:' . $uid));
+	$cachekey = cache_system_key("user_modules:" . $uid);
+	$modules = cache_load($cachekey);
 	if (empty($modules)) {
 		$user_info = user_single(array ('uid' => $uid));
 
 		$system_modules = pdo_getall('modules', array('issystem' => 1), array('name'), 'name');
-		if (empty($uid) || user_is_founder($uid)) {
+		if (empty($uid)  || user_is_founder($uid) && !user_is_vice_founder($uid)) {
 			$module_list = pdo_getall('modules', array(), array('name'), 'name', array('mid DESC'));
+		} elseif (!empty($user_info) && $user_info['type'] == ACCOUNT_OPERATE_CLERK) {
+			$clerk_module = pdo_fetch("SELECT p.type FROM " . tablename('users_permission') . " p LEFT JOIN " . tablename('uni_account_users') . " u ON p.uid = u.uid AND p.uniacid = u.uniacid WHERE u.role = :role AND p.uid = :uid", array(':role' => ACCOUNT_MANAGE_NAME_CLERK, ':uid' => $uid));
+			if (empty($clerk_module)) {
+				return array();
+			}
+			$module_list = array($clerk_module['type'] => $clerk_module['type']);
 		} elseif (!empty($user_info) && empty($user_info['groupid'])) {
 			$module_list = $system_modules;
 		} else {
-<<<<<<< HEAD
-			$user_group_info = user_group_detail_info($user_info['groupid']);
-			$packageids = $user_group_info['package'];
-			
-						if (!empty($packageids) && in_array('-1', $packageids)) {
-=======
 			if ($user_info['founder_groupid'] == ACCOUNT_MANAGE_GROUP_VICE_FOUNDER) {
 				$user_group_info = user_founder_group_detail_info($user_info['groupid']);
 			} else {
-				$user_group_info = user_group_detail_info($user_info['groupid']);
+				$user_group_info = user_group_detail_info($user_info['groupid']);	
 			}
 			$packageids = $user_group_info['package'];
 
-			if (!empty($packageids) && in_array('-1', $packageids)) {
->>>>>>> parent of 775f72a... 654
+						if (!empty($packageids) && in_array('-1', $packageids)) {
 				$module_list = pdo_getall('modules', array(), array('name'), 'name', array('mid DESC'));
 			} else {
-				$package_group = pdo_getall('uni_group', array('id' => $packageids));
+								$package_group = pdo_getall('uni_group', array('id' => $packageids));
 				if (!empty($package_group)) {
+					$package_group_module = array();
 					foreach ($package_group as $row) {
 						if (!empty($row['modules'])) {
 							$row['modules'] = (array)unserialize($row['modules']);
 						}
-						$package_group_module = array();
 						if (!empty($row['modules'])) {
 							foreach ($row['modules'] as $modulename => $module) {
 								if (!is_array($module)) {
@@ -392,8 +424,8 @@ function user_modules($uid) {
 						}
 					}
 				}
-				$module_table = table('module');
-				$module_list = $module_table->moduleLists($package_group_module);
+				$module_list = pdo_fetchall("SELECT name FROM ".tablename('modules')." WHERE
+										name IN ('" . implode("','", $package_group_module) . "') OR issystem = '1' ORDER BY mid DESC", array(), 'name');
 			}
 		}
 		$module_list = array_keys($module_list);
@@ -421,8 +453,9 @@ function user_modules($uid) {
 				}
 			}
 		}
-		cache_write(cache_system_key('user_modules:' . $uid), $modules);
+		cache_write($cachekey, $modules);
 	}
+
 	$module_list = array();
 	if (!empty($modules)) {
 		foreach ($modules as $module) {
@@ -436,65 +469,44 @@ function user_modules($uid) {
 }
 
 
-function user_login_forward($forward = '') {
-	global $_W, $_GPC;
-	$login_forward = trim($forward);
-
-	$login_location = array(
-		'account' => url('home/welcome'),
-		'wxapp' => url('wxapp/version/home'),
-		'module' => url('module/display'),
-		'webapp' => url('webapp/home'),
-	);
-	if (!empty($forward)) {
-		return $login_forward;
-	}
-	if (user_is_founder($_W['uid']) && !user_is_vice_founder($_W['uid'])) {
-		return url('home/welcome/system');
-	}
-	$login_forward = url('account/display');
-	$visit_key = '__lastvisit_' . $_W['uid'];
-	if (!empty($_GPC[$visit_key])) {
-		$last_visit = explode(',', $_GPC[$visit_key]);
-		$last_visit_uniacid = intval($last_visit[0]);
-		$last_visit_url = url_params($last_visit[1]);
-		if ($last_visit_url['c'] == 'site' && in_array($last_visit_url['a'], array('entry', 'nav')) ||
-			$last_visit_url['c'] == 'platform' && in_array($last_visit_url['a'], array('cover', 'reply')) && !in_array($last_visit_url['m'], system_modules()) ||
-			$last_visit_url['c'] == 'module' && in_array($last_visit_url['a'], array('manage-account', 'permission', 'display'))) {
-			return $login_location['module'];
-		} else {
-			if ($last_visit_url['c'] == 'wxapp') {
-				return $last_visit_url['a'] == 'display' ? url('wxapp/display') : $login_location['wxapp'];
-			}
-			$account_info = uni_fetch($last_visit_uniacid);
-			if (empty($account_info) || $last_visit_url['c'] == 'account' && $last_visit_url['a'] == 'display') {
-				return $login_forward;
-			}
-			if (in_array($account_info['type'], array(ACCOUNT_TYPE_OFFCIAL_NORMAL, ACCOUNT_TYPE_OFFCIAL_AUTH))) {
-				return $login_location['account'];
-			}
-			if ($account_info['type'] == ACCOUNT_TYPE_APP_NORMAL) {
-				return $login_location['wxapp'];
-			}
-			if ($account_info['type'] == ACCOUNT_TYPE_WEBAPP_NORMAL) {
-				return $login_location['webapp'];
+function user_uniacid_modules($uid) {
+	if (user_is_vice_founder($uid)) {
+		$module_list = user_modules($uid);
+		if (empty($module_list)) {
+			return $module_list;
+		}
+		foreach ($module_list as $module => $module_info) {
+			if (!empty($module_info['issystem'])) {
+				unset($module_list[$module]);
 			}
 		}
+	} else {
+		$module_list = pdo_getall('modules', array('issystem' => 0), array(), 'name', 'mid DESC');
+	}
+	return $module_list;
+}
+
+
+function user_login_forward($forward = '') {
+	global $_W;
+	$login_forward = trim($forward);
+
+	if (!empty($forward)) {
+		return $login_forward;
 	}
 	if (user_is_vice_founder()) {
 		return url('account/manage', array('account_type' => 1));
 	}
-<<<<<<< HEAD
 	if (!empty($_W['isfounder'])) {
 		return url('home/welcome/system');
-=======
+	}
 	if ($_W['user']['type'] == ACCOUNT_OPERATE_CLERK) {
 		return url('module/display');
->>>>>>> parent of 775f72a... 654
 	}
 
+	$login_forward = url('account/display');
 	if (!empty($_W['uniacid']) && !empty($_W['account'])) {
-		$permission = uni_permission($_W['uid'], $_W['uniacid']);
+		$permission = permission_account_user_role($_W['uid'], $_W['uniacid']);
 		if (empty($permission)) {
 			return $login_forward;
 		}
@@ -502,14 +514,11 @@ function user_login_forward($forward = '') {
 			$login_forward = url('home/welcome');
 		} elseif ($_W['account']['type'] == ACCOUNT_TYPE_APP_NORMAL) {
 			$login_forward = url('wxapp/display/home');
-		} elseif ($_W['account']['type'] == ACCOUNT_TYPE_WEBAPP_NORMAL) {
-			$login_forward = url('webapp/home/display');
 		}
 	}
 
 	return $login_forward;
 }
-
 
 function user_module_by_account_type($type) {
 	global $_W;
@@ -525,9 +534,6 @@ function user_module_by_account_type($type) {
 			if ($module['app_support'] != 2 && $type == 'account') {
 				unset($module_list[$key]);
 			}
-			if ($module['webapp_support'] != MODULE_SUPPORT_WEBAPP && $type == 'webapp') {
-				unset($module_list[$key]);
-			}
 		}
 		unset($module);
 	}
@@ -539,39 +545,25 @@ function user_invite_register_url($uid = 0) {
 	if (empty($uid)) {
 		$uid = $_W['uid'];
 	}
-	return $_W['siteroot'] . 'index.php?c=user&a=register&owner_uid=' . $uid;
+	return $_W['siteroot'] . '/index.php?c=user&a=register&owner_uid=' . $uid;
 }
 
 
 function user_save_group($group_info) {
 	global $_W;
-	$group_table = table('group');
 	$name = trim($group_info['name']);
 	if (empty($name)) {
 		return error(-1, '用户权限组名不能为空');
 	}
 
-	$group_table->searchWithName($name);
 	if (!empty($group_info['id'])) {
-		$group_table->searchWithNoId($group_info['id']);
-	}
-	$name_exist = $group_table->searchGroup();
-	if (!empty($name_exist)) {
-		return error(-1, '用户权限组名已存在！');
+		$name_exist = pdo_get('users_group', array('id <>' => $group_info['id'], 'name' => $name));
+	} else {
+		$name_exist = pdo_get('users_group', array('name' => $name));
 	}
 
-	if (user_is_vice_founder()) {
-		$group_table->searchWithId($_W['user']['groupid']);
-		$founder_info = $group_table->searchGroup(true);
-		if ($group_info['maxaccount'] > $founder_info['maxaccount']) {
-			return error(-1, '当前用户组的公众号个数不能超过' . $founder_info['maxaccount'] . '个！');
-		}
-		if ($group_info['maxwxapp'] > $founder_info['maxwxapp']) {
-			return error(-1, '当前用户组的公众号个数不能超过' . $founder_info['maxwxapp'] . '个！');
-		}
-		if ($group_info['maxwebapp'] > $founder_info['maxwebapp']) {
-			return error(-1, '当前用户组的公众号个数不能超过' . $founder_info['maxwebapp'] . '个！');
-		}
+	if (!empty($name_exist)) {
+		return error(-1, '用户权限组名已存在！');
 	}
 
 	if (!empty($group_info['package'])) {
@@ -592,8 +584,6 @@ function user_save_group($group_info) {
 
 	return error(0, '添加成功');
 }
-<<<<<<< HEAD
-=======
 
 
 function user_save_founder_group($group_info) {
@@ -637,36 +627,22 @@ function user_group_format($lists) {
 		$package = iunserializer($group['package']);
 		$group['package'] = uni_groups($package);
 		if (empty($package)) {
-			$lists[$key]['module_nums'] = 0;
-			$lists[$key]['wxapp_nums'] = 0;
-			$lists[$key]['webapp_nums'] = 0;
+			$lists[$key]['module_nums'] = '系统默认';
+			$lists[$key]['wxapp_nums'] = '系统默认';
 			continue;
 		}
 		if (is_array($package) && in_array(-1, $package)) {
 			$lists[$key]['module_nums'] = -1;
 			$lists[$key]['wxapp_nums'] = -1;
-			$lists[$key]['webapp_nums'] = -1;
 			continue;
 		}
 		$names = array();
-		$modules = array(
-			'modules' => array(),
-			'wxapp' => array(),
-			'webapp' => array()
-		);
 		if (!empty($group['package'])) {
-			foreach ($group['package'] as $package) {
-				$names[] = $package['name'];
-				$package['modules'] = !empty($package['modules']) && is_array($package['modules']) ? array_keys($package['modules']) : array();
-				$package['wxapp'] = !empty($package['wxapp']) && is_array($package['wxapp']) ? array_keys($package['wxapp']) : array();
-				$package['webapp'] = !empty($package['webapp']) && is_array($package['webapp']) ? array_keys($package['webapp']) : array();
-				$modules['modules'] = array_unique(array_merge($modules['modules'], $package['modules']));
-				$modules['wxapp'] = array_unique(array_merge($modules['wxapp'], $package['wxapp']));
-				$modules['webapp'] = array_unique(array_merge($modules['webapp'], $package['webapp']));
+			foreach ($group['package'] as $modules) {
+				$names[] = $modules['name'];
+				$lists[$key]['module_nums'] = count($modules['modules']);
+				$lists[$key]['wxapp_nums'] = count($modules['wxapp']);
 			}
-			$lists[$key]['module_nums'] = count($modules['modules']);
-			$lists[$key]['wxapp_nums'] = count($modules['wxapp']);
-			$lists[$key]['webapp_nums'] = count($modules['webapp']);
 		}
 		$lists[$key]['packages'] = implode(',', $names);
 	}
@@ -698,7 +674,6 @@ function user_list_format($users) {
 		}
 		$user['maxaccount'] = $user['founder_groupid'] == 1 ? '不限' : (empty($group) ? 0 : $group['maxaccount']);
 		$user['maxwxapp'] = $user['founder_groupid'] == 1 ? '不限' : (empty($group) ? 0 : $group['maxwxapp']);
-		$user['maxwebapp'] = $user['founder_groupid'] == 1 ? '不限' : (empty($group) ? 0 : $group['maxwebapp']);
 		$user['groupname'] = $group['name'];
 		unset($user);
 	}
@@ -738,9 +713,6 @@ function user_info_save($user, $is_founder_group = false) {
 	if ($timelimit > 0) {
 		$timeadd = strtotime($timelimit . ' days');
 	}
-	if (user_is_vice_founder() && !empty($_W['user']['endtime'])) {
-		$timeadd = !empty($timeadd) ? min($timeadd, $_W['user']['endtime']) : $_W['user']['endtime'];
-	}
 	$user['endtime'] = $timeadd;
 	$user['owner_uid'] = user_get_uid_byname($user['vice_founder_name']);
 	if (user_is_vice_founder()) {
@@ -774,62 +746,3 @@ function user_detail_formate($profile) {
 	}
 	return $profile;
 }
-
-
-function user_support_urls() {
-	global $_W;
-	load()->classs('oauth2/oauth2client');
-	$types = OAuth2Client::supportLoginType();
-	$login_urls = array();
-	foreach ($types as $type) {
-		if (!empty($_W['setting']['thirdlogin'][$type]['authstate'])) {
-			$login_urls[$type] = OAuth2Client::create($type, $_W['setting']['thirdlogin'][$type]['appid'], $_W['setting']['thirdlogin'][$type]['appsecret'])->showLoginUrl();
-		}
-	}
-	if (empty($login_urls)) {
-		$login_urls['system'] = true;
-	}
-	return $login_urls;
-}
-
-
-function user_borrow_oauth_account_list() {
-	global $_W;
-	$user_have_accounts = uni_user_accounts($_W['uid']);
-	$oauth_accounts = array();
-	$jsoauth_accounts = array();
-	if(!empty($user_have_accounts)) {
-		foreach($user_have_accounts as $account) {
-			if(!empty($account['key']) && !empty($account['secret'])) {
-				if (in_array($account['level'], array(ACCOUNT_SERVICE_VERIFY))) {
-					$oauth_accounts[$account['acid']] = $account['name'];
-				}
-				if (in_array($account['level'], array(ACCOUNT_SUBSCRIPTION_VERIFY, ACCOUNT_SERVICE_VERIFY))) {
-					$jsoauth_accounts[$account['acid']] = $account['name'];
-				}
-			}
-		}
-	}
-	return array(
-		'oauth_accounts' => $oauth_accounts,
-		'jsoauth_accounts' => $jsoauth_accounts
-	);
-}
-
-
-function user_founder_templates($founder_groupid) {
-	$group_detail_info = user_founder_group_detail_info($founder_groupid);
-
-	if (empty($group_detail_info) || empty($group_detail_info['package'])) {
-		return array();
-	}
-
-	$template_list = array();
-	foreach ($group_detail_info['package'] as $uni_group) {
-		if (!empty($group_detail_info['package_detail'][$uni_group]['templates'])) {
-			$template_list = array_merge($template_list, $group_detail_info['package_detail'][$uni_group]['templates']);
-		}
-	}
-	return $template_list;
-}
->>>>>>> parent of 775f72a... 654

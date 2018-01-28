@@ -1,13 +1,12 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
 load()->func('communication');
 load()->classs('weixin.platform');
-load()->model('account');
 set_time_limit(0);
 
 $dos = array('ticket', 'forward', 'test', 'confirm');
@@ -56,7 +55,7 @@ if ($do == 'forward') {
 		'description' => '',
 		'groupid' => 0,
 	);
-	if (!pdo_insert('uni_account', $account_insert)) {
+	if(!pdo_insert('uni_account', $account_insert)) {
 		itoast('授权登录新建公众号失败，请重试', url('account/manage'), 'error');
 	}
 	$uniacid = pdo_insertid();
@@ -80,11 +79,11 @@ if ($do == 'forward') {
 	$unisetting_insert = array(
 		'creditnames' => iserializer(array(
 			'credit1' => array('title' => '积分', 'enabled' => 1),
-			'credit2' => array('title' => '余额', 'enabled' => 1),
+			'credit2' => array('title' => '余额', 'enabled' => 1)
 		)),
 		'creditbehaviors' => iserializer(array(
 			'activity' => 'credit1',
-			'currency' => 'credit2',
+			'currency' => 'credit2'
 		)),
 		'uniacid' => $uniacid,
 		'default_site' => $multi_id,
@@ -97,7 +96,7 @@ if ($do == 'forward') {
 		'uniacid' => $uniacid,
 		'type' => ACCOUNT_OAUTH_LOGIN,
 		'hash' => random(8),
-		'isconnect' => 1,
+		'isconnect' => 1
 	);
 	pdo_insert('account', $account_index_insert);
 	$acid = pdo_insertid();
@@ -115,21 +114,18 @@ if ($do == 'forward') {
 		'token' => $account_platform->token,
 	);
 	pdo_insert('account_wechats', $subaccount_insert);
-	if (is_error($acid)) {
+	if(is_error($acid)) {
 		itoast('授权登录新建公众号失败，请重试', url('account/manage'), 'error');
 	}
 	if (empty($_W['isfounder'])) {
 		pdo_insert('uni_account_users', array('uniacid' => $uniacid, 'uid' => $_W['uid'], 'role' => 'owner'));
-		if (!empty($_W['user']['owner_uid'])) {
-			uni_user_account_role($uniacid, $_W['user']['owner_uid'], ACCOUNT_MANAGE_NAME_VICE_FOUNDER);
-		}
 	}
 	pdo_update('uni_account', array('default_acid' => $acid), array('uniacid' => $uniacid));
 	$headimg = ihttp_request($account_info['authorizer_info']['head_img']);
 	$qrcode = ihttp_request($account_info['authorizer_info']['qrcode_url']);
-	file_put_contents(IA_ROOT . '/attachment/headimg_' . $acid . '.jpg', $headimg['content']);
-	file_put_contents(IA_ROOT . '/attachment/qrcode_' . $acid . '.jpg', $qrcode['content']);
-
+	file_put_contents(IA_ROOT . '/attachment/headimg_'.$acid.'.jpg', $headimg['content']);
+	file_put_contents(IA_ROOT . '/attachment/qrcode_'.$acid.'.jpg', $qrcode['content']);
+	
 	cache_build_account($uniacid);
 	itoast('授权登录成功', url('account/manage', array('type' => '3')), 'success');
 } elseif ($do == 'confirm') {
@@ -138,7 +134,7 @@ if ($do == 'forward') {
 	$level = intval($_GPC['level']);
 	$acid = intval($_GPC['acid']);
 	$uniacid = intval($_GPC['uniacid']);
-
+	
 	pdo_update('account_wechats', array(
 		'auth_refresh_token' => $auth_refresh_token,
 		'encodingaeskey' => $account_platform->encodingaeskey,
@@ -173,5 +169,5 @@ if ($do == 'forward') {
 	exit('success');
 } elseif ($do == 'test') {
 	$authurl = $account_platform->getAuthLoginUrl();
-	echo '<a href="' . $authurl . '%26test=1"><img src="https://open.weixin.qq.com/zh_CN/htmledition/res/assets/res-design-download/icon_button3_2.png" /></a>';
+	echo '<a href="'.$authurl.'%26test=1"><img src="https://open.weixin.qq.com/zh_CN/htmledition/res/assets/res-design-download/icon_button3_2.png" /></a>';
 }

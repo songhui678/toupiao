@@ -27,6 +27,9 @@
 							</li>
 							<?php  if($_W['isfounder']) { ?>
 							<li class="divider"></li>
+							<?php  if(uni_user_see_more_info(ACCOUNT_MANAGE_NAME_VICE_FOUNDER, false)) { ?>
+							<li><a href="<?php  echo url('cloud/upgrade');?>" target="_blank"><i class="wi wi-update color-gray"></i> 自动更新</a></li>
+							<?php  } ?>
 							<li><a href="<?php  echo url('system/updatecache');?>" target="_blank"><i class="wi wi-cache color-gray"></i> 更新缓存</a></li>
 							<li class="divider"></li>
 							<?php  } ?>
@@ -53,7 +56,7 @@
 	<div class="container text-right">
 		<div class="alert-info">
 			<a href="<?php  if($_W['isfounder']) { ?><?php  echo url('user/edit', array('uid' => $_W['account']['uid']));?><?php  } else { ?>javascript:void(0);<?php  } ?>">
-				您的服务有效期限：<?php  echo date('Y-m-d', $_W['account']['starttime']);?> ~ <?php  echo date('Y-m-d', $_W['account']['endtime']);?>.
+				该公众号管理员服务有效期：<?php  echo date('Y-m-d', $_W['account']['starttime']);?> ~ <?php  echo date('Y-m-d', $_W['account']['endtime']);?>.
 				<?php  if($_W['account']['endtime'] < TIMESTAMP) { ?>
 				目前已到期，请联系管理员续费
 				<?php  } else { ?>
@@ -76,7 +79,7 @@
 <?php  if(!defined('IN_MESSAGE')) { ?>
 <div class="container">
 	<a href="javascript:;" class="js-big-main button-to-big color-gray" title="加宽"><?php  if($_GPC['main-lg']) { ?>正常<?php  } else { ?>宽屏<?php  } ?></a>
-	<?php  if(in_array(FRAME, array('account', 'system', 'advertisement', 'wxapp', 'site')) && !in_array($_GPC['a'], array('news-show', 'notice-show'))) { ?>
+	<?php  if(in_array(FRAME, array('account', 'system', 'advertisement', 'wxapp', 'site', 'store')) && !in_array($_GPC['a'], array('news-show', 'notice-show'))) { ?>
 	<div class="panel panel-content main-panel-content <?php  if(!empty($frames['section']['platform_module_menu']['plugin_menu'])) { ?>panel-content-plugin<?php  } ?>">
 		<div class="content-head panel-heading main-panel-heading">
 			<?php  if(($_GPC['c'] != 'cloud' && !empty($_GPC['m']) && !in_array($_GPC['m'], array('keyword', 'special', 'welcome', 'default', 'userapi', 'service'))) || defined('IN_MODULE')) { ?>
@@ -90,6 +93,9 @@
 			<?php  if(empty($frames['section']['platform_module_menu']['plugin_menu'])) { ?>
 			<div class="left-menu-content">
 				<?php  if(is_array($frames['section'])) { foreach($frames['section'] as $frame_section_id => $frame_section) { ?>
+				<?php  if(FRAME == 'store' && !($_W['isfounder'] && !user_is_vice_founder()) && !empty($frame_section['founder'])) { ?>
+					<?php  continue;?>
+				<?php  } ?>
 				<?php  if(!isset($frame_section['is_display']) || !empty($frame_section['is_display'])) { ?>
 				<div class="panel panel-menu">
 					<?php  if($frame_section['title']) { ?>
@@ -105,7 +111,7 @@
 										<a href="<?php  echo url('module/manage-account');?>"><span class="label label-more">更多应用</span></a>
 									</li>
 									<?php  } else { ?>
-									<?php  if(in_array($_W['role'], array(ACCOUNT_MANAGE_NAME_OWNER, ACCOUNT_MANAGE_NAME_FOUNDER)) && $menu_id == 'front_download' || $menu_id != 'front_download') { ?>
+									<?php  if((in_array($_W['role'], array(ACCOUNT_MANAGE_NAME_OWNER, ACCOUNT_MANAGE_NAME_FOUNDER)) && $menu_id == 'front_download' || $menu_id != 'front_download') && !($menu_id == 'platform_menu' && $_W['account']['level'] == ACCOUNT_SUBSCRIPTION)) { ?>
 									<li class="list-group-item <?php  if($menu['active']) { ?>active<?php  } ?>">
 										<a href="<?php  echo $menu['url'];?>" class="text-over" <?php  if($frame_section_id == 'platform_module') { ?>target="_blank"<?php  } ?>>
 										<?php  if($menu['icon']) { ?>

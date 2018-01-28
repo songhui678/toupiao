@@ -1,7 +1,7 @@
 <?php
 /**
- * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * [WECHAT 2018]
+ * [WECHAT  a free software]
  */
 define('IN_MOBILE', true);
 require '../../framework/bootstrap.inc.php';
@@ -37,6 +37,10 @@ $_W['uniacid'] = $_W['weid'] = intval($get['attach']);
 $_W['uniaccount'] = $_W['account'] = uni_fetch($_W['uniacid']);
 $_W['acid'] = $_W['uniaccount']['acid'];
 $setting = uni_setting($_W['uniacid'], array('payment'));
+if ($get['trade_type'] == 'NATIVE') {
+	$setting = setting_load('store_pay');
+	$setting['payment']['wechat'] = $setting['store_pay']['wechat'];
+}
 if(is_array($setting['payment'])) {
 	$wechat = $setting['payment']['wechat'];
 	WeUtility::logging('pay', var_export($get, true));
@@ -61,9 +65,6 @@ if(is_array($setting['payment'])) {
 			$params = array();
 			$params[':uniontid'] = $get['out_trade_no'];
 			$log = pdo_fetch($sql, $params);
-			if (intval($wechat['switch']) == PAYMENT_WECHAT_TYPE_SERVICE) {
-				$get['openid'] = $log['openid'];
-			}
 						if(!empty($log) && $log['status'] == '0' && (($get['total_fee'] / 100) == $log['card_fee'])) {
 				$log['tag'] = iunserializer($log['tag']);
 				$log['tag']['transaction_id'] = $get['transaction_id'];

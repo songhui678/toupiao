@@ -1,7 +1,7 @@
 <?php
 /**
- * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * [WECHAT 2018]
+ * [WECHAT  a free software]
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -9,7 +9,7 @@ define('FRAME', 'system');
 load()->model('system');
 load()->model('wxapp');
 
-$dos = array('delete', 'display', 'edit_version', 'del_version', 'get_available_apps');
+$dos = array('delete', 'display', 'edit_version', 'del_version', 'get_available_apps', 'getpackage');
 $do = in_array($do, $dos) ? $do : 'display';
 
 $uniacid = intval($_GPC['uniacid']);
@@ -18,17 +18,9 @@ if (empty($uniacid)) {
 	itoast('请选择要编辑的小程序', referer(), 'error');
 }
 
-<<<<<<< HEAD
-$state = uni_permission($_W['uid'], $uniacid);
-if ($state != ACCOUNT_MANAGE_NAME_OWNER && $state != ACCOUNT_MANAGE_NAME_FOUNDER && $state != ACCOUNT_MANAGE_NAME_MANAGER) {
-=======
 $state = permission_account_user_role($_W['uid'], $uniacid);
-
-	$role_permission = in_array($state, array(ACCOUNT_MANAGE_NAME_OWNER, ACCOUNT_MANAGE_NAME_FOUNDER, ACCOUNT_MANAGE_NAME_MANAGER, ACCOUNT_MANAGE_NAME_VICE_FOUNDER));
-
-
+$role_permission = in_array($state, array(ACCOUNT_MANAGE_NAME_OWNER, ACCOUNT_MANAGE_NAME_FOUNDER, ACCOUNT_MANAGE_NAME_MANAGER, ACCOUNT_MANAGE_NAME_VICE_FOUNDER));
 if (!$role_permission) {
->>>>>>> parent of 775f72a... 654
 	itoast('无权限操作！', referer(), 'error');
 }
 
@@ -41,10 +33,9 @@ if ($do == 'display') {
 		$version_exist = wxapp_fetch($account['uniacid']);
 		if (!empty($version_exist)) {
 			$wxapp_version_lists = wxapp_version_all($account['uniacid']);
-			$wxapp_modules = wxapp_support_wxapp_modules();
+			$wxapp_modules = wxapp_support_uniacid_modules();
 		}
 	}
-
 	template('wxapp/manage');
 }
 
@@ -129,28 +120,33 @@ if ($do == 'delete') {
 		itoast('版本不存在', referer(), 'error');
 	}
 	itoast('删除成功', referer(), 'success');
-<<<<<<< HEAD
 }
 
 if($do == 'getpackage') {
+
 	$versionid = intval($_GPC['versionid']);
 	if(empty($versionid)) {
 		itoast('参数错误！', '', '');
 	}
-
 	$account_wxapp_info = wxapp_fetch($uniacid, $versionid);
 	if (empty($account_wxapp_info)) {
 		itoast('版本不存在！', referer(), 'error');
 	}
+	$siteurl = $_W['siteroot'].'app/index.php';
+	if(!empty($account_wxapp_info['appdomain'])) {
+		$siteurl = $account_wxapp_info['appdomain'];
+	}
+
 	$request_cloud_data = array(
 		'name' => $account_wxapp_info['name'],
 		'modules' => $account_wxapp_info['version']['modules'],
 		'siteInfo' => array(
+			'name' => $account_wxapp_info['name'],
 			'uniacid' => $account_wxapp_info['uniacid'],
 			'acid' => $account_wxapp_info['acid'],
 			'multiid' => $account_wxapp_info['version']['multiid'],
 			'version' => $account_wxapp_info['version']['version'],
-			'siteroot' => $_W['siteroot'].'app/index.php',
+			'siteroot' => $siteurl,
 			'design_method' => $account_wxapp_info['version']['design_method']
 		),
 		'tabBar' => json_decode($account_wxapp_info['version']['quickmenu'], true),
@@ -165,6 +161,4 @@ if($do == 'getpackage') {
 		echo $result;
 	}
 	exit;
-=======
->>>>>>> parent of 775f72a... 654
 }

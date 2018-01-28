@@ -1,27 +1,17 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
-$account_api = WeAccount::create();
-if (!($action == 'material' && $do == 'delete') && empty($_GPC['version_id'])) {
-	if (is_error($account_api)) {
-		message($account_api['message'], url('account/display'));
-	}
-	$check_manange = $account_api->checkIntoManage();
-	if (is_error($check_manange)) {
-		$account_display_url = $account_api->accountDisplayUrl();
-		itoast('', $account_display_url);
-	}
-}
+checkaccount();
 
-if ($action != 'material-post' && $_GPC['uniacid'] != FILE_NO_UNIACID) {
+if ($action != 'material-post') {
 	define('FRAME', 'account');
 }
 if ($action == 'qr') {
-	$platform_qr_permission =  uni_user_permission_check('platform_qr', false);
+	$platform_qr_permission = permission_check_account_user('platform_qr', false);
 	if ($platform_qr_permission ===  false) {
 		header("Location: ". url('platform/url2qr'));
 	}

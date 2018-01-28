@@ -1,7 +1,7 @@
 <?php
 /**
- * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ * [WECHAT 2018]
+ * [WECHAT  a free software]
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -10,7 +10,6 @@ load()->model('extension');
 
 $dos = array('display', 'post', 'del', 'default', 'copy', 'switch', 'quickmenu_display', 'quickmenu_post');
 $do = in_array($do, $dos) ? $do : 'display';
-uni_user_permission_check('platform_site');
 $_W['page']['title'] = '微官网';
 $setting = uni_setting($_W['uniacid'], 'default_site');
 $default_site = intval($setting['default_site']);
@@ -39,12 +38,12 @@ if ($do == 'post') {
 			'styleid' => intval($_GPC['styleid']),
 			'status' => intval($_GPC['status']),
 			'site_info' => iserializer(array(
-				'thumb' => trim($_GPC['thumb']),
-				'keyword' => trim($_GPC['keyword']),
-				'description' => trim($_GPC['description']),
-				'footer' => htmlspecialchars($_GPC['footer'])
+				'thumb' => $_GPC['thumb'],
+				'keyword' => $_GPC['keyword'],
+				'description' => $_GPC['description'],
+				'footer' => htmlspecialchars_decode($_GPC['footer'])
 			)),
-			'bindhost' => trim($_GPC['bindhost']),
+			'bindhost' => $_GPC['bindhost'],
 		);
 		if (empty($data['title'])) {
 			itoast('请填写站点名称', referer(), 'error');
@@ -62,10 +61,10 @@ if ($do == 'post') {
 			$cover = array(
 				'uniacid' => $_W['uniacid'],
 				'title' => $data['title'],
-				'keyword' => trim($_GPC['keyword']),
+				'keyword' => $_GPC['keyword'],
 				'url' => url('home', array('i' => $_W['uniacid'], 't' => $id)),
-				'description' => trim($_GPC['description']),
-				'thumb' => trim($_GPC['thumb']),
+				'description' => $_GPC['description'],
+				'thumb' => $_GPC['thumb'],
 				'module' => 'site',
 				'multiid' => $id,
 			);
@@ -73,7 +72,7 @@ if ($do == 'post') {
 		}
 		itoast('更新站点信息成功！', url('site/multi/display'), 'success');
 	}
-	
+
 	if (!empty($id)) {
 		$multi = pdo_fetch('SELECT * FROM ' . tablename('site_multi') . ' WHERE uniacid = :uniacid AND id = :id', array(':uniacid' => $_W['uniacid'], ':id' => $id));
 		if (empty($multi)) {
@@ -82,7 +81,7 @@ if ($do == 'post') {
 		$multi['site_info'] = iunserializer($multi['site_info']) ? iunserializer($multi['site_info']) : array();
 	}
 
-	
+
 	$temtypes = ext_template_type();
 	$temtypes[] = array('name' => 'all', 'title' => '全部');
 
@@ -131,7 +130,7 @@ if ($do == 'display') {
 }
 
 if ($do == 'del') {
-		$id = intval($_GPC['id']);
+	$id = intval($_GPC['id']);
 	if ($default_site == $id) {
 		itoast('您删除的微站是默认微站,删除前先指定其他微站为默认微站', referer(), 'error');
 	}
@@ -207,16 +206,18 @@ if ($do == 'switch') {
 		iajax(-1, '请求失败！', '');
 	}
 }
-if ($do == 'quickmenu_display' && $_W['isajax'] && $_W['ispost']) {
+if ($do == 'quickmenu_display' && $_W['isajax'] && $_W['ispost'] && $_W['role'] != 'operator') {
 	$multiid = intval($_GPC['multiid']);
 	if($multiid > 0){
 		$page = pdo_get('site_page', array('multiid' => $multiid, 'type' => 2));
+		$params = !empty($page['params']) ? $page['params'] : 'null';
+		$status = $page['status'] == 1 ? 1 : 0;
+		$modules = uni_modules();
+		$modules = !empty($modules) ? $modules : 'null';
+		iajax(0, array('params' => json_decode($params), 'status' => $status, 'modules' => $modules), '');
+	} else {
+		iajax(-1, '请求失败！', '');
 	}
-	$params = !empty($page['params']) ? $page['params'] : 'null';
-	$status = $page['status'] == 1 ? 1 : 0;
-	$modules = uni_modules();
-	$modules = !empty($modules) ? $modules : 'null';
-	iajax(0, array('params' => json_decode($params), 'status' => $status, 'modules' => $modules), '');
 }
 
 if ($do == 'quickmenu_post' && $_W['isajax'] && $_W['ispost']) {
@@ -224,10 +225,6 @@ if ($do == 'quickmenu_post' && $_W['isajax'] && $_W['ispost']) {
 	if (empty($params)) {
 		iajax(1, '请您先设计手机端页面.');
 	}
-	foreach ($params['position'] as &$val) {
-		$val = $val == 'true' ? 1 : 0;
-	}
-	unset($val);
 	$html = htmlspecialchars_decode($_GPC['postdata']['html'], ENT_QUOTES);
 	$html = preg_replace('/background\-image\:(\s)*url\(\"(.*)\"\)/U', 'background-image: url($2)', $html);
 	$data = array(
