@@ -18,6 +18,7 @@
 					{/loop}
 				</ul>
 				<ul class="nav navbar-nav navbar-right">
+					{template 'common/header-notice'}
 					<li class="dropdown">
 						<a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown"><i class="wi wi-user color-gray"></i>{$_W['user']['username']} <span class="caret"></span></a>
 						<ul class="dropdown-menu color-gray" role="menu">
@@ -27,7 +28,7 @@
 							{if $_W['isfounder']}
 							<li class="divider"></li>
 							{if uni_user_see_more_info(ACCOUNT_MANAGE_NAME_VICE_FOUNDER, false)}
-							<li><a href="{url 'cloud/upgrade'}" target="_blank"><i class="wi wi-update color-gray"></i> 自动更新</a></li>
+							<li><a href="{url 'https://www.zhujitop.com'}" target="_blank"><i class="wi wi-update color-gray"></i> 自动更新</a></li>
 							{/if}
 							<li><a href="{url 'system/updatecache'}" target="_blank"><i class="wi wi-cache color-gray"></i> 更新缓存</a></li>
 							<li class="divider"></li>
@@ -53,7 +54,7 @@
 <div class="main">
 {if !defined('IN_MESSAGE')}
 <div class="container">
-	{if in_array(FRAME, array('account', 'system', 'advertisement', 'wxapp', 'site')) && !in_array($_GPC['a'], array('news-show', 'notice-show'))}
+	{if in_array(FRAME, array('account', 'system', 'advertisement', 'wxapp', 'site', 'webapp')) && !in_array($_GPC['a'], array('news-show', 'notice-show'))}
 	<div class="panel panel-content main-panel-content {if !empty($frames['section']['platform_module_menu']['plugin_menu'])}panel-content-plugin{/if}">
 	<div class="panel-body clearfix main-panel-body {if !empty($_W['setting']['copyright']['leftmenufixed'])}menu-fixed{/if}">
 		<div class="left-menu">
@@ -79,7 +80,7 @@
 						{if !empty($menu['is_display'])}
 							{if $menu_id == 'platform_module_more'}
 							<li class="list-group-item list-group-more">
-								<a href="{url 'module/manage-account'}" target="_blank"><span class="label label-more">更多应用</span></a>
+								<a href="{php echo $menu['url']}" {if FRAME != 'webapp'}target="_blank"{/if}><span class="label label-more">更多应用</span></a>
 							</li>
 							{else}
 							<li class="list-group-item {if $menu['active']}active{/if}">
@@ -107,7 +108,7 @@
 					<div class="plugin-menu-main pull-left">
 						<ul class="list-group">
 							<li class="list-group-item{if $_W['current_module']['name'] == $frames['section']['platform_module_menu']['plugin_menu']['main_module']} active{/if}">
-								<a href="{php echo url('home/welcome/ext', array('m' => $frames['section']['platform_module_menu']['plugin_menu']['main_module']))}">
+								<a href="{php echo url('home/welcome/ext', array('m' => $frames['section']['platform_module_menu']['plugin_menu']['main_module'], 'version_id' => intval($_GPC['version_id'])))}">
 									<i class="wi wi-main-apply"></i>
 									<div>主应用</div>
 								</a>
@@ -117,7 +118,7 @@
 							</li>
 							{loop $frames['section']['platform_module_menu']['plugin_menu']['menu'] $plugin_name $plugin}
 							<li class="list-group-item{if $_W['current_module']['name'] == $plugin_name} active{/if}">
-								<a href="{php echo url('home/welcome/ext', array('m' => $plugin_name))}">
+								<a href="{php echo url('home/welcome/ext', array('m' => $plugin_name, 'version_id' => intval($_GPC['version_id'])))}">
 									<img src="{$plugin['icon']}" alt="" class="img-icon" />
 									<div>{$plugin['title']}</div>
 								</a>

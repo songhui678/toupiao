@@ -26,7 +26,7 @@
 				{if !empty($copyright['slides'])}
 					{php $i = 1;}
 					{loop $copyright['slides'] $slide}
-						<div class="item {if $i == 1}active{/if}" style="background-image:url({php echo tomedia($slide);});"></div>
+						<div class="item {if $i == 1}active{/if}"><img src="{php echo tomedia($slide);}" alt="" style="width:100%;"></div>
 						{php $i++;}
 					{/loop}
 				{/if}
@@ -72,7 +72,7 @@
 							<div class="col-xs-6">
 								<ul class="list-unstyled">
 									{loop $notices $notice}
-										<li><span class="style-2">公告</span><a href="{php echo url('article/notice-show/detail', array('id' => $notice['id']));}">{$notice['title']}</a></li>
+										<li><span class="style-2">公告</span><a href="{php echo url('article/notice-show/detail', array('id' => $notice['id']));}" style="{if !empty($notice['style'])}{if !empty($notice['style']['color'])}color: {php echo $notice['style']['color']};{/if}{if !empty($notice['style']['bold'])}font-weight:bold;{/if}{/if}">{$notice['title']}</a></li>
 									{/loop}
 								</ul>
 							</div>
@@ -215,14 +215,14 @@
 	</div>
 	<div class="center-block footer" role="footer">
 		<div class="text-center">
-			{if empty($copyright['footerright'])}<a href="http://www.we8.club">关于维吧</a>&nbsp;&nbsp;<a href="http://www.we8.club">维吧社区</a>&nbsp;&nbsp;<a href="tencent://message/?uin=1582077961&Site=联系客服&Menu=yes">联系客服</a>{else}{$copyright['footerright']}{/if} &nbsp; &nbsp; {if !empty($copyright['statcode'])}{$copyright['statcode']}{/if}
+			{if empty($copyright['footerright'])}<a href="http://www.we7.cc">关于微擎</a>&nbsp;&nbsp;<a href="http://bbs.we7.cc">微擎论坛</a>&nbsp;&nbsp;<a href="http://wpa.b.qq.com/cgi/wpa.php?ln=1&key=XzkzODAwMzEzOV8xNzEwOTZfNDAwMDgyODUwMl8yXw">联系客服</a>{else}{$copyright['footerright']}{/if} &nbsp; &nbsp; {if !empty($copyright['statcode'])}{$copyright['statcode']}{/if}
 		</div>
 		<div class="text-center">
-			{if empty($copyright['footerleft'])}Powered by <a href="http://www.we8.club"><b>微擎</b></a> v{IMS_VERSION} &copy; 2014-2015 <a href="http://www.we8.club">www.we8.club</a>{else}{$copyright['footerleft']}{/if}
+			{if empty($copyright['footerleft'])}Powered by <a href="http://www.we7.cc"><b>微擎</b></a> v{IMS_VERSION} &copy; 2014-2015 <a href="http://www.we7.cc">www.we7.cc</a>{else}{$copyright['footerleft']}{/if}
 		</div>
 	</div>
 </div>
-<script type="text/javascript" src="http://api.map.baidu.com/api?v=1.4"></script>
+<script type="text/javascript" src="//api.map.baidu.com/api?v=1.4"></script>
 <script>
 	var bmap = {
 		'option' : {

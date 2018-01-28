@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 
 require '../../framework/bootstrap.inc.php';
@@ -36,11 +36,29 @@ if (!empty($input)) {
 }
 
 $account = pdo_get('account_wechats', array('key' => $wechat_data['appid']));
+if (empty($account)) {
+	$account = pdo_get('account_wxapp', array('key' => $wechat_data['appid']));
+}
 $_W['uniacid'] = $account['uniacid'];
-
+if (!empty($wechat_data['sub_mch_id'])) {
+	$account_list = pdo_getall('account', array(), array('uniacid'));
+	if (is_array($account_list)) {
+		foreach ($account_list as $sub_account) {
+			$setting = uni_setting_load('payment', $sub_account['uniacid']);
+			if ($setting['payment']['wechat']['switch'] == PAYMENT_WECHAT_TYPE_SERVICE && $wechat_data['sub_mch_id'] == $setting['payment']['wechat']['sub_mch_id']) {
+				$_W['uniacid'] = $sub_account['uniacid'];
+				break;
+			}
+		}
+	}
+}
 $setting = uni_setting_load('payment', $_W['uniacid']);
 $pay_setting = $setting['payment']['wechat'];
 $pay_setting['signkey'] = $pay_setting['version'] == 1 ? $pay_setting['key'] : $pay_setting['signkey'];
+if ($pay_setting['switch'] == PAYMENT_WECHAT_TYPE_SERVICE) {
+	$proxy_setting = uni_setting_load('payment', $pay_setting['service']);
+	$pay_setting['signkey'] = $proxy_setting['payment']['wechat_facilitator']['signkey'];
+}
 
 if(!empty($pay_setting['signkey'])) {
 	WeUtility::logging('refund', var_export($wechat_data, true));

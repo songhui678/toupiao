@@ -1,7 +1,7 @@
 <?php
 /**
- * [WECHAT 2018]
- * [WECHAT  a free software]
+ * [WeEngine System] Copyright (c) 2014 WE7.CC
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -159,7 +159,7 @@ function template_parse($str) {
 	$str = str_replace('{##', '{', $str);
 	$str = str_replace('##}', '}', $str);
 
-	$business_stat_script = $GLOBALS['_W']['current_module']['name'] ? "</script><script type=\"text/javascript\" src=\"{$GLOBALS['_W']['siteroot']}app/index.php?i={$GLOBALS['_W']['uniacid']}&c=utility&a=visit&do=showjs&m={$GLOBALS['_W']['current_module']['name']}\">" : '';
+	$business_stat_script = "</script><script type=\"text/javascript\" src=\"{$GLOBALS['_W']['siteroot']}app/index.php?i={$GLOBALS['_W']['uniacid']}&c=utility&a=visit&do=showjs&m={$GLOBALS['_W']['current_module']['name']}\">";
 	if (!empty($GLOBALS['_W']['setting']['remote']['type'])) {
 		$str = str_replace('</body>', "<script>var imgs = document.getElementsByTagName('img');for(var i=0, len=imgs.length; i < len; i++){imgs[i].onerror = function() {if (!this.getAttribute('check-src') && (this.src.indexOf('http://') > -1 || this.src.indexOf('https://') > -1)) {this.src = this.src.indexOf('{$GLOBALS['_W']['attachurl_local']}') == -1 ? this.src.replace('{$GLOBALS['_W']['attachurl_remote']}', '{$GLOBALS['_W']['attachurl_local']}') : this.src.replace('{$GLOBALS['_W']['attachurl_local']}', '{$GLOBALS['_W']['attachurl_remote']}');this.setAttribute('check-src', true);}}};{$business_stat_script}</script></body>", $str);
 	} else {
@@ -320,9 +320,15 @@ function site_article($params = array()) {
 			$condition .= " AND ccate = :ccate ";
 			$pars[':ccate'] = $cid;
 		} else {
-			$condition .= " AND pcate = :pcate AND ccate = :ccate ";
+			$condition .= " AND pcate = :pcate AND (ccate = :ccate OR iscommend = '1')";
 			$pars[':pcate'] = $cid;
 			$pars[':ccate'] = ARTICLE_CCATE;
+		}
+	} else {
+		$category_list = pdo_getall('site_category', array('uniacid' => $_W['uniacid'], 'multiid' => $multiid), array(), 'id');
+		$category_list = implode(',', array_keys($category_list));
+		if (!empty($category_list)) {
+			$condition .= " AND (pcate IN (". $category_list .") OR ccate IN (". $category_list .") OR pcate = 0 AND ccate = 0)";
 		}
 	}
 	if ($iscommend == 'true') {
@@ -334,7 +340,7 @@ function site_article($params = array()) {
 	$sql = "SELECT * FROM ".tablename('site_article'). $condition. ' ORDER BY displayorder DESC, id DESC LIMIT ' . ($pindex - 1) * $psize .',' .$psize;
 	$result['list'] = pdo_fetchall($sql, $pars);
 	$total = pdo_fetchcolumn('SELECT COUNT(*) FROM ' . tablename('site_article') . $condition, $pars);
-	$result['pager'] = pagination($total, $pindex, $psize);
+	$result['pager'] = pagination($total, $pindex, $psize, '', array('before' => 0, 'after' => 0));
 	if (!empty($result['list'])) {
 		foreach ($result['list'] as &$row) {
 			if(empty($row['linkurl'])) {

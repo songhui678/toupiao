@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 class CoreModuleReceiver extends WeModuleReceiver {
@@ -90,9 +90,6 @@ class CoreModuleReceiver extends WeModuleReceiver {
 			$userinfo = $account_obj->fansQueryInfo($this->message['from']);
 			if(!is_error($userinfo) && !empty($userinfo) && !empty($userinfo['subscribe'])) {
 				$userinfo['nickname'] = stripcslashes($userinfo['nickname']);
-				if (!empty($userinfo['headimgurl'])) {
-					$userinfo['headimgurl'] = rtrim($userinfo['headimgurl'], '0') . 132;
-				}
 				$userinfo['avatar'] = $userinfo['headimgurl'];
 				$fans = array(
 					'unionid' => $userinfo['unionid'],

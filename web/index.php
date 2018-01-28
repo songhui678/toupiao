@@ -1,20 +1,30 @@
 <?php
 /**
- * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * [WeEngine System] Copyright (c) 20180112104051 WE7.CC
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 define('IN_SYS', true);
 require '../framework/bootstrap.inc.php';
 require IA_ROOT . '/web/common/bootstrap.sys.inc.php';
 
-load()->web('common');
-load()->web('template');
-load()->func('file');
+if (!empty($_GPC['state'])) {
+	$login_callback_params = OAuth2Client::supportParams($_GPC['state']);
+	if (!empty($login_callback_params)) {
+		$controller = 'user';
+		$action = 'login';
+		$_GPC['login_type'] = $login_callback_params['from'];
+		$_GPC['handle_type'] = $login_callback_params['mode'];
+	}
+}
 
 if (empty($_W['isfounder']) && !empty($_W['user']) && ($_W['user']['status'] == USER_STATUS_CHECK || $_W['user']['status'] == USER_STATUS_BAN)) {
 	message('您的账号正在审核或是已经被系统禁止，请联系网站管理员解决！');
 }
 $acl = require IA_ROOT . '/web/common/permission.inc.php';
+
+$_W['page'] = array();
+$_W['page']['copyright'] = $_W['setting']['copyright'];
+
 if (($_W['setting']['copyright']['status'] == 1) && empty($_W['isfounder']) && $controller != 'cloud' && $controller != 'utility' && $controller != 'account') {
 	$_W['siteclose'] = true;
 	if ($controller == 'account' && $action == 'welcome') {
@@ -73,9 +83,6 @@ if (!in_array($action, $actions)) {
 	$action = $acl[$controller]['default'] ? $acl[$controller]['default'] : $actions[0];
 }
 
-$_W['page'] = array();
-$_W['page']['copyright'] = $_W['setting']['copyright'];
-
 if (is_array($acl[$controller]['direct']) && in_array($action, $acl[$controller]['direct'])) {
 		require _forward($controller, $action);
 	exit();
@@ -83,9 +90,6 @@ if (is_array($acl[$controller]['direct']) && in_array($action, $acl[$controller]
 checklogin();
 if ($_W['role'] != ACCOUNT_MANAGE_NAME_FOUNDER) {
 	if (empty($_W['uniacid'])) {
-		if ($_W['role'] == ACCOUNT_MANAGE_NAME_CLERK) {
-			itoast('', url('module/display'), 'info');
-		}
 		if (defined('FRAME') && FRAME == 'account') {
 			itoast('', url('account/display'), 'info');
 		}
@@ -93,14 +97,11 @@ if ($_W['role'] != ACCOUNT_MANAGE_NAME_FOUNDER) {
 			itoast('', url('wxapp/display'), 'info');
 		}
 	}
-	if (function_exists('permission_build')) {
-		$acl = permission_build();
-	}
+	$acl = permission_build();
 	if (empty($acl[$controller][$_W['role']]) || (!in_array($controller.'*', $acl[$controller][$_W['role']]) && !in_array($action, $acl[$controller][$_W['role']]))) {
 		message('不能访问, 需要相应的权限才能访问！');
 	}
 }
-
 require _forward($controller, $action);
 
 define('ENDTIME', microtime());
@@ -126,7 +127,7 @@ function _forward($c, $a) {
 }
 function _calc_current_frames(&$frames) {
 	global $controller, $action;
-	if (! empty($frames['section']) && is_array($frames['section'])) {
+	if (!empty($frames['section']) && is_array($frames['section'])) {
 		foreach ($frames['section'] as &$frame) {
 			if (empty($frame['menu'])) {
 				continue;
@@ -145,7 +146,7 @@ function _calc_current_frames(&$frames) {
 					$get['c'] = $controller;
 					$get['a'] = $action;
 				}
-				if (! empty($do)) {
+				if (!empty($do)) {
 					$get['do'] = $do;
 				}
 				$diff = array_diff_assoc($urls, $get);

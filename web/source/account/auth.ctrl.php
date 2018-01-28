@@ -1,12 +1,13 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
 load()->func('communication');
 load()->classs('weixin.platform');
+load()->model('account');
 set_time_limit(0);
 
 $dos = array('ticket', 'forward', 'test', 'confirm');
@@ -119,6 +120,9 @@ if ($do == 'forward') {
 	}
 	if (empty($_W['isfounder'])) {
 		pdo_insert('uni_account_users', array('uniacid' => $uniacid, 'uid' => $_W['uid'], 'role' => 'owner'));
+		if (!empty($_W['user']['owner_uid'])) {
+			uni_user_account_role($uniacid, $_W['user']['owner_uid'], ACCOUNT_MANAGE_NAME_VICE_FOUNDER);
+		}
 	}
 	pdo_update('uni_account', array('default_acid' => $acid), array('uniacid' => $uniacid));
 	$headimg = ihttp_request($account_info['authorizer_info']['head_img']);

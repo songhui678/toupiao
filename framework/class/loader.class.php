@@ -1,7 +1,7 @@
 <?php
 /**
- * [WECHAT 2018]
- * [WECHAT  a free software]
+ * [WeEngine System] Copyright (c) 2014 WE7.CC
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -42,6 +42,10 @@ class Loader {
 		'pkcs7' => 'pkcs7/pkcs7Encoder',
 		'json' => 'json/JSON',
 		'phpmailer' => 'phpmailer/PHPMailerAutoload',
+		'oss' => 'alioss/autoload',
+		'qiniu' => 'qiniu/autoload',
+		'cos' => 'cosv4.2/include',
+		'cosv3' => 'cos/include',
 	);
 	private $loadTypeMap = array(
 		'func' => '/framework/function/%s.func.php',
@@ -52,11 +56,11 @@ class Loader {
 		'web' => '/web/common/%s.func.php',
 		'app' => '/app/common/%s.func.php',
 	);
-	
+
 	public function __call($type, $params) {
 		global $_W;
-		$name = array_shift($params);
-		if (!empty($this->cache[$type]) && isset($this->cache[$type][$name])) {
+		$name = $cachekey = array_shift($params);
+		if (!empty($this->cache[$type]) && isset($this->cache[$type][$cachekey])) {
 			return true;
 		}
 		if (empty($this->loadTypeMap[$type])) {
@@ -68,10 +72,10 @@ class Loader {
 		$file = sprintf($this->loadTypeMap[$type], $name);
 		if (file_exists(IA_ROOT . $file)) {
 			include IA_ROOT . $file;
-			$this->cache[$type][$name] = true;
+			$this->cache[$type][$cachekey] = true;
 			return true;
 		} else {
-			trigger_error('Invalid ' . ucfirst($type) . $file, E_USER_ERROR);
+			trigger_error('Invalid ' . ucfirst($type) . $file, E_USER_WARNING);
 			return false;
 		}
 	}

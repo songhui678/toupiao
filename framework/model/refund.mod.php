@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 
 defined('IN_IA') or exit('Access Denied');
@@ -134,6 +134,13 @@ function reufnd_wechat_build($refund_id) {
 		'nonce_str' => random(8),
 		'refund_desc' => $refundlog['reason']
 	);
+	if ($setting['payment']['wechat']['switch'] == PAYMENT_WECHAT_TYPE_SERVICE) {
+		$refund_param['sub_mch_id'] = $setting['payment']['wechat']['sub_mch_id'];
+		$refund_param['sub_appid'] = $account['key'];
+		$proxy_account = uni_fetch($setting['payment']['wechat']['service']);
+		$refund_param['appid'] = $proxy_account['key'];
+		$refund_param['mch_id'] = $proxy_account['setting']['payment']['wechat_facilitator']['mchid'];
+	}
 	$cert = authcode($refund_setting['cert'], 'DECODE');
 	$key = authcode($refund_setting['key'], 'DECODE');
 	file_put_contents(ATTACHMENT_ROOT . $_W['uniacid'] . '_wechat_refund_all.pem', $cert . $key);

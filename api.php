@@ -1,11 +1,12 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 define('IN_API', true);
 require_once './framework/bootstrap.inc.php';
 load()->model('reply');
+load()->model('attachment');
 load()->app('common');
 load()->classs('wesession');
 $hash = $_GPC['hash'];
@@ -45,6 +46,7 @@ $_W['uniaccount'] = uni_fetch($_W['uniacid']);
 $_W['account']['groupid'] = $_W['uniaccount']['groupid'];
 $_W['account']['qrcode'] = $_W['attachurl'].'qrcode_'.$_W['acid'].'.jpg?time='.$_W['timestamp'];
 $_W['account']['avatar'] = $_W['attachurl'].'headimg_'.$_W['acid'].'.jpg?time='.$_W['timestamp'];
+$_W['attachurl'] = attachment_set_attach_url();
 
 $engine = new WeEngine();
 if (!empty($_W['setting']['copyright']['status'])) {
@@ -360,28 +362,12 @@ class WeEngine {
 			}
 		} else {
 			if ($message['event'] == 'subscribe' || $message['type'] == 'text' || $message['type'] == 'image') {
-				$rec = array();
-				$rec['acid'] = $_W['acid'];
-				$rec['uniacid'] = $_W['uniacid'];
-				$rec['uid'] = 0;
-				$rec['openid'] = $message['from'];
-				$rec['salt'] = random(8);
-				$rec['follow'] = 1;
-				$rec['followtime'] = $message['time'];
-				$rec['unfollowtime'] = 0;
-								if (!isset($setting['passport']) || empty($setting['passport']['focusreg'])) {
-										$data = array(
-						'uniacid' => $_W['uniacid'],
-						'email' => md5($message['from']).'@we7.cc',
-						'salt' => random(8),
-						'groupid' => $default_groupid,
-						'createtime' => TIMESTAMP,
-					);
-					$data['password'] = md5($message['from'] . $data['salt'] . $_W['config']['setting']['authkey']);
-					pdo_insert('mc_members', $data);
-					$rec['uid'] = pdo_insertid();
+				load()->model('mc');
+				$force_init_member = false;
+				if (!isset($setting['passport']) || empty($setting['passport']['focusreg'])) {
+					$force_init_member = true;
 				}
-				pdo_insert('mc_mapping_fans', $rec);
+				mc_init_fans_info($message['from'], $force_init_member);
 			}
 		}
 	}
@@ -409,13 +395,17 @@ class WeEngine {
 		}
 		if (!empty($subscribe[$this->message['type']])) {
 			foreach ($subscribe[$this->message['type']] as $modulename) {
-								$response = ihttp_request(wurl('utility/subscribe/receive'), array(
-					'i' => $GLOBALS['uniacid'], 
+																$params = array(
+					'i' => $GLOBALS['uniacid'],
 					'modulename' => $modulename,
 					'request' => json_encode($par),
 					'response' => json_encode($response),
 					'message' => json_encode($this->message),
-				), array(), 0);
+				);
+				$response = ihttp_request(wurl('utility/subscribe/receive'), $params, array(), 10);
+				if (is_error($response) && $response['errno'] == '7') {
+					$response = ihttp_request($_W['siteroot'] . 'web/' . wurl('utility/subscribe/receive'), $params, array(), 10);
+				}
 			}
 		}
 	}

@@ -1,12 +1,12 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
 class CoreModuleProcessor extends WeModuleProcessor {
-	
+
 	public function respond() {
 
 		$reply_type = $this->reply_type;
@@ -64,7 +64,7 @@ class CoreModuleProcessor extends WeModuleProcessor {
 	private function image_respond() {
 		global $_W;
 		$rid = $this->rule;
-		$sql = "SELECT `mediaid` FROM " . tablename('images_reply') . " WHERE `rid`=:rid";
+		$sql = "SELECT `mediaid` FROM " . tablename('images_reply') . " WHERE `rid`=:rid ORDER BY RAND()";
 		$mediaid = pdo_fetchcolumn($sql, array(':rid' => $rid));
 		if (empty($mediaid)) {
 			return false;
@@ -125,7 +125,7 @@ class CoreModuleProcessor extends WeModuleProcessor {
 	private function voice_respond() {
 		global $_W;
 		$rid = $this->rule;
-		$sql = "SELECT `mediaid` FROM " . tablename('voice_reply') . " WHERE `rid`=:rid";
+		$sql = "SELECT `mediaid` FROM " . tablename('voice_reply') . " WHERE `rid`=:rid ORDER BY RAND()";
 		$mediaid = pdo_fetchcolumn($sql, array(':rid' => $rid));
 		if (empty($mediaid)) {
 			return false;
@@ -136,7 +136,7 @@ class CoreModuleProcessor extends WeModuleProcessor {
 	private function video_respond() {
 		global $_W;
 		$rid = $this->rule;
-		$sql = "SELECT * FROM " . tablename('video_reply') . " WHERE `rid`=:rid";
+		$sql = "SELECT * FROM " . tablename('video_reply') . " WHERE `rid`=:rid ORDER BY RAND()";
 		$item = pdo_fetch($sql, array(':rid' => $rid));
 		if (empty($item)) {
 			return false;

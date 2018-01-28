@@ -1,10 +1,13 @@
-<?php
+<?php 
+/**
+ * [WeEngine System] Copyright (c) 2014 WE7.CC
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
+ */
 defined('IN_IA') or exit('Access Denied');
 
 load()->model('cloud');
 load()->model('setting');
-$cdnip = base64_decode('d2FwaS53ZWk4ODQ4LmNvbQ');
-$cdnips = base64_decode('aHR0cDovL3dhcGkud2VpODg0OC5jb20');
+
 $dos = array('display', 'testapi');
 $do = in_array($do, $dos) ? $do : 'display';
 uni_user_permission_check('system_cloud_diagnose');
@@ -13,7 +16,7 @@ $_W['page']['title'] = '云服务诊断 - 云服务';
 
 if ($do == 'testapi') {
 	$starttime = microtime(true);
-	$response = cloud_request($cdnips, array(), array('ip' => $_GPC['ip']));
+	$response = cloud_request('HTTP_HOST', array(), array('ip' => $_GPC['ip']));
 	$endtime = microtime(true);
 	iajax(0,'请求接口成功，耗时 '.(round($endtime - $starttime, 5)).' 秒');
 } else {
@@ -29,10 +32,6 @@ if ($do == 'testapi') {
 		}
 		itoast('修改云服务ip成功.', 'refresh', 'success');
 	}
-	if (checksubmit('updateserverfile')) {
-		cloud_build();
-		itoast('获取补丁文件成功.', 'refresh', 'success');
-	}
 	if(empty($_W['setting']['site'])) {
 		$_W['setting']['site'] = array();
 	}
@@ -41,13 +40,13 @@ if ($do == 'testapi') {
 		$checkips[] = $_W['setting']['cloudip']['ip'];
 	}
 	if (strexists(strtoupper(PHP_OS), 'WINNT')) {
-		$cloudip = gethostbyname($cdnip);
+		$cloudip = gethostbyname('HTTP_HOST');
 		if (!in_array($cloudip, $checkips)) {
 			$checkips[] = $cloudip;
 		}
 	} else {
 		for ($i = 0; $i <= 10; $i++) {
-			$cloudip = gethostbyname($cdnip);
+			$cloudip = gethostbyname('HTTP_HOST');
 			if (!in_array($cloudip, $checkips)) {
 				$checkips[] = $cloudip;
 			}

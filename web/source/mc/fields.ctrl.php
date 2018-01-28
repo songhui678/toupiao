@@ -1,10 +1,12 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
+
 permission_check_account_user('mc_member');
+
 $dos = array('display', 'post');
 $do = in_array($do, $dos) ? $do : 'display';
 if($do == 'display') {

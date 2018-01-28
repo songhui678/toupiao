@@ -1,22 +1,25 @@
 <?php defined('IN_IA') or exit('Access Denied');?><?php (!empty($this) && $this instanceof WeModuleSite || 0) ? (include $this->template('common/header', TEMPLATE_INCLUDEPATH)) : (include template('common/header', TEMPLATE_INCLUDEPATH));?>
 <div class="panel panel-cut" id="js-account-display" ng-controller="AccountDisplay" ng-cloak>
 	<div class="panel-heading">
-		<i class="wi wi-wechat" style="font-size: 24px; margin-right: 10px; vertical-align:middle;"></i>请选择您要操作的公众号
+		<span class="panel-heading-left"><i class="wi wi-wechat" style="font-size: 24px; margin-right: 10px; vertical-align:middle;"></i>请选择您要操作的公众号</span>
 		<div class="font-default pull-right">
-			<?php  if(!empty($account_info['uniacid_limit']) || $_W['isfounder'] && !user_is_vice_founder()) { ?>
-			<a href="./index.php?c=account&a=post-step" class="color-default"><i class="fa fa-plus"></i>新增公众号</a>
-			<?php  } ?>
+			
+				<?php  if(!empty($account_info['uniacid_limit']) || $_W['isfounder'] && !user_is_vice_founder()) { ?>
+				<a href="./index.php?c=account&a=post-step" class="color-default"><i class="fa fa-plus"></i>新增公众号</a>
+				<?php  } ?>
+			
+			
 			<?php  if($state == ACCOUNT_MANAGE_NAME_FOUNDER || $state == ACCOUNT_MANAGE_NAME_MANAGER) { ?>
-			<a href="./index.php?c=account&a=manage" class="color-default"><i class="wi wi-wechatstatistics"></i>公众号管理</a>
+			<a href="<?php  echo url('account/manage', array('account_type' => ACCOUNT_TYPE_OFFCIAL_NORMAL))?>" class="color-default"><i class="wi wi-wechatstatistics"></i>公众号管理</a>
 			<?php  } ?>
 		</div>
 	</div>
-	<div class="panel-body">
+	<div class="panel-body" >
 		<?php  if(!$_W['isfounder'] && !empty($account_info['uniacid_limit'])) { ?>
-			<div class="alert alert-warning">
+			<div class="alert alert-warning hidden">
 				温馨提示：
 				<i class="fa fa-info-circle"></i>
-				Hi，<span class="text-strong"><?php  echo $_W['username'];?></span>，您所在的会员组： <span class="text-strong"><?php  echo $account_info['group_name'];?></span>，
+				Hi，<span class="text-strong"><?php  echo $_W['username'];?></span>，您所在的会员组： <span class="text-strong"><?php  echo $account_info['group_name'];?></span>
 				账号有效期限：<span class="text-strong"><?php  echo date('Y-m-d', $_W['user']['starttime'])?> ~~ <?php  if(empty($_W['user']['endtime'])) { ?>无限制<?php  } else { ?><?php  echo date('Y-m-d', $_W['user']['endtime'])?><?php  } ?></span>，
 				可创建 <span class="text-strong"><?php  echo $account_info['maxaccount'];?> </span>个公众号，已创建<span class="text-strong"> <?php  echo $account_info['uniacid_num'];?> </span>个，还可创建 <span class="text-strong"><?php  echo $account_info['uniacid_limit'];?> </span>个公众号。
 			</div>
@@ -36,7 +39,7 @@
 			</form>
 		</div>
 		<div class="clearfix"></div>
-		<ul class="letters-list cut-wechat-letters" ng-if="alphabetShow">
+		<ul class="letters-list cut-wechat-letters" ng-if="searchShow">
 			<li ng-repeat="letter in alphabet" ng-style="{'background-color': letter == activeLetter ? '#ddd' : 'none'}" ng-class="{'active': letter == activeLetter}" ng-click="searchModule(letter)">
 				<a href="javascript:;" ng-bind="letter"></a>
 			</li>
@@ -69,13 +72,15 @@
 <script>
 	angular.module('accountApp').value('config', {
 		accountList: <?php echo !empty($account_list) ? json_encode($account_list) : 'null'?>,
+		accountTotal: "<?php  echo $total;?>",
+		pagesize: "<?php  echo $psize;?>",
 		links: {
 			rank: "<?php  echo url('account/display/rank')?>",
 			display: "<?php  echo url('account/display/display')?>",
 		},
 		scrollUrl : "<?php  echo url('account/display')?>",
-		keyword : "<?php  echo $condition['keyword'];?>",
-		letter : "<?php  echo $condition['letter'];?>"
+		keyword : "<?php  echo $keyword;?>",
+		letter : "<?php  echo $letter;?>"
 	});
 	angular.bootstrap($('#js-account-display'), ['accountApp']);
 </script>

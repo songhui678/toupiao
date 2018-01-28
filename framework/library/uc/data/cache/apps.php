@@ -21,7 +21,7 @@ $_CACHE['apps'] = array (
   array (
     'appid' => '2',
     'type' => 'OTHER',
-    'name' => '维吧系统',
+    'name' => '微擎系统',
     'url' => 'http://we7.cc',
     'ip' => '',
     'viewprourl' => '',

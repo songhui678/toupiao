@@ -25,21 +25,56 @@
 				<input type="hidden" name="reasons" value="{$settings['reason']}">
 			</div>
 		</div>
+		<div class="form-group">
+			<label class="col-sm-2 control-label" style="text-align:left;">备案号</label>
+			<div class="col-sm-8">
+				<input type="text" class="form-control" name="icp" value="{$settings['icp']}">
+			</div>
+		</div>
+		
 		<h5 class="page-header">登录站点</h5>
 		<div class="form-group">
 			<label class="col-sm-2 control-label" style="text-align:left;">是否开启验证码</label>
 			<div class="col-sm-8 form-control-static">
-				<input type="radio" id="verifycode-1" name="verifycode" {if $settings['verifycode'] == 1} checked="checked" {/if} value="1" /> 
+				<input type="radio" id="verifycode-1" name="verifycode" {if $settings['verifycode'] == 1} checked="checked" {/if} value="1" />
 				<label class="radio-inline" for="verifycode-1">
 					是
 				</label>
-				<input type="radio" id="verifycode-0" name="verifycode" {if $settings['verifycode'] == 0} checked="checked" {/if} value="0" /> 
+				<input type="radio" id="verifycode-0" name="verifycode" {if $settings['verifycode'] == 0} checked="checked" {/if} value="0" />
 				<label class="radio-inline" for="verifycode-0">
 					否
 				</label>
 			</div>
 		</div>
-	<h5 class="page-header">版权信息</h5>
+		
+		<div class="form-group">
+			<label class="col-sm-2 control-label" style="text-align:left;">是否开启手机登录</label>
+			<div class="col-sm-8 form-control-static">
+				<input type="radio" name="mobile_status" id="mobile_status_status-1" {if $settings['mobile_status'] == 1} checked="checked" {/if} value="1" />
+				<label class="radio-inline" for="mobile_status_status-1">
+					是
+				</label>
+				<input type="radio" name="mobile_status" id="mobile_status_status-0" {if $settings['mobile_status'] == 0} checked="checked" {/if} value="0" />
+				<label class="radio-inline" for="mobile_status_status-0">
+					否
+				</label>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-2 control-label" style="text-align:left;">默认登录方式</label>
+			<div class="col-sm-8 form-control-static">
+				<input type="radio" name="login_type" id = "login_type_status-0" {if $settings['login_type'] == 0 || $settings['mobile_status'] == 0} checked="checked" {/if} value="0" />
+				<label class="radio-inline" for="login_type_status-0">
+					账号密码登录
+				</label>
+				<input type="radio" name="login_type" id = "login_type_status-1" {if $settings['login_type'] == 1} checked="checked" {/if} {if $settings['mobile_status'] == 0} disabled {/if}value="1" />
+				<label class="radio-inline" for="login_type_status-1">
+					手机登录
+				</label>
+			</div>
+		</div>
+		
+		<h5 class="page-header">版权信息</h5>
 		<div class="form-group">
 			<label class="col-sm-2 control-label" style="text-align:left;">是否显示首页</label>
 			<div class="col-sm-8 form-control-static">
@@ -79,9 +114,9 @@
 			<div class="col-sm-8 form-control-static">
 				<input type="radio" name="leftmenu_fixed" id="leftmenu_fixed_status-1" {if $settings['leftmenufixed'] == 1} checked="checked" {/if} value="1" />
 				<label class="radio-inline" for="leftmenu_fixed_status-1">
-					 是
+					是
 				</label>
-				<input type="radio" name="leftmenu_fixed" id="leftmenu_fixed_status-0" {if $settings['leftmenufixed'] == 0} checked="checked" {/if} value="0" /> 
+				<input type="radio" name="leftmenu_fixed" id="leftmenu_fixed_status-0" {if $settings['leftmenufixed'] == 0} checked="checked" {/if} value="0" />
 				<label class="radio-inline" for="leftmenu_fixed_status-0">
 					否
 				</label>
@@ -94,7 +129,7 @@
 				<select name="template" class="form-control">
 					{loop $template $tpl}
 					<option value="{$tpl}" {if $_W['setting']['basic']['template'] == $tpl}selected{/if}>
-						{if !empty($template_ch_name[$tpl])}{$template_ch_name[$tpl]}{else}{$tpl}{/if}
+					{if !empty($template_ch_name[$tpl])}{$template_ch_name[$tpl]}{else}{$tpl}{/if}
 					</option>
 					{/loop}
 				</select>
@@ -214,6 +249,7 @@
 				{php echo tpl_form_field_coordinate('baidumap', $settings['baidumap'])}
 			</div>
 		</div>
+		
 		<div class="form-group">
 			<div class="col-sm-offset-2 col-md-offset-2 col-lg-offset-1 col-xs-12 col-sm-10 col-md-10 col-lg-11">
 				<input name="submit" type="submit" value="提交" class="btn btn-primary span3" />
@@ -237,6 +273,15 @@
 					$("textarea[name='reason']").text(reason);
 				} else {
 					$(".reason").hide();
+				}
+			});
+			$("input[name='mobile_status']").click(function() {
+				if ($(this).val() == 0) {
+					$("#login_type_status-1").attr("checked", false);
+					$("#login_type_status-0").prop("checked", true);
+					$("#login_type_status-1").attr("disabled", true);
+				} else {
+					$("#login_type_status-1").attr("disabled", false);
 				}
 			});
 	</script>

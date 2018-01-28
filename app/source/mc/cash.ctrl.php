@@ -1,7 +1,7 @@
 <?php 
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -35,6 +35,9 @@ if(!empty($setting['payment']['unionpay']['switch'])) {
 }
 if(!empty($setting['payment']['baifubao']['switch'])) {
 	$dos[] = 'baifubao';
+}
+if(!empty($setting['payment']['jueqiymf']['switch'])) {
+	$dos[] = 'jueqiymf';
 }
 $do = $_GPC['do'];
 $type = in_array($do, $dos) ? $do : '';
@@ -157,6 +160,14 @@ if(!empty($type)) {
 		header("Location: $callback");
 		exit();
 	}
+
+	if ($type == 'jueqiymf') {
+		$sl = base64_encode(json_encode($ps));
+		$auth = sha1($sl . $_W['uniacid'] . $_W['config']['setting']['authkey']);
+		header("location: ../payment/jueqiymf/pay.php?i={$_W['uniacid']}&auth={$auth}&ps={$sl}");
+		exit();
+	}
+
 	if($type == 'credit') {
 		$we7_coupon_info = module_fetch('we7_coupon');
 		$setting = uni_setting($_W['uniacid'], array('creditbehaviors'));
@@ -202,6 +213,7 @@ if(!empty($type)) {
 				if (is_error($result)) {
 					message($result['message'], '', 'error');
 				}
+				pdo_update('core_paylog', array('status' => '1'), array('plid' => $log['plid']));
 				if (!empty($_W['openid'])) {
 					if (is_error($is_grant_credit)) {
 						$grant_credit_nums = 0; 
@@ -210,7 +222,6 @@ if(!empty($type)) {
 					}
 					mc_notice_credit2($_W['openid'], $_W['member']['uid'], $fee, $grant_credit_nums, '线上消费');
 				}
-				pdo_update('core_paylog', array('status' => '1'), array('plid' => $log['plid']));
 				$site = WeUtility::createModuleSite($log['module']);
 				if(!is_error($site)) {
 					$site->weid = $_W['weid'];

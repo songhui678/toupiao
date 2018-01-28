@@ -1,11 +1,11 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
-$dos = array('category_post', 'category', 'category_del', 'list', 'post', 'batch_post', 'del');
+$dos = array('category_post', 'category', 'category_del', 'list', 'post', 'batch_post', 'del', 'displaysetting');
 $do = in_array($do, $dos) ? $do : 'list';
 permission_check_account_user('system_article_news');
 
@@ -126,10 +126,11 @@ if ($do == 'list') {
 		$condition .= " AND title LIKE :title";
 		$params[':title'] = "%{$search_title}%";
 	}
+	$order = !empty($_W['setting']['news_display']) ? $_W['setting']['news_display'] : 'displayorder';
 
 	$pindex = max(1, intval($_GPC['page']));
 	$psize = 20;
-	$sql = 'SELECT * FROM ' . tablename('article_news') . $condition . " ORDER BY displayorder DESC LIMIT " . ($pindex - 1) * $psize .',' .$psize;
+	$sql = 'SELECT * FROM ' . tablename('article_news') . $condition . " ORDER BY " . $order . " DESC LIMIT " . ($pindex - 1) * $psize .',' .$psize;
 	$news = pdo_fetchall($sql, $params);
 	$total = pdo_fetchcolumn('SELECT COUNT(*) FROM ' . tablename('article_news') . $condition, $params);
 	$pager = pagination($total, $pindex, $psize);
@@ -158,4 +159,11 @@ if ($do == 'del') {
 	$id = intval($_GPC['id']);
 	pdo_delete('article_news', array('id' => $id));
 	itoast('删除文章成功', referer(), 'success');
+}
+
+if ($do == 'displaysetting') {
+	$setting = trim($_GPC['setting']);
+	$data = $setting == 'createtime' ? 'createtime' : 'displayorder';
+	setting_save($data, 'news_display');
+	itoast('更改成功！', referer(), 'success');
 }

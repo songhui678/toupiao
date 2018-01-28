@@ -1,13 +1,16 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 load()->model('user');
 load()->func('file');
+load()->classs('oauth2/oauth2client');
+load()->model('message');
+load()->model('setting');
 
-$dos = array('base', 'post');
+$dos = array('base', 'post', 'bind', 'validate_mobile', 'bind_mobile', 'unbind');
 $do = in_array($do, $dos) ? $do : 'base';
 $_W['page']['title'] = '账号信息 - 我的账户 - 用户管理';
 
@@ -55,6 +58,10 @@ if ($do == 'post' && $_W['isajax'] && $_W['ispost']) {
 				if (empty($match)) {
 					iajax(-1, '手机号不正确', '');
 				}
+				$users_mobile = pdo_get('users_profile', array('mobile' => trim($_GPC[$type]), 'uid <>' => $uid));
+				if (!empty($users_mobile)) {
+					iajax(-1, '手机号已存在，请联系管理员', '');
+				}
 			}
 			if ($users_profile_exist) {
 				$result = pdo_update('users_profile', array($type => trim($_GPC[$type])), array('uid' => $uid));
@@ -69,7 +76,7 @@ if ($do == 'post' && $_W['isajax'] && $_W['ispost']) {
 			break;
 		case 'username':
 			$founders = explode(',', $_W['config']['setting']['founder']);
-			if (in_array($uid, $founders)) {
+			if (in_array($uid, $founders) && !in_array($_W['uid'], $founders)) {
 				iajax(1, '用户名不可与网站创始人同名！', '');
 			}
 			$username = trim($_GPC['username']);
@@ -91,7 +98,7 @@ if ($do == 'post' && $_W['isajax'] && $_W['ispost']) {
 			break;
 		case 'password':
 			if ($_GPC['newpwd'] !== $_GPC['renewpwd']) iajax(2, '两次密码不一致！', '');
-			if (!$_W['isfounder']) {
+			if (!$_W['isfounder'] && empty($user['register_type'])) {
 				$pwd = user_hash($_GPC['oldpwd'], $user['salt']);
 				if ($pwd != $user['password']) iajax(3, '原密码不正确！', '');
 			}
@@ -107,7 +114,14 @@ if ($do == 'post' && $_W['isajax'] && $_W['ispost']) {
 			} else {
 				$endtime = strtotime($_GPC['endtime']);
 			}
+			
+				if (user_is_vice_founder() && !empty($_W['user']['endtime']) && ($endtime > $_W['user']['endtime'] || empty($endtime))) {
+					iajax(-1, '副创始人给用户设置的时间不能超过自己的到期时间');
+				}
+			
+			
 			$result = pdo_update('users', array('endtime' => $endtime), array('uid' => $uid));
+			pdo_update('users_profile', array('send_expire_status' => 0), array('uid' => $uid));
 			$uni_account_user = pdo_getall('uni_account_users', array('uid' => $uid, 'role' => 'owner'));
 			if (!empty($uni_account_user)) {
 				foreach ($uni_account_user as $account) {
@@ -153,6 +167,9 @@ if ($do == 'post' && $_W['isajax'] && $_W['ispost']) {
 }
 
 if ($do == 'base') {
+	$message_id = safe_gpc_int($_GPC['message_id']);
+	message_notice_read($message_id);
+
 	$user_type = !empty($_GPC['user_type']) ? trim($_GPC['user_type']) : PERSONAL_BASE_TYPE;
 		$user = user_single($_W['uid']);
 	if (empty($user)) {
@@ -166,16 +183,126 @@ if ($do == 'base') {
 
 	$profile = user_detail_formate($profile);
 
-	if (!$_W['isfounder'] || user_is_vice_founder()) {
-				if ($_W['user']['founder_groupid'] == ACCOUNT_MANAGE_GROUP_VICE_FOUNDER) {
-			$groups = user_founder_group();
-			$group_info = user_founder_group_detail_info($user['groupid']);
-		} else {
-			$groups = user_group();
-			$group_info = user_group_detail_info($user['groupid']);
-		}
+	
+		if (!$_W['isfounder'] || user_is_vice_founder()) {
+						if ($_W['user']['founder_groupid'] == ACCOUNT_MANAGE_GROUP_VICE_FOUNDER) {
+				$groups = user_founder_group();
+				$group_info = user_founder_group_detail_info($user['groupid']);
+			} else {
+				$groups = user_group();
+				$group_info = user_group_detail_info($user['groupid']);
+			}
 
-				$account_detail = user_account_detail_info($_W['uid']);
-	}
+						$account_detail = user_account_detail_info($_W['uid']);
+		}
+	
+	
 	template('user/profile');
+}
+
+if ($do == 'bind') {
+	$setting_sms_sign = setting_load('site_sms_sign');
+	$bind_sign = !empty($setting_sms_sign['site_sms_sign']['register']) ? $setting_sms_sign['site_sms_sign']['register'] : '';
+
+	$user_table = table('users');
+	$user = $user_table->usersInfo($_W['uid']);
+	$user_profile = $user_table->userProfile($_W['uid']);
+
+	$user_table->bindSearchWithUser($_W['uid']);
+	$bind_info = $user_table->userBind();
+
+	$signs = array_keys($bind_info);
+
+	if (!empty($user['openid']) && !in_array($user['openid'], $signs)) {
+		pdo_insert('users_bind', array('uid' => $user['uid'], 'bind_sign' => $user['openid'], 'third_type' => $user['register_type'], 'third_nickname' => $user_profile['nickname']));
+	}
+
+	if (!empty($user_profile['mobile']) && !in_array($user_profile['mobile'], $signs)) {
+		pdo_insert('users_bind', array('uid' => $user_profile['uid'], 'bind_sign' => $user_profile['mobile'], 'third_type' => USER_REGISTER_TYPE_MOBILE, 'third_nickname' => $user_profile['mobile']));
+	}
+
+	$user_table->bindSearchWithUser($_W['uid']);
+	$lists = $user_table->userBind();
+
+	$bind_qq = array();
+	$bind_wechat = array();
+	$bind_mobile = array();
+
+	if (!empty($lists)) {
+		foreach($lists as $list) {
+			switch($list['third_type']){
+				case USER_REGISTER_TYPE_QQ:
+					$bind_qq = $list;
+					break;
+				case USER_REGISTER_TYPE_WECHAT:
+					$bind_wechat = $list;
+					break;
+				case USER_REGISTER_TYPE_MOBILE:
+					$bind_mobile = $list;
+					break;
+			}
+		}
+	}
+
+	$support_login_urls = user_support_urls();
+
+	template('user/bind');
+}
+
+if (in_array($do, array('validate_mobile', 'bind_mobile')) || $_GPC['bind_type'] == USER_REGISTER_TYPE_MOBILE && $do == 'unbind') {
+	$user_table = table('users');
+	$user_profile = $user_table->userProfile($_W['uid']);
+
+	$mobile = trim($_GPC['mobile']);
+	$type = trim($_GPC['type']);
+	$user_table = table('users');
+
+	$mobile_exists = $user_table->userProfileMobile($mobile);
+	if (empty($mobile)) {
+		iajax(-1, '手机号不能为空');
+	}
+	if (!preg_match(REGULAR_MOBILE, $mobile)) {
+		iajax(-1, '手机号格式不正确');
+	}
+
+	if (!empty($type) && $mobile != $user_profile['mobile']) {
+		iajax(-1, '请输入已绑定的手机号');
+	}
+
+	if (empty($type) && !empty($mobile_exists)) {
+		iajax(-1, '手机号已存在');
+	}
+}
+if ($do == 'validate_mobile') {
+	iajax(0, '本地校验成功');
+}
+
+if ($do == 'bind_mobile') {
+	if ($_W['isajax'] && $_W['ispost']) {
+		$bind_info = OAuth2Client::create('mobile')->bind();
+
+		if (is_error($bind_info)) {
+			iajax(-1, $bind_info['message']);
+		}
+		iajax(0, '绑定成功', url('user/profile/bind'));
+	} else {
+		iajax(-1, '非法请求');
+	}
+}
+
+if ($do == 'unbind') {
+	$types = array(1 => 'qq', 2 => 'wechat', 3 => 'mobile');
+	if (!in_array($_GPC['bind_type'], array(USER_REGISTER_TYPE_QQ, USER_REGISTER_TYPE_WECHAT, USER_REGISTER_TYPE_MOBILE))) {
+		iajax(-1, '类型错误');
+	}
+	$bind_type = $types[$_GPC['bind_type']];
+	if ($_W['isajax'] && $_W['ispost']) {
+		$unbind_info = OAuth2Client::create($bind_type, $_W['setting']['thirdlogin'][$bind_type]['appid'], $_W['setting']['thirdlogin'][$bind_type]['appsecret'])->unbind();
+
+		if (is_error($unbind_info)) {
+			iajax(-1, $unbind_info['message']);
+		}
+		iajax(0, '解绑成功', url('user/profile/bind'));
+	}
+	iajax(-1, '非法请求');
 }

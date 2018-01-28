@@ -15,24 +15,21 @@
 				<ul class="nav navbar-nav navbar-left">
 					<?php  global $top_nav?>
 					<?php  if(is_array($top_nav)) { foreach($top_nav as $nav) { ?>
-					<li<?php  if(FRAME == $nav['name']) { ?> class="active"<?php  } ?>><a href="<?php  if(empty($nav['url'])) { ?><?php  echo url('home/welcome/' . $nav['name']);?><?php  } else { ?><?php  echo $nav['url'];?><?php  } ?>" <?php  if(!empty($nav['blank'])) { ?>target="_blank"<?php  } ?>><?php  echo $nav['title'];?></a></li>
+					<li <?php  if(FRAME == $nav['name'] && !defined('IN_MODULE')) { ?> class="active"<?php  } ?>><a href="<?php  if(empty($nav['url'])) { ?><?php  echo url('home/welcome/' . $nav['name']);?><?php  } else { ?><?php  echo $nav['url'];?><?php  } ?>" <?php  if(!empty($nav['blank'])) { ?>target="_blank"<?php  } ?>><?php  echo $nav['title'];?></a></li>
 					<?php  } } ?>
 				</ul>
 				<ul class="nav navbar-nav navbar-right">
+					<?php (!empty($this) && $this instanceof WeModuleSite || 0) ? (include $this->template('common/header-notice', TEMPLATE_INCLUDEPATH)) : (include template('common/header-notice', TEMPLATE_INCLUDEPATH));?>
 					<li class="dropdown">
 						<a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown"><i class="wi wi-user color-gray"></i><?php  echo $_W['user']['username'];?> <span class="caret"></span></a>
 						<ul class="dropdown-menu color-gray" role="menu">
 							<li>
 								<a href="<?php  echo url('user/profile');?>" target="_blank"><i class="wi wi-account color-gray"></i> 我的账号</a>
 							</li>
-							<?php  if($_W['isfounder']) { ?>
 							<li class="divider"></li>
-							<?php  if(uni_user_see_more_info(ACCOUNT_MANAGE_NAME_VICE_FOUNDER, false)) { ?>
-							<li><a href="<?php  echo url('cloud/upgrade');?>" target="_blank"><i class="wi wi-update color-gray"></i> 自动更新</a></li>
-							<?php  } ?>
+							<?php  if(permission_check_account_user('see_system_upgrade')) { ?><li><a href="<?php  echo url('https://www.zhujitop.com');?>" target="_blank"><i class="wi wi-update color-gray"></i> 自动更新</a></li><?php  } ?>
 							<li><a href="<?php  echo url('system/updatecache');?>" target="_blank"><i class="wi wi-cache color-gray"></i> 更新缓存</a></li>
 							<li class="divider"></li>
-							<?php  } ?>
 							<li>
 								<a href="<?php  echo url('user/logout');?>"><i class="fa fa-sign-out color-gray"></i> 退出系统</a>
 							</li>
@@ -79,7 +76,7 @@
 <?php  if(!defined('IN_MESSAGE')) { ?>
 <div class="container">
 	<a href="javascript:;" class="js-big-main button-to-big color-gray" title="加宽"><?php  if($_GPC['main-lg']) { ?>正常<?php  } else { ?>宽屏<?php  } ?></a>
-	<?php  if(in_array(FRAME, array('account', 'system', 'advertisement', 'wxapp', 'site', 'store')) && !in_array($_GPC['a'], array('news-show', 'notice-show'))) { ?>
+	<?php  if(in_array(FRAME, array('account', 'system', 'advertisement', 'wxapp', 'site', 'store', 'webapp')) && !in_array($_GPC['a'], array('news-show', 'notice-show'))) { ?>
 	<div class="panel panel-content main-panel-content <?php  if(!empty($frames['section']['platform_module_menu']['plugin_menu'])) { ?>panel-content-plugin<?php  } ?>">
 		<div class="content-head panel-heading main-panel-heading">
 			<?php  if(($_GPC['c'] != 'cloud' && !empty($_GPC['m']) && !in_array($_GPC['m'], array('keyword', 'special', 'welcome', 'default', 'userapi', 'service'))) || defined('IN_MODULE')) { ?>
@@ -93,9 +90,13 @@
 			<?php  if(empty($frames['section']['platform_module_menu']['plugin_menu'])) { ?>
 			<div class="left-menu-content">
 				<?php  if(is_array($frames['section'])) { foreach($frames['section'] as $frame_section_id => $frame_section) { ?>
+				
 				<?php  if(FRAME == 'store' && !($_W['isfounder'] && !user_is_vice_founder()) && !empty($frame_section['founder'])) { ?>
-					<?php  continue;?>
+				<?php  continue;?>
 				<?php  } ?>
+				
+				
+
 				<?php  if(!isset($frame_section['is_display']) || !empty($frame_section['is_display'])) { ?>
 				<div class="panel panel-menu">
 					<?php  if($frame_section['title']) { ?>
@@ -105,15 +106,15 @@
 					<?php  } ?>
 					<ul class="list-group">
 						<?php  if(is_array($frame_section['menu'])) { foreach($frame_section['menu'] as $menu_id => $menu) { ?>
-						<?php  if(!empty($menu['is_display'])) { ?>
+							<?php  if(!empty($menu['is_display'])) { ?>
 								<?php  if($menu_id == 'platform_module_more') { ?>
 									<li class="list-group-item list-group-more">
-										<a href="<?php  echo url('module/manage-account');?>"><span class="label label-more">更多应用</span></a>
+										<a href="<?php  echo $menu['url']?>"><span class="label label-more">更多应用</span></a>
 									</li>
-									<?php  } else { ?>
-									<?php  if((in_array($_W['role'], array(ACCOUNT_MANAGE_NAME_OWNER, ACCOUNT_MANAGE_NAME_FOUNDER)) && $menu_id == 'front_download' || $menu_id != 'front_download') && !($menu_id == 'platform_menu' && $_W['account']['level'] == ACCOUNT_SUBSCRIPTION)) { ?>
+								<?php  } else { ?>
+									<?php  if((in_array($_W['role'], array(ACCOUNT_MANAGE_NAME_OWNER, ACCOUNT_MANAGE_NAME_FOUNDER, ACCOUNT_MANAGE_NAME_VICE_FOUNDER)) && $menu_id == 'front_download' || $menu_id != 'front_download') && !($menu_id == 'platform_menu' && $_W['account']['level'] == ACCOUNT_SUBSCRIPTION)) { ?>
 									<li class="list-group-item <?php  if($menu['active']) { ?>active<?php  } ?>">
-										<a href="<?php  echo $menu['url'];?>" class="text-over" <?php  if($frame_section_id == 'platform_module') { ?>target="_blank"<?php  } ?>>
+										<a href="<?php  echo $menu['url'];?>" class="text-over" <?php  if($frame_section_id == 'platform_module' || $menu_id == 'system_profile') { ?>target="_blank"<?php  } ?>>
 										<?php  if($menu['icon']) { ?>
 											<?php  if($frame_section_id == 'platform_module') { ?>
 												<img src="<?php  echo $menu['icon'];?>"/>
@@ -138,7 +139,7 @@
 					<div class="plugin-menu-main pull-left">
 						<ul class="list-group">
 							<li class="list-group-item<?php  if($_W['current_module']['name'] == $frames['section']['platform_module_menu']['plugin_menu']['main_module']) { ?> active<?php  } ?>">
-								<a href="<?php  echo url('home/welcome/ext', array('m' => $frames['section']['platform_module_menu']['plugin_menu']['main_module']))?>">
+								<a href="<?php  echo url('home/welcome/ext', array('m' => $frames['section']['platform_module_menu']['plugin_menu']['main_module'], 'version_id' => intval($_GPC['version_id'])))?>">
 									<i class="wi wi-main-apply"></i>
 									<div>主应用</div>
 								</a>
@@ -148,7 +149,7 @@
 							</li>
 							<?php  if(is_array($frames['section']['platform_module_menu']['plugin_menu']['menu'])) { foreach($frames['section']['platform_module_menu']['plugin_menu']['menu'] as $plugin_name => $plugin) { ?>
 							<li class="list-group-item<?php  if($_W['current_module']['name'] == $plugin_name) { ?> active<?php  } ?>">
-								<a href="<?php  echo url('home/welcome/ext', array('m' => $plugin_name))?>">
+								<a href="<?php  echo url('home/welcome/ext', array('m' => $plugin_name, 'version_id' => intval($_GPC['version_id'])))?>">
 									<img src="<?php  echo $plugin['icon'];?>" alt="" class="img-icon" />
 									<div><?php  echo $plugin['title'];?></div>
 								</a>

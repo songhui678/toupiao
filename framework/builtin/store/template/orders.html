@@ -1,5 +1,16 @@
 {template 'header'}
 <div id="js-store-orders" ng-controller="storeOrdersCtrl" ng-cloak>
+	<ul class="we7-page-tab">
+		<li {if $_GPC['type'] == ''}class="active"{/if}><a href="{php echo $this->createWebUrl('orders', array('direct' => 1))}">全部订单</a></li>
+		<li {if $_GPC['type'] == STORE_ORDER_PLACE}class="active"{/if}><a href="{php echo $this->createWebUrl('orders', array('direct' => 1, 'type' => STORE_ORDER_PLACE))}">待支付</a></li>
+		<li {if $_GPC['type'] == STORE_ORDER_FINISH}class="active"{/if}><a href="{php echo $this->createWebUrl('orders', array('direct' => 1, 'type' => STORE_ORDER_FINISH))}">已完成</a></li>
+	</ul>
+	<form action="{php echo $this->createWebUrl('orders', array('direct' => 1))}" class="form-inline we7-margin-bottom" method="post">
+		<div class="input-group form-group" style="width: 400px;">
+			<input type="text" name="orderid" value="" class="form-control" placeholder="请输入订单号">
+			<span class="input-group-btn"><button class="btn btn-default"><i class="fa fa-search"></i></button></span>
+		</div>
+	</form>
 	<table class="table we7-table">
 		<col width="105px"/>
 		<col width="155px"/>
@@ -38,14 +49,19 @@
 		<tr>
 			<td ng-if="order.goods_info.type == 1 || order.goods_info.type == 4"><img ng-src="{{order.goods_info.module_info.logo}}" alt="" class="icon" width="60" height="60"/></td>
 			<td ng-if="order.goods_info.type == 2 || order.goods_info.type == 3 || order.goods_info.type == 5"><div class="icon icon-api"><span class="wi wi-appjurisdiction"></span></div></td>
-			<td ng-if="order.goods_info.type == 6"><div class="icon icon-api"><span class="wi wi-api"></span></div></td>
+			<td ng-if="order.goods_info.type == 6 || order.goods_info.type == 7 || order.goods_info.type == 8"><div class="icon icon-api"><span class="wi wi-api"></span></div></td>
 			<td>
 				<div class="name" ng-bind="order.goods_info.title"></div>
 			</td>
 			<td ng-bind="order.buyer"></td>
 			<td class="text-center">
 				<div>￥<span ng-bind="order.abstract_amount"></span></div>
-				<div class="color-gray">{{order.goods_info.price}}元/月 * {{order.duration}}月</div>
+				<div class="color-gray">{{order.goods_info.price}}元/
+					<span ng-if="order.goods_info.unit == 'day'">天* {{order.duration}}天</span>
+					<span ng-if="order.goods_info.unit == 'month'">月* {{order.duration}}月</span>
+					<span ng-if="order.goods_info.unit == 'year'">年* {{order.duration}}年</span>
+					<span ng-if="order.goods_info.type == 6">万次* {{order.duration}}万次</span>
+				</div>
 			</td>
 			<td ng-if="order.type == 1" class="color-red">待付款</td>
 			<td ng-if="order.type == 3" class="color-green">交易成功</td>

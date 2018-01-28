@@ -1,7 +1,7 @@
 <?php
 /**
- * [WECHAT 2018]
- * [WECHAT  a free software]
+ * [WeEngine System] Copyright (c) 2014 WE7.CC
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -117,9 +117,18 @@ function system_database_backup_delete($delete_dirname) {
 
 function system_template_ch_name() {
 	$result = array(
-			'default' => '白色',
-			'black' => '黑色',
-			'classical' => '经典',
+		'default' => '白色',
+		'black' => '黑色',
+		'classical' => '经典',
 	);
 	return $result;
+}
+
+
+function system_site_info() {
+	load()->classs('cloudapi');
+
+	$api = new CloudApi();
+	$site_info = $api->get('site', 'info');
+	return $site_info;
 }

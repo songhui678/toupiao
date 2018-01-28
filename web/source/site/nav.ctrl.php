@@ -1,7 +1,7 @@
 <?php
 /**
  * [WeEngine System] Copyright (c) 2014 WE7.CC
- * WeEngine is NOT a free software, it under the license terms, visited http://www.we8.club/ for more details.
+ * WeEngine is NOT a free software, it under the license terms, visited http://www.we7.cc/ for more details.
  */
 defined('IN_IA') or exit('Access Denied');
 
@@ -136,13 +136,13 @@ if ($do == 'homemenu_switch') {
 if ($do == 'home' || $do == 'profile') {
 	$modules = uni_modules();
 	$bindings = array();
-	
+	define('IN_MODULE', $modulename);
 	if (!empty($modulename)) {
 		$modulenames = array($modulename);
 	} else {
 		$modulenames = array_keys($modules);
 	}
-	
+
 	$_W['current_module'] = module_fetch($modulename);
 	foreach ($modulenames as $modulename) {
 		$entries = module_entries($modulename, array($do));
