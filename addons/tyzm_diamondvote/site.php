@@ -22,7 +22,7 @@ class tyzm_diamondvoteModuleSite extends WeModuleSite {
 	public $tableblacklist = "tyzm_diamondvote_blacklist";
 	public $tabledomainlist = "tyzm_diamondvote_domainlist";
 	public $tablesetmeal = "tyzm_diamondvote_setmeal";
-	public $tablecode = "ims_tyzm_diamondvote_code";
+	public $tablecode = "tyzm_diamondvote_code";
 	public function __construct() {
 		$useragent = addslashes($_SERVER['HTTP_USER_AGENT']);
 		if (!(strpos($useragent, 'MicroMessenger') === false && strpos($useragent, 'Windows Phone') === false)) {

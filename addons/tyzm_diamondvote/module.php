@@ -22,7 +22,7 @@ class tyzm_diamondvoteModule extends WeModule {
 	public $tableblacklist = "tyzm_diamondvote_blacklist";
 	public $tabledomainlist = "tyzm_diamondvote_domainlist";
 	public $tablesetmeal = "tyzm_diamondvote_setmeal";
-	public $tablecode = "ims_tyzm_diamondvote_code";
+	public $tablecode = "tyzm_diamondvote_code";
 	public function fieldsFormDisplay($rid = 0) {
 		global $_W, $_GPC;
 		$template = $this->tplmobile();
