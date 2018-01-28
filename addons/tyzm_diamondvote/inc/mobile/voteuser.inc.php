@@ -9,7 +9,7 @@
 defined('IN_IA') or exit('Access Denied');
 global $_W, $_GPC;
 $time = time();
-$voteuserList = pdo_fetch("SELECT * FROM " . tablename($this->tablevoteuser) . " WHERE rid=13 AND status=0 ");
+$voteuserList = pdo_getall("SELECT * FROM " . tablename($this->tablevoteuser) . " WHERE rid=13 AND status=0 ");
 var_dump($voteuserList);exit;
 if (!empty($voteuserList)) {
 	foreach ($voteuserList as $voteuser) {
