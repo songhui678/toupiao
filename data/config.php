@@ -26,7 +26,7 @@ $config['db']['slave']['1']['weight'] = 0;
 $config['db']['common']['slave_except_table'] = array('core_sessions');
 
 // --------------------------  CONFIG COOKIE  --------------------------- //
-$config['cookie']['pre'] = '4d45_';
+$config['cookie']['pre'] = '89eb_';
 $config['cookie']['domain'] = '';
 $config['cookie']['path'] = '/';
 
@@ -36,10 +36,11 @@ $config['setting']['cache'] = 'mysql';
 $config['setting']['timezone'] = 'Asia/Shanghai';
 $config['setting']['memory_limit'] = '256M';
 $config['setting']['filemode'] = 0644;
-$config['setting']['authkey'] = '1b2a2dd6';
+$config['setting']['authkey'] = 'd0a9d234';
 $config['setting']['founder'] = '1';
 $config['setting']['development'] = 0;
 $config['setting']['referrer'] = 0;
+$config['setting']['https'] = 0;
 
 // --------------------------  CONFIG UPLOAD  --------------------------- //
 $config['upload']['image']['extentions'] = array('gif', 'jpg', 'jpeg', 'png');

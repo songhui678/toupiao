@@ -1,0 +1,146 @@
+{template 'header'}
+{if $operate == 'display'}
+	<div class="store module">
+		<div class="modules clearfix">
+		{loop $store_goods $goods}
+			<div class="item active">
+			<a href="{php echo $this->createWebUrl('goodsbuyer', array('operate' => 'goods_info', 'direct' => 1, 'goods' => $goods['id']))}">
+				<img src="{$goods['module']['logo']}" alt="icon" class="icon" onerror="this.src='./resource/images/nopic-107.png'"/>
+				<div class="name text-over">{php echo $goods['title']}</div>
+				<div class="price">￥{$goods['price']}元 /{if $goods['unit'] == 'month'} 月{/if}</div>
+				<div class="text-right view">
+					查看详情>
+				</div>
+			</a>
+			</div>
+		{/loop}
+		</div>
+	</div>
+	<div class="pull-right">
+		{$pager}
+	</div>
+{elseif $operate == 'goods_info'}
+<div class="panel-body js-goods-buyer" ng-controller="goodsBuyerCtrl">
+	<ol class="breadcrumb we7-breadcrumb">
+		<a href="{php echo $this->createWebUrl('goodsbuyer', array('operate' => 'display', 'direct' => 1))}"><i class="wi wi-back-circle"></i> </a>
+		<li>
+			商城列表
+		</li>
+		<li>
+			{$goods['title']}
+		</li>
+	</ol>
+	<div class="store module-detail" style="width: 898px;">
+		<div class="top">
+			<div class="icon">
+				<img src="{php echo tomedia($goods['module']['logo'])}" alt="" />
+			</div>
+			<div class="introduce">
+				<div class="name">{$goods['title']}</div>
+				<div class="help-block">
+					{$goods['synopsis']}
+				</div>
+			</div>
+			<div class="buy pull-right">
+				<div class="price">单价￥<span class="fee">{$goods['price']}</span>/月</div>
+				<div class="buy-btn">
+					<button class="btn btn-danger btn-lg" data-toggle="modal" data-target="#myModalBuy">立即购买</button>
+				</div>
+			</div>
+		</div>
+		<div class="modal fade" id="myModalBuy">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title">购买<span>{$goods['module']['title']}</span>应用</h4>
+					</div>
+					<div class="modal-body">
+						<form action="" method="get" class="we7-form">
+							<div class="form-group">
+								<label class="control-label col-sm-2">应用单价</label>
+								<div class="col-sm-8 form-control-static">￥{$goods['price']}/月</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-sm-2">购买时长</label>
+								<div class="col-sm-8">
+									<div class="clearfix we7-margin-bottom-sm" style="line-height: 34px;">
+										<input type="number" class="form-control pull-left" style="width: 80px;" value="1" ng-model="duration"/>个月,有效期至{{ expiretime }}
+									</div>
+									<div class="select-btn">
+										<button type="button" class="btn" ng-class="duration == 1? 'btn-primary' : 'btn-default'" ng-click="changeDuration(1)">1</button>
+										<button type="button" class="btn" ng-class="duration == 3? 'btn-primary' : 'btn-default'" ng-click="changeDuration(3)">3</button>
+										<button type="button" class="btn" ng-class="duration == 6? 'btn-primary' : 'btn-default'" ng-click="changeDuration(6)">6</button>
+										<button type="button" class="btn" ng-class="duration == 12? 'btn-primary' : 'btn-default'" ng-click="changeDuration(12)">12</button>
+									</div>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-sm-2">公众号</label>
+								<div class="col-sm-10">
+									<div class="clearfix" style="line-height: 34px;">
+										<select class="we7-select" style="width:150px;" ng-model="uniacid">
+											<option value="{{ uniacid }}" ng-repeat="(uniacid, account) in account_list track by uniacid">{{ account.name }}</option>
+										</select>
+										<span class="text-error">注意!</span>请确认服务所需绑定的公众号,购买后不可更换.
+									</div>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-sm-2">费用明细</label>
+								<div class="col-sm-8 form-control-static">实付总计<span class="we7-margin-left">￥{{ price }}.00</span></div>
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-primary" ng-click="submit_order('order')">提交订单</button>
+						<button type="button" class="btn btn-primary" ng-click="submit_order('pay')">立即支付</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="swiper">
+			<div class="swiper-container">
+				<div class="swiper-wrapper">
+					{loop $goods['slide'] $picture}
+					<div class="swiper-slide"><img src="{php echo tomedia($picture)}" alt="" class="img-responsive"/></div>
+					{/loop}
+				</div>
+				<div class="swiper-button-prev"></div>
+				<div class="swiper-button-next"></div>
+			</div>
+		</div>
+		<div class="summary">
+			<div class="title">应用介绍</div>
+			<div class="content">
+				{$goods['description']}
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+	{php $first_account = current($user_account);}
+	angular.module('storeApp').value('config', {
+		'singlePrice' : {$goods['price']},
+		account_list : {php echo json_encode($user_account)},
+		expiretime : "{php echo date('Y-m-d', strtotime('+1 month', time()))}",
+		first_uniacid : "{php echo $first_account['uniacid'];}",
+		goods : {php echo json_encode($goods)}
+	});
+	angular.bootstrap($('.js-goods-buyer'), ['storeApp']);
+	$(function() {
+		require(['swiper'], function () {
+			var mySwiper = new Swiper('.swiper-container', {
+				loop: true,
+				width: 240,
+				height: 400,
+				spaceBetween: 20,
+				// 如果需要前进后退按钮
+				nextButton: '.swiper-button-next',
+				prevButton: '.swiper-button-prev'
+			})
+		});
+	});
+</script>
+{/if}
+{template 'common/footer'}

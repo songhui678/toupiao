@@ -1,19 +1,16 @@
 <?php defined('IN_IA') or exit('Access Denied');?><?php (!empty($this) && $this instanceof WeModuleSite || 0) ? (include $this->template('common/header', TEMPLATE_INCLUDEPATH)) : (include template('common/header', TEMPLATE_INCLUDEPATH));?>
 <div class="panel panel-cut">
 	<div class="panel-heading">
-		<span class="panel-heading-left">
-			<i class="wi wi-small-routine" style="font-size: 24px; margin-right: 10px; vertical-align:middle;"></i>选择小程序
-		</span>
+		<i class="wi wi-small-routine" style="font-size: 24px; margin-right: 10px; vertical-align:middle;"></i>选择小程序
 		<div class="pull-right font-default">
 			<?php  if(!empty($account_info['wxapp_limit']) || $_W['isfounder'] && !user_is_vice_founder()) { ?>
 			<a href="<?php  echo url('wxapp/post/design_method')?>" class="color-default"><i class="wi wi-registersite"></i>新建小程序</a>
 			<?php  } ?>
-			<a href="<?php  echo url('account/manage', array('account_type' => ACCOUNT_TYPE_APP_NORMAL))?>" class="color-default"><i class="wi wi-wechatstatistics"></i>小程序管理</a>
 		</div>
 	</div>
 	<div class="panel-body" id="js-wxapp-account-display" ng-controller="AccountDisplayWxappCtrl" ng-cloak>
 		<?php  if(!$_W['isfounder'] && !empty($account_info['wxapp_limit'])) { ?>
-			<div class="alert alert-warning hidden">
+			<div class="alert alert-warning">
 				温馨提示：
 				<i class="fa fa-info-circle"></i>
 				Hi，<span class="text-strong"><?php  echo $_W['username'];?></span>，您所在的会员组： <span class="text-strong"><?php  echo $account_info['group_name'];?></span>，
@@ -84,13 +81,9 @@
 			<div class="text-center we7-padding-vertical message-page"  ng-if="!wxapp_lists && !activeLetter">
 				<div class="icon"><span class="wi wi-sad"></span></div>
 				<div class="message-state">您还没有创建小程序</div>
-				
 				<?php  if(!empty($account_info['wxapp_limit']) || $_W['isfounder'] && !user_is_vice_founder()) { ?>
 				<div><a class="btn btn-primary" href="<?php  echo url('wxapp/post/design_method')?>">新建小程序</a></div>
 				<?php  } ?>
-				
-				
-
 			</div>
 			<div class="text-center we7-padding-vertical" ng-if="!wxapp_lists && activeLetter">
 				暂无数据
@@ -102,6 +95,7 @@
 	</div>
 </div>
 <script>
+require(['underscore'], function() {
 	angular.module('wxApp').value('config', {
 		'wxapp_lists': <?php echo !empty($wxapp_lists) ? json_encode($wxapp_lists) : 'null'?>,
 		'activeLetter' : <?php echo !empty($_GPC['letter']) ? json_encode($_GPC['letter']) : 'null'?>,
@@ -112,5 +106,6 @@
 		},
 	});
 	angular.bootstrap($('#js-wxapp-account-display'), ['wxApp']);
+});
 </script>
 <?php (!empty($this) && $this instanceof WeModuleSite || 0) ? (include $this->template('common/footer', TEMPLATE_INCLUDEPATH)) : (include template('common/footer', TEMPLATE_INCLUDEPATH));?>
