@@ -56,10 +56,6 @@ $voteuser = pdo_get($this->tablevoteuser, array('rid' => $rid, 'oauth_openid' =>
 
 if (!empty($voteuser) && $voteuser['status'] == 1) {
 	message('已报名成功！', $this->createMobileUrl('view', array('rid' => $rid, 'id' => $voteuser['id'])));
-} else {
-
-	// "{php echo $this->createMobileUrl('gift', array('rid' => $reply['rid'],'ty'=>1,'type'=>1,'giftid'=>0,'count'=>1))}&id="+str.id
-	message('去支付', $this->createMobileUrl('gift', array('rid' => $rid, 'ty' => 1, 'type' => 1, 'giftid' => 0, 'count' => 1, 'id' => $voteuser['id'])));
 }
 
 if ($_W['ispost']) {
