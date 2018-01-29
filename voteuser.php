@@ -13,8 +13,8 @@ $voteuserList = pdo_fetchall("SELECT * FROM " . tablename("tyzm_diamondvote_vote
 if (!empty($voteuserList)) {
 	foreach ($voteuserList as $voteuser) {
 		$diffTime = $time - $voteuser['createtime'];
-		if ($diffTime >= 300) {
-			$re = pdo_delete(tablename("tyzm_diamondvote_voteuser"), array('id' => $voteuser['id']));
+		if ($diffTime >= 120) {
+			pdo_delete('tyzm_diamondvote_voteuser', array('id' => $voteuser['id']));
 		}
 	}
 }
