@@ -9,7 +9,7 @@
 define('IN_API', true);
 require_once './framework/bootstrap.inc.php';
 $time = time();
-$voteuserList = pdo_fetchall("SELECT * FROM " . tablename("tyzm_diamondvote_voteuser") . " WHERE rid=13 AND status=0 ");
+$voteuserList = pdo_fetchall("SELECT * FROM " . tablename("tyzm_diamondvote_voteuser") . " WHERE status=0 ");
 if (!empty($voteuserList)) {
 	foreach ($voteuserList as $voteuser) {
 		$diffTime = $time - $voteuser['createtime'];
