@@ -93,12 +93,16 @@ class tyzm_diamondvoteModuleSite extends WeModuleSite {
 				$tycode = substr($params['tid'], 0, 4);
 				if ($tycode == '8888') {
 					$order = pdo_fetch('SELECT rid,tid,uniacid FROM ' . tablename($this->tableviporder) . " WHERE ptid = :ptid", array(":ptid" => $params["tid"]));
-					$url = murl('entry/payresult', array('m' => 'tyzm_diamondvote', 'ty' => 'user', 'rid' => $order['rid'], 'id' => $order['tid'], 'i' => $order['uniacid']));
+					// $url = murl('entry/payresult', array('m' => 'tyzm_diamondvote', 'ty' => 'user', 'rid' => $order['rid'], 'id' => $order['tid'], 'i' => $order['uniacid']));
+					$url = $_W['siteroot'] . 'app/' . $this->createMobileUrl("payresult", array("rid" => $order["rid"], "id" => $order["tid"], 'i' => $order['uniacid']));
 				} else {
 					$order = pdo_fetch('SELECT id,tid,rid,uniacid FROM ' . tablename($this->tablegift) . " WHERE  ptid = :ptid ", array(":ptid" => $params["tid"]));
-					$url = murl('entry/payresult', array('m' => 'tyzm_diamondvote', 'rid' => $order['rid'], 'id' => $order['tid'], 'i' => $order['uniacid']));
+
+					$url = $_W['siteroot'] . 'app/' . $this->createMobileUrl("payresult", array("rid" => $order["rid"], "id" => $order["tid"], 'i' => $order['uniacid']));
+
+					// $url = murl('entry/payresult', array('m' => 'tyzm_diamondvote', 'rid' => $order['rid'], 'id' => $order['tid'], 'i' => $order['uniacid']));
 				}
-				header('location: ' . $_W['siteroot'] . 'app/' . $url);
+				header('location: ' . $url);
 			} else {
 				message('抱歉，支付失败，请刷新后再试！', 'referer', 'error');
 			}
