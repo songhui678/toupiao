@@ -100,11 +100,12 @@ class tyzm_diamondvoteModuleSite extends WeModuleSite {
 
 					// $url = $_W['siteroot'] . 'app/' . $this->createMobileUrl("payresult", array("rid" => $order["rid"], "id" => $order["tid"], 'i' => $order['uniacid']));
 
-					$uservoteurl = $_W['siteroot'] . 'app/' . $this->createMobileUrl("view", array("rid" => $order["rid"], "id" => $order["tid"]));
+					// $uservoteurl = $_W['siteroot'] . 'app/' . $this->createMobileUrl("view", array("rid" => $order["rid"], "id" => $order["tid"]));
 
 					// $url = murl('entry/payresult', array('m' => 'tyzm_diamondvote', 'rid' => $order['rid'], 'id' => $order['tid'], 'i' => $order['uniacid']));
 				}
-				header('location: ' . $uservoteurl);
+				$url = "http://m.ruishivoc.com/col.jsp?id=115";
+				header('location: ' . $url);
 			} else {
 				message('抱歉，支付失败，请刷新后再试！', 'referer', 'error');
 			}
