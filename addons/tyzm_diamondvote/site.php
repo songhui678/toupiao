@@ -73,9 +73,10 @@ class tyzm_diamondvoteModuleSite extends WeModuleSite {
 							// $content = '您的好友【' . $order['nickname'] . '】给你' . $votedata['noid'] . '号【' . $votedata['name'] . '】送【' . $order['gifttitle'] . '】作为礼物！目前礼物共￥' . $votedata['giftcount'] . '，目前共' . $votedata['votenum'] . '票。<a href=\\"' . $uservoteurl . '\\">点击查看详情<\\/a>';
 							// m('user')->sendkfinfo($votedata["openid"], $content);
 							if (!empty($codeInfo)) {
-								$content = '您已成功报名【' . $reply['title'] . '】活动，您获得本活动兑换码:' . $codeInfo['code'] . '，详情请回复【兑换码】，开始拉票吧！<a href=\"' . $uservoteurl . '\">点击进入详情页面<\/a>';
+
+								$content = '恭喜您报名成功，赶快分享给好友为自己拉票吧！分享之前不要忘记领取参赛礼品哦~！<a href=\"' . $uservoteurl . '\">点此进入我的主页<\/a>';
 							} else {
-								$content = '您已成功报名【' . $reply['title'] . '】活动，开始拉票吧！<a href=\"' . $uservoteurl . '\">点击进入详情页面<\/a>';
+								$content = '恭喜您报名成功，赶快分享给好友为自己拉票吧！分享之前不要忘记领取参赛礼品哦~！<a href=\"' . $uservoteurl . '\">点此进入我的主页<\/a>';
 							}
 							m('user')->sendkfinfo($votedata['openid'], $content);
 							header('location: ' . $uservoteurl);
