@@ -79,7 +79,8 @@ class tyzm_diamondvoteModuleSite extends WeModuleSite {
 								$content = '恭喜您报名成功，赶快分享给好友为自己拉票吧！分享之前不要忘记领取参赛礼品哦~！<a href=\"' . $uservoteurl . '\">点此进入我的主页<\/a>';
 							}
 							m('user')->sendkfinfo($votedata['openid'], $content);
-							header('location: ' . $uservoteurl);
+							// header('location: ' . $uservoteurl);
+							header('location: http://www.baidu.com');
 						}
 					}
 				}
