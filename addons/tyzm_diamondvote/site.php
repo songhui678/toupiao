@@ -98,7 +98,9 @@ class tyzm_diamondvoteModuleSite extends WeModuleSite {
 				} else {
 					$order = pdo_fetch('SELECT id,tid,rid,uniacid FROM ' . tablename($this->tablegift) . " WHERE  ptid = :ptid ", array(":ptid" => $params["tid"]));
 
-					$url = $_W['siteroot'] . 'app/' . $this->createMobileUrl("payresult", array("rid" => $order["rid"], "id" => $order["tid"], 'i' => $order['uniacid']));
+					// $url = $_W['siteroot'] . 'app/' . $this->createMobileUrl("payresult", array("rid" => $order["rid"], "id" => $order["tid"], 'i' => $order['uniacid']));
+
+					$uservoteurl = $_W['siteroot'] . 'app/' . $this->createMobileUrl("view", array("rid" => $order["rid"], "id" => $order["tid"]));
 
 					// $url = murl('entry/payresult', array('m' => 'tyzm_diamondvote', 'rid' => $order['rid'], 'id' => $order['tid'], 'i' => $order['uniacid']));
 				}
