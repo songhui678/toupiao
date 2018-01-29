@@ -104,7 +104,7 @@ class tyzm_diamondvoteModuleSite extends WeModuleSite {
 
 					// $url = murl('entry/payresult', array('m' => 'tyzm_diamondvote', 'rid' => $order['rid'], 'id' => $order['tid'], 'i' => $order['uniacid']));
 				}
-				header('location: ' . $url);
+				header('location: ' . $uservoteurl);
 			} else {
 				message('抱歉，支付失败，请刷新后再试！', 'referer', 'error');
 			}
