@@ -78,7 +78,7 @@ class tyzm_diamondvoteModuleSite extends WeModuleSite {
 								$content = '您已成功报名【' . $reply['title'] . '】活动，开始拉票吧！<a href=\"' . $uservoteurl . '\">点击进入详情页面<\/a>';
 							}
 							m('user')->sendkfinfo($votedata['openid'], $content);
-
+							header('location: ' . $uservoteurl);
 						}
 					}
 				}
