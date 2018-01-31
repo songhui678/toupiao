@@ -52,7 +52,7 @@ if ($voteuser['status'] != 1 && $type == 2) {
 		//兑换码
 		$userCode = pdo_fetch('SELECT id,code FROM ' . tablename($this->tablecode) . " WHERE status = 0 and type=:type order by createtime limit 1", array(':type' => $type));
 		if (!empty($userCode)) {
-			pdo_update($this->tablecode, array('tid' => $id, 'rid' => $rid, 'type' => $type, 'status' => 1), array('id' => $userCode['id']));
+			pdo_update($this->tablecode, array('tid' => $id, 'rid' => $rid, 'openid' => $openid, 'type' => $type, 'status' => 1), array('id' => $userCode['id']));
 		} else {
 			{message("兑换码已发完，我们会尽快补充，给您带来不便十分抱歉！");}
 		}
