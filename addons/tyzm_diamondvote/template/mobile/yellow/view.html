@@ -378,6 +378,7 @@ var longitude=0;
 	    },
 	    error: function(err) {
 		    hidemod("loadingToast");
+            $(".votenum").html(Number($(".votenum").html())+1);
 	    	dialog2("投票成功");
 	    }
 	});
