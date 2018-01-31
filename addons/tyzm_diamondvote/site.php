@@ -50,11 +50,7 @@ class tyzm_diamondvoteModuleSite extends WeModuleSite {
 					if (empty($resetvote)) {
 						pdo_update($this->{$tablegift}, array('isdeal' => 0), array('ptid' => $params['tid']));
 					} else {
-						//兑换码
-						$codeInfo = pdo_fetch('SELECT id,code FROM ' . tablename($this->tablecode) . " WHERE status = 0 order by createtime limit 1");
-						if (!empty($codeInfo)) {
-							pdo_update($this->{$tablecode}, array('tid' => $params['tid'], 'rid' => $order["rid"], 'status' => 1), array('id' => $codeInfo['id']));
-						}
+
 						$reply = pdo_fetch('SELECT config,title FROM ' . tablename($this->tablereply) . " WHERE rid = :rid ", array(":rid" => $order["rid"]));
 						$reply = @array_merge($reply, unserialize($reply['config']));
 						unset($reply['config']);
