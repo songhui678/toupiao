@@ -10,9 +10,8 @@ defined('IN_IA') or exit('Access Denied');
 global $_W, $_GPC;
 is_weixin();
 load()->func('communication');
-$uniacid = intval($_W['uniacid']);
+$type = intval($_GPC['type']) ? intval($_GPC['type']) : 1;
 $rid = intval($_GPC['rid']);
-$id = intval($_GPC['id']);
 $userinfo = $this->oauthuser;
 $oauth_openid = $userinfo['oauth_openid'];
 $openid = $userinfo['openid'];
@@ -27,10 +26,11 @@ if ($reply['apstarttime'] > time()) {
 	$aptime = 2; //报名已结束
 }
 
-$voteuser = pdo_fetch("SELECT * FROM " . tablename($this->tablevoteuser) . " WHERE rid = :rid AND  id = :id ", array(':rid' => $rid, ':id' => $id));
+$voteuser = pdo_fetch("SELECT * FROM " . tablename($this->tablevoteuser) . " WHERE rid = :rid AND  openid = :openid ", array(':rid' => $rid, ':openid' => $openid));
 if ($voteuser['status'] != 1) {
 	{message("请先去报名");}
 }
+$id = $voteuser['id'];
 $voteuser['avatar'] = !empty($voteuser['avatar']) ? $voteuser['avatar'] : $voteuser["img1"];
 
 $pvtotal = pdo_fetch("SELECT pv_total FROM " . tablename($this->tablecount) . " WHERE tid = :tid AND rid = :rid ", array(':tid' => $id, ':rid' => $rid));
@@ -45,12 +45,12 @@ if ($voteuser['openid'] != $userinfo['openid']) {
 	}
 }
 
-$userCode = pdo_fetch('SELECT id,code FROM ' . tablename($this->tablecode) . " WHERE status = 1 AND tid = :tid AND rid = :rid", array(':tid' => $id, ':rid' => $rid));
+$userCode = pdo_fetch('SELECT id,code FROM ' . tablename($this->tablecode) . " WHERE status = 1 AND tid = :tid AND rid = :rid AND type = :type", array(':tid' => $id, ':rid' => $rid, ':type' => $type));
 if (empty($userCode)) {
 //兑换码
-	$userCode = pdo_fetch('SELECT id,code FROM ' . tablename($this->tablecode) . " WHERE status = 0 order by createtime limit 1");
+	$userCode = pdo_fetch('SELECT id,code FROM ' . tablename($this->tablecode) . " WHERE status = 0 and type=:type order by createtime limit 1", array(':type' => $type));
 	if (!empty($userCode)) {
-		pdo_update($this->tablecode, array('tid' => $id, 'rid' => $rid, 'status' => 1), array('id' => $userCode['id']));
+		pdo_update($this->tablecode, array('tid' => $id, 'rid' => $rid, 'type' => $type, 'status' => 1), array('id' => $userCode['id']));
 	}
 }
 
