@@ -41,7 +41,7 @@
 </div>
 
 <div class="divbottommenu">
-  
+  {if $type==2}
   <div class="divitem">
 	  <span><i class="glyphicon glyphicon-user"></i> 编号</span>
 	  <span>{$voteuser['noid']}</span>
@@ -54,7 +54,7 @@
 	  <span><i class="glyphicon glyphicon-fire"></i> 热度</span>
 	  <span>{$pvtotal['pv_total']}</span>
   </div>
- 
+  {/if}
 </div>
 <div class="divviewg">
 <!--/*
@@ -80,9 +80,11 @@
  
 <div style="height:80px;"></div>
 <div class="lapiao">
+  {if $type==2}
 	<!-- <a href="{php echo $this->createMobileUrl('index', array('rid' => $rid))}" class='l'>回首页</a> -->
-	<a href="http://m.ruishivoc.com/col.jsp?id=115"  class='b'>领奖品</a>
-	<div class="add" ><div class="i"><i><img src="{MODULE_URL}/template/static/images/xin.png"></i>恭喜</div>
+ 
+	<a href="http://m.ruishivoc.com/col.jsp?id=115"  class='b'><div class="add" ><div class="i"><i><img src="{MODULE_URL}/template/static/images/xin.png"></i>返回</div></a>
+   {/if} 
 </div>
 </div>
 

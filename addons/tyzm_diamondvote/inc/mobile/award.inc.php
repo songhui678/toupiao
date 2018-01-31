@@ -15,6 +15,7 @@ $rid = intval($_GPC['rid']);
 $userinfo = $this->oauthuser;
 $oauth_openid = $userinfo['oauth_openid'];
 $openid = $userinfo['openid'];
+
 m('domain')->randdomain($rid);
 $reply = pdo_fetch("SELECT rid,title,sharedesc,description,config,style,area,addata,applydata,endtime,apstarttime,apendtime,status FROM " . tablename($this->tablereply) . " WHERE rid = :rid ", array(':rid' => $rid));
 $reply['style'] = @unserialize($reply['style']);
@@ -27,30 +28,42 @@ if ($reply['apstarttime'] > time()) {
 }
 
 $voteuser = pdo_fetch("SELECT * FROM " . tablename($this->tablevoteuser) . " WHERE rid = :rid AND  openid = :openid ", array(':rid' => $rid, ':openid' => $openid));
-if ($voteuser['status'] != 1) {
+if ($voteuser['status'] != 1 && $type == 2) {
 	{message("请先去报名");}
-}
-$id = $voteuser['id'];
-$voteuser['avatar'] = !empty($voteuser['avatar']) ? $voteuser['avatar'] : $voteuser["img1"];
+//兑椰子
+} elseif ($type == 2 && $voteuser['status'] == 1) {
+	$id = $voteuser['id'];
+	$voteuser['avatar'] = !empty($voteuser['avatar']) ? $voteuser['avatar'] : $voteuser["img1"];
 
-$pvtotal = pdo_fetch("SELECT pv_total FROM " . tablename($this->tablecount) . " WHERE tid = :tid AND rid = :rid ", array(':tid' => $id, ':rid' => $rid));
-if (empty($pvtotal)) {
-	$pvtotal['pv_total'] = 0;
-}
-$pvtotal['pv_total'] = $pvtotal['pv_total'] + $voteuser['vheat'];
-if ($voteuser['openid'] != $userinfo['openid']) {
-	$myvoteuser = pdo_fetch("SELECT id FROM " . tablename($this->tablevoteuser) . " WHERE rid = :rid AND  openid = :openid ", array(':rid' => $rid, ':openid' => $openid));
-	if (!empty($myvoteuser)) {
-		$myvoteid = $myvoteuser['id'];
+	$pvtotal = pdo_fetch("SELECT pv_total FROM " . tablename($this->tablecount) . " WHERE tid = :tid AND rid = :rid ", array(':tid' => $id, ':rid' => $rid));
+	if (empty($pvtotal)) {
+		$pvtotal['pv_total'] = 0;
 	}
-}
+	$pvtotal['pv_total'] = $pvtotal['pv_total'] + $voteuser['vheat'];
+	if ($voteuser['openid'] != $userinfo['openid']) {
+		$myvoteuser = pdo_fetch("SELECT id FROM " . tablename($this->tablevoteuser) . " WHERE rid = :rid AND  openid = :openid ", array(':rid' => $rid, ':openid' => $openid));
+		if (!empty($myvoteuser)) {
+			$myvoteid = $myvoteuser['id'];
+		}
+	}
 
-$userCode = pdo_fetch('SELECT id,code FROM ' . tablename($this->tablecode) . " WHERE status = 1 AND tid = :tid AND rid = :rid AND type = :type", array(':tid' => $id, ':rid' => $rid, ':type' => $type));
-if (empty($userCode)) {
-//兑换码
-	$userCode = pdo_fetch('SELECT id,code FROM ' . tablename($this->tablecode) . " WHERE status = 0 and type=:type order by createtime limit 1", array(':type' => $type));
-	if (!empty($userCode)) {
-		pdo_update($this->tablecode, array('tid' => $id, 'rid' => $rid, 'type' => $type, 'status' => 1), array('id' => $userCode['id']));
+	$userCode = pdo_fetch('SELECT id,code FROM ' . tablename($this->tablecode) . " WHERE status = 1 AND tid = :tid AND rid = :rid AND type = :type", array(':tid' => $id, ':rid' => $rid, ':type' => $type));
+	if (empty($userCode)) {
+		//兑换码
+		$userCode = pdo_fetch('SELECT id,code FROM ' . tablename($this->tablecode) . " WHERE status = 0 and type=:type order by createtime limit 1", array(':type' => $type));
+		if (!empty($userCode)) {
+			pdo_update($this->tablecode, array('tid' => $id, 'rid' => $rid, 'type' => $type, 'status' => 1), array('id' => $userCode['id']));
+		}
+	}
+//兑草莓
+} elseif ($type == 1) {
+	$userCode = pdo_fetch('SELECT id,code FROM ' . tablename($this->tablecode) . " WHERE status = 1 AND openid = :openid AND rid = :rid AND type = :type", array(':tid' => $id, ':rid' => $rid, ':type' => $type));
+	if (empty($userCode)) {
+		//兑换码
+		$userCode = pdo_fetch('SELECT id,code FROM ' . tablename($this->tablecode) . " WHERE status = 0 and type=:type order by createtime limit 1", array(':type' => $type));
+		if (!empty($userCode)) {
+			pdo_update($this->tablecode, array('tid' => $id, 'rid' => $rid, 'openid' => $openid, 'type' => $type, 'status' => 1), array('id' => $userCode['id']));
+		}
 	}
 }
 
