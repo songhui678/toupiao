@@ -59,7 +59,7 @@ if ($voteuser['status'] != 1 && $type == 2) {
 	}
 //兑草莓
 } elseif ($type == 1) {
-	$userCode = pdo_fetch('SELECT id,code FROM ' . tablename($this->tablecode) . " WHERE status = 1 AND openid = :openid AND rid = :rid AND type = :type", array(':tid' => $id, ':rid' => $rid, ':type' => $type));
+	$userCode = pdo_fetch('SELECT id,code FROM ' . tablename($this->tablecode) . " WHERE status = 1 AND openid = :openid AND rid = :rid AND type = :type", array(':openid' => $openid, ':rid' => $rid, ':type' => $type));
 	if (empty($userCode)) {
 		//兑换码
 		$userCode = pdo_fetch('SELECT id,code FROM ' . tablename($this->tablecode) . " WHERE status = 0 and type=:type order by createtime limit 1", array(':type' => $type));
