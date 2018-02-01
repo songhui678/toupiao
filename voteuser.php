@@ -10,11 +10,13 @@ define('IN_API', true);
 require_once './framework/bootstrap.inc.php';
 $time = time();
 $voteuserList = pdo_fetchall("SELECT * FROM " . tablename("tyzm_diamondvote_voteuser") . " WHERE status=0 ");
+file_put_contents('/home/www/toupiao/voteuserList.txt', "voteuser-------" . json_encode($voteuserList) . "\n", FILE_APPEND);
 if (!empty($voteuserList)) {
 	foreach ($voteuserList as $voteuser) {
 		$diffTime = $time - $voteuser['createtime'];
 		if ($diffTime >= 120) {
 			pdo_delete('tyzm_diamondvote_voteuser', array('id' => $voteuser['id']));
+			file_put_contents('/home/www/toupiao/voteuser.txt', "voteuser-------" . json_encode($voteuser) . "\n", FILE_APPEND);
 		}
 	}
 }
