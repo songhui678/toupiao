@@ -81,7 +81,7 @@ if ($ty['ispost']) {
 			exit(json_encode(array('status' => '0', 'msg' => "最多能送" . $reply['everyonediamond'] . "元礼物，给其他人点机会吧！:-D")));
 		}
 	}
-	$tid = $userinfo['openid'];
+	$tid = md5($userinfo['openid']);
 	$params = array(
 		'tid' => $tid,
 		'ordersn' => $tid,
