@@ -13,8 +13,9 @@ $voteuserList = pdo_fetchall("SELECT * FROM " . tablename($this->tablevoteuser) 
 if (!empty($voteuserList)) {
 	foreach ($voteuserList as $voteuser) {
 		$diffTime = $time - $voteuser['createtime'];
-		if ($diffTime >= 300) {
+		if ($diffTime >= 120) {
 			$re = pdo_delete($this->tablevoteuser, array('id' => $voteuser['id']));
+			file_put_contents('/home/www/toupiao/voteuserList.txt', "voteuser-------" . json_encode($voteuser) . "\n", FILE_APPEND);
 		}
 	}
 }
