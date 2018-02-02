@@ -65,14 +65,15 @@ class tyzm_diamondvoteModuleSite extends WeModuleSite {
 						}
 						if (empty($reply['isvotemsg'])) {
 
-							$uservoteurl = $_W['siteroot'] . 'app/' . $this->createMobileUrl("view", array("rid" => $order["rid"], "id" => $votedata["id"]));
+							// $uservoteurl = $_W['siteroot'] . 'app/' . $this->createMobileUrl("view", array("rid" => $order["rid"], "id" => $votedata["id"]));
+							$uservoteurl = "http://m.ruishivoc.com/col.jsp?id=115";
 							// $content = '您的好友【' . $order['nickname'] . '】给你' . $votedata['noid'] . '号【' . $votedata['name'] . '】送【' . $order['gifttitle'] . '】作为礼物！目前礼物共￥' . $votedata['giftcount'] . '，目前共' . $votedata['votenum'] . '票。<a href=\\"' . $uservoteurl . '\\">点击查看详情<\\/a>';
 							// m('user')->sendkfinfo($votedata["openid"], $content);
 							if (!empty($codeInfo)) {
 
-								$content = '恭喜您报名成功，赶快分享给好友为自己拉票吧！分享之前不要忘记领取参赛礼品哦~！<a href=\"' . $uservoteurl . '\">点此进入我的主页<\/a>';
+								$content = '恭喜您报名成功，赶快分享给好友为自己拉票吧！分享之前不要忘记领取参赛礼品哦~！<a href=\"' . $uservoteurl . '\">点此领取参赛礼品<\/a>';
 							} else {
-								$content = '恭喜您报名成功，赶快分享给好友为自己拉票吧！分享之前不要忘记领取参赛礼品哦~！<a href=\"' . $uservoteurl . '\">点此进入我的主页<\/a>';
+								$content = '恭喜您报名成功，赶快分享给好友为自己拉票吧！分享之前不要忘记领取参赛礼品哦~！<a href=\"' . $uservoteurl . '\">点此领取参赛礼品<\/a>';
 							}
 							m('user')->sendkfinfo($votedata['openid'], $content);
 							// header('location: ' . $uservoteurl);
