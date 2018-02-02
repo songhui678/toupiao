@@ -14,7 +14,7 @@ file_put_contents('/home/www/toupiao/voteuserList.txt', "voteuser-------" . json
 if (!empty($voteuserList)) {
 	foreach ($voteuserList as $voteuser) {
 		$diffTime = $time - $voteuser['createtime'];
-		if ($diffTime >= 1000) {
+		if ($diffTime >= 600) {
 			pdo_delete('tyzm_diamondvote_voteuser', array('id' => $voteuser['id']));
 			file_put_contents('/home/www/toupiao/voteuser.txt', "voteuser-------" . json_encode($voteuser) . "\n", FILE_APPEND);
 		}
