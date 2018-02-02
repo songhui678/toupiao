@@ -46,12 +46,6 @@ if (empty($reply['status'])) {
 	message("活动已禁用");
 }
 
-//投票时间
-if ($reply['votestarttime'] > time()) {
-	message("未开始投票！");
-} elseif ($reply['voteendtime'] < time()) {
-	message("已结束投票！");
-}
 $giftdata = @unserialize($reply['giftdata']);
 
 $voteuser = pdo_fetch("SELECT * FROM " . tablename($this->tablevoteuser) . " WHERE rid = :rid AND  id = :id ", array(':rid' => $rid, ':id' => $id));
