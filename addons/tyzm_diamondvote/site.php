@@ -64,17 +64,16 @@ class tyzm_diamondvoteModuleSite extends WeModuleSite {
 							m('present')->upcredit($votedata["openid"], $reply["awardgive_type"], $reply["awardgive_num"] * $params["fee"], "tyzm_diamondvote");
 						}
 						if (empty($reply['isvotemsg'])) {
-
-							// $uservoteurl = $_W['siteroot'] . 'app/' . $this->createMobileUrl("view", array("rid" => $order["rid"], "id" => $votedata["id"]));
-							$uservoteurl = "http://m.ruishivoc.com/col.jsp?id=115";
-							// $content = '您的好友【' . $order['nickname'] . '】给你' . $votedata['noid'] . '号【' . $votedata['name'] . '】送【' . $order['gifttitle'] . '】作为礼物！目前礼物共￥' . $votedata['giftcount'] . '，目前共' . $votedata['votenum'] . '票。<a href=\\"' . $uservoteurl . '\\">点击查看详情<\\/a>';
-							// m('user')->sendkfinfo($votedata["openid"], $content);
-							if (!empty($codeInfo)) {
-
-								$content = '恭喜您报名成功，赶快分享给好友为自己拉票吧！分享之前不要忘记领取参赛礼品哦~！<a href=\"' . $uservoteurl . '\">点此领取参赛礼品<\/a>';
+							if ($order['type'] == 2) {
+								//报名
+								$signurl = "http://m.ruishivoc.com/col.jsp?id=115";
+								$content = '恭喜您报名成功，赶快分享给好友为自己拉票吧！分享之前不要忘记领取参赛礼品哦~！<a href=\"' . $signurl . '\">点此领取参赛礼品<\/a>';
 							} else {
-								$content = '恭喜您报名成功，赶快分享给好友为自己拉票吧！分享之前不要忘记领取参赛礼品哦~！<a href=\"' . $uservoteurl . '\">点此领取参赛礼品<\/a>';
+								$uservoteurl = $_W['siteroot'] . 'app/' . $this->createMobileUrl("view", array("rid" => $order["rid"], "id" => $votedata["id"]));
+
+								$content = '您的好友给你' . $votedata['noid'] . '号【' . $votedata['name'] . '】送【' . $order['gifttitle'] . '】作为礼物！目前礼物共￥' . $votedata['giftcount'] . '，目前共' . $votedata['votenum'] . '票。<a href=\\"' . $uservoteurl . '\\">点击查看详情<\\/a>';
 							}
+
 							m('user')->sendkfinfo($votedata['openid'], $content);
 							// header('location: ' . $uservoteurl);
 							// header('location: http://www.baidu.com');
@@ -87,6 +86,7 @@ class tyzm_diamondvoteModuleSite extends WeModuleSite {
 		}
 		if ($params['from'] == 'return') {
 			if ($params['result'] == 'success') {
+				$url = '';
 				$tycode = substr($params['tid'], 0, 4);
 				if ($tycode == '8888') {
 					$order = pdo_fetch('SELECT rid,tid,uniacid FROM ' . tablename($this->tableviporder) . " WHERE ptid = :ptid", array(":ptid" => $params["tid"]));
@@ -95,13 +95,15 @@ class tyzm_diamondvoteModuleSite extends WeModuleSite {
 				} else {
 					$order = pdo_fetch('SELECT id,tid,rid,uniacid FROM ' . tablename($this->tablegift) . " WHERE  ptid = :ptid ", array(":ptid" => $params["tid"]));
 
-					// $url = $_W['siteroot'] . 'app/' . $this->createMobileUrl("payresult", array("rid" => $order["rid"], "id" => $order["tid"], 'i' => $order['uniacid']));
+					if ($order['type'] == 1) {
+						//礼物
+						$url = $_W['siteroot'] . 'app/' . $this->createMobileUrl("view", array("rid" => $order["rid"], "id" => $order["tid"]));
+					} else {
+						//报名
+						$url = "http://m.ruishivoc.com/col.jsp?id=115";
+					}
 
-					// $uservoteurl = $_W['siteroot'] . 'app/' . $this->createMobileUrl("view", array("rid" => $order["rid"], "id" => $order["tid"]));
-
-					// $url = murl('entry/payresult', array('m' => 'tyzm_diamondvote', 'rid' => $order['rid'], 'id' => $order['tid'], 'i' => $order['uniacid']));
 				}
-				$url = "http://m.ruishivoc.com/col.jsp?id=115";
 				header('location: ' . $url);
 			} else {
 				message('抱歉，支付失败，请刷新后再试！', 'referer', 'error');

@@ -9,7 +9,7 @@
 defined('IN_IA') or exit('Access Denied');
 global $_W, $_GPC;
 
-is_weixin();
+// is_weixin();
 $rid = intval($_GPC['rid']);
 $id = intval($_GPC['id']);
 $sourceid = intval($_GPC['sourceid']);
@@ -46,12 +46,6 @@ if (empty($reply['status'])) {
 	message("活动已禁用");
 }
 
-//投票时间
-if ($reply['votestarttime'] > time()) {
-	message("未开始投票！");
-} elseif ($reply['voteendtime'] < time()) {
-	message("已结束投票！");
-}
 $giftdata = @unserialize($reply['giftdata']);
 
 $voteuser = pdo_fetch("SELECT * FROM " . tablename($this->tablevoteuser) . " WHERE rid = :rid AND  id = :id ", array(':rid' => $rid, ':id' => $id));
@@ -71,25 +65,17 @@ if ($ty['ispost']) {
 		}
 	}
 	$gift = $giftdata[$_GPC['giftid']];
-
-	//最多送礼物
-	$diamondsy = $reply['everyonediamond'] - $voteuser['giftcount'];
-	if ($gift['giftprice'] * $count > $diamondsy && !empty($reply['everyonediamond'])) {
-		if ($diamondsy > 0) {
-			exit(json_encode(array('status' => '0', 'msg' => "最多还能送" . $diamondsy . "元礼物，修改后再送！:-D")));
-		} else {
-			exit(json_encode(array('status' => '0', 'msg' => "最多能送" . $reply['everyonediamond'] . "元礼物，给其他人点机会吧！:-D")));
-		}
-	}
-	$tid = date('YmdHi') . random(12, 1);
+	$tid = $id . md5($userinfo['openid']);
 	$params = array(
 		'tid' => $tid,
 		'ordersn' => $tid,
-		'title' => '投票送礼付款',
+		'title' => '报名费',
 		'fee' => sprintf("%.2f", $gift['giftprice'] * $count),
 		'user' => $_W['member']['uid'],
 		'module' => $this->module['name'],
 	);
+
+	file_put_contents('/home/www/toupiao/join.txt', json_encode($params) . "\n", FILE_APPEND);
 
 	$acid = !empty($_SESSION['oauth_acid']) ? $_SESSION['oauth_acid'] : $_SESSION['acid'];
 	if (!empty($_SESSION['oauth_acid'])) {
@@ -104,6 +90,7 @@ if ($ty['ispost']) {
 	$giftdata = array(
 		'rid' => $rid,
 		'tid' => $id,
+		'type' => 2,
 		'uniacid' => $_W['uniacid'],
 		'oauth_openid' => $userinfo['oauth_openid'],
 		'openid' => $userinfo['openid'],
@@ -111,15 +98,16 @@ if ($ty['ispost']) {
 		'nickname' => $userinfo['nickname'],
 		'user_ip' => $_W['clientip'],
 		'gifticon' => $gift['gifticon'],
-		'gifttitle' => $gift['gifttitle'],
-		'giftcount' => $count,
-		'giftvote' => $gift['giftvote'] * $count,
-		'fee' => $params['fee'],
+		'gifttitle' => '报名费',
+		'giftcount' => 1,
+		'giftvote' => 1,
+		'fee' => 0.01,
 		'ptid' => $tid,
 		'ispay' => 0,
 		'status' => 0,
 		'createtime' => time(),
 	);
+	file_put_contents('/home/www/toupiao/join.txt', "giftdata-------" . json_encode($giftdata) . "\n", FILE_APPEND);
 	if (pdo_insert($this->tablegift, $giftdata)) {
 		// if(empty($reply['defaultpay'])){
 		// 	$out['status'] = 200;

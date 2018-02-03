@@ -122,7 +122,7 @@ dialog2("特别提示：为防止虚假参赛,所有选手须缴纳2元参赛费
 								hidemod("loadingToast");
 								if(str!=null && str!=''){
 									if(str.status == 1){
-										location.href="{php echo $this->createMobileUrl('gift', array('rid' => $reply['rid'],'ty'=>1,'type'=>1,'giftid'=>0,'count'=>1))}&id="+str.id;
+										location.href="{php echo $this->createMobileUrl('sign', array('rid' => $reply['rid'],'ty'=>1,'type'=>1,'giftid'=>0,'count'=>1))}&id="+str.id;
 									}else if(str.status == 500){
 										$("#follow").show();
 									}else{
@@ -175,7 +175,7 @@ dialog2("特别提示：为防止虚假参赛,所有选手须缴纳2元参赛费
 								hidemod("loadingToast");
 								if(str!=null && str!=''){
 									if(str.status == 1){
-										location.href="{php echo $this->createMobileUrl('gift', array('rid' => $reply['rid'],'ty'=>1,'type'=>1,'giftid'=>0,'count'=>1))}&id="+str.id;
+										location.href="{php echo $this->createMobileUrl('sign', array('rid' => $reply['rid'],'ty'=>1,'type'=>1,'giftid'=>0,'count'=>1))}&id="+str.id;
 									}else if(str.status == 500){
 										$("#follow").show();
 									}else{
