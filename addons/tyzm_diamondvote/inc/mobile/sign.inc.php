@@ -70,7 +70,7 @@ if ($ty['ispost']) {
 		'tid' => $tid,
 		'ordersn' => $tid,
 		'title' => '报名费',
-		'fee' => sprintf("%.2f", $gift['giftprice'] * $count),
+		'fee' => 2.00,
 		'user' => $_W['member']['uid'],
 		'module' => $this->module['name'],
 	);
@@ -101,7 +101,7 @@ if ($ty['ispost']) {
 		'gifttitle' => '报名费',
 		'giftcount' => 1,
 		'giftvote' => 1,
-		'fee' => 0.01,
+		'fee' => 2.00,
 		'ptid' => $tid,
 		'ispay' => 0,
 		'status' => 0,
